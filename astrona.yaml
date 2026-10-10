@@ -1,0 +1,170 @@
+# Course manifest for ATS019 - Platform APIs and Self-Service Capabilities
+# (Certified Cloud Native Platform Engineer).
+#
+# One entry per section under `modules:`. Each section lists, in order: its
+# README, then for each module the landing page (course.md), its parts
+# (course-0N-*.md), and right after the part a lab tests, the lab's
+# question.md reading and the `type: lab` entry. The module's wrap-up page
+# comes last. The section capstone closes the section. Playgrounds are not
+# listed: the landing page's playground marker shows them. solution.md is
+# never listed.
+#
+# Every `path:` is relative to this file.
+
+training:
+  id: ATS019
+  title: "CNPE: Platform APIs and Self-Service Capabilities"
+  description: >
+    Training material covering the Certified Cloud Native Platform Engineer
+    (CNPE) Platform APIs and Self-Service Capabilities domain: designing
+    CustomResourceDefinitions with OpenAPI schemas, CEL validation rules,
+    printer columns, versions and subresources; reading an operator's
+    reconcile loop through status conditions, finalizers and owner
+    references; building platform APIs with Crossplane composite resource
+    definitions, compositions, functions and providers; and offering
+    self-service provisioning with Argo Workflows, Argo Events, Git requests
+    and RBAC scoped to the platform API. Each module pairs a layered reader
+    with an ungraded hands-on playground. Each section closes with an
+    integration capstone.
+    Built and verified against Kubernetes 1.35, Crossplane 2.4.2 and
+    Argo Workflows 4.1.5.
+
+  certification:
+    name: Certified Cloud Native Platform Engineer
+    code: CNPE
+    provider: CNCF / Linux Foundation
+    domain: Platform APIs and Self-Service Capabilities
+    weight: 25
+    competencies:
+      - "Designing and Creating Custom Resource Definitions (CRDs) for Platform Services"
+      - "Implementing Workflows for Self-Service Provisioning Using Platform APIs"
+      - "Using Kubernetes Operators for Platform Automation and Integration"
+      - "Using Automation Frameworks for Self-Service Provisioning"
+
+modules:
+
+  - id: module-intro
+    title: "Introduction"
+    description: >
+      Start here. What this course trains you to do, how it is laid out, how
+      to get your machine ready with the astrona command-line tool, how the
+      content is written and checked, who maintains it, and how to report a
+      mistake.
+
+    content:
+      - type: reading
+        title: Introduction
+        path: sections/intro/README.md
+      - type: reading
+        title: "Welcome To The Course"
+        path: sections/intro/course-01-welcome.md
+      - type: reading
+        title: "Get Your Machine Ready"
+        path: sections/intro/course-02-get-your-machine-ready.md
+      - type: reading
+        title: "How This Course Is Made"
+        path: sections/intro/course-03-how-this-course-is-made.md
+
+  - id: module-010
+    title: "Extending The Kubernetes API With CRDs"
+    description: >
+      The reader designs a platform service as a new Kubernetes resource
+      type. First the schema that makes the API server type, default,
+      prune and reject input, then versions and subresources so the API
+      can evolve and a controller can report status. It comes first
+      because every later section (operators, Crossplane, self-service)
+      is built on custom resources and reads their schema and status.
+
+    content:
+      - type: reading
+        title: Section Overview
+        path: sections/section-010/README.md
+
+      - type: reading
+        title: "Design A CRD Schema That Validates Input"
+        path: sections/section-010/module-01/course.md
+
+      - type: reading
+        title: "Version A CRD And Enable Subresources"
+        path: sections/section-010/module-02/course.md
+
+  - id: module-020
+    title: "Platform Automation With Operators"
+    description: >
+      The reader learns what makes a custom resource do something: a
+      controller running a reconcile loop. Using the Prometheus
+      Operator, the reader follows a `Prometheus` custom resource to the
+      StatefulSet, Service and Secrets it creates, reads status conditions and
+      observedGeneration, and sees how finalizers and owner references
+      control deletion. It sits after CRDs because it reads the status
+      and subresources defined there, and before Crossplane because
+      Crossplane is itself a set of operators.
+
+    content:
+      - type: reading
+        title: Section Overview
+        path: sections/section-020/README.md
+
+      - type: reading
+        title: "Read An Operator's Reconcile Loop"
+        path: sections/section-020/module-01/course.md
+
+      - type: reading
+        title: "Manage Deletion With Finalizers And Owner References"
+        path: sections/section-020/module-02/course.md
+
+  - id: module-030
+    title: "Platform APIs With Crossplane"
+    description: >
+      The reader builds a platform API that turns one small request into
+      many objects. First a provider and its ProviderConfig, then a
+      CompositeResourceDefinition and a function-pipeline Composition,
+      then a composite resource that tenants request and the platform
+      team traces when it fails. The provider acts inside the cluster
+      (provider-kubernetes), so the pattern is shown
+      offline and transfers to cloud providers.
+
+    content:
+      - type: reading
+        title: Section Overview
+        path: sections/section-030/README.md
+
+      - type: reading
+        title: "Install A Crossplane Provider And ProviderConfig"
+        path: sections/section-030/module-01/course.md
+
+      - type: reading
+        title: "Define A Platform API With An XRD And Composition"
+        path: sections/section-030/module-02/course.md
+
+      - type: reading
+        title: "Provision And Trace A Composite Resource"
+        path: sections/section-030/module-03/course.md
+
+  - id: module-040
+    title: "Self-Service Provisioning Workflows"
+    description: >
+      The reader wraps the platform API in a self-service flow. Argo
+      Workflows runs multi-step provisioning jobs from reusable
+      templates, Argo Events starts them from an event, and a Git-based
+      request flow with Argo CD and tightly scoped RBAC lets a tenant
+      team request a service through the platform API and nothing else.
+      It comes last because it uses the custom resources, operators and
+      composite resources from every earlier section.
+
+    content:
+      - type: reading
+        title: Section Overview
+        path: sections/section-040/README.md
+
+      - type: reading
+        title: "Run Provisioning Steps With Argo Workflows"
+        path: sections/section-040/module-01/course.md
+
+      - type: reading
+        title: "Trigger Workflows From Events With Argo Events"
+        path: sections/section-040/module-02/course.md
+
+      - type: reading
+        title: "Offer Self-Service Through Git And Scoped RBAC"
+        path: sections/section-040/module-03/course.md

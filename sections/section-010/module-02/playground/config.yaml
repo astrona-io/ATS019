@@ -1,0 +1,31 @@
+# yaml-language-server: $schema=https://cli.astrona.io/schema/lab-config.schema.json
+#
+# Version A CRD And Enable Subresources (PLAYGROUND) — playground environment.
+# A clean sandbox: it starts, installs the TeamEnvironment CRD in one version
+# (v1alpha1) with no subresources, and stores two objects in it. No task, no
+# grading, no `astrona submit`.
+apiVersion: astrona.io/v1
+metadata:
+  name: ats-019-playground-010-02
+  docs:
+    guide: docs/overview.md
+
+runtime:
+  type: kind
+  kind:
+    image: kindest/node:v1.35.8
+
+# Starting state: namespaces `starfleet` and `outpost`, the TeamEnvironment
+# CRD served and stored only as v1alpha1, without the status or scale
+# subresource, and two TeamEnvironment objects (`alpha`, `beta`) in
+# `outpost`, stored as v1alpha1. No controller runs: the learner writes
+# status by hand.
+bootstrap:
+  init:
+    - name: seed
+      description: "Creates the namespaces, the single-version TeamEnvironment CRD and two objects stored as v1alpha1"
+      type: file
+      source: bootstrap/seed.sh
+
+teardown:
+  keepCluster: false

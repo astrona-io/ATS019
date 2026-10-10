@@ -1,0 +1,31 @@
+# yaml-language-server: $schema=https://cli.astrona.io/schema/lab-config.schema.json
+#
+# Design A CRD Schema That Validates Input (PLAYGROUND) — playground environment.
+# A clean sandbox: it starts, installs a TeamEnvironment CRD with a weak schema
+# and three objects that schema wrongly accepts, then stays running for free
+# exploration. No task, no grading, no `astrona submit`.
+apiVersion: astrona.io/v1
+metadata:
+  name: ats-019-playground-010-01
+  docs:
+    guide: docs/overview.md
+
+runtime:
+  type: kind
+  kind:
+    image: kindest/node:v1.35.8
+
+# Starting state: the namespaces, a CRD whose spec accepts anything
+# (x-kubernetes-preserve-unknown-fields, no required fields, no printer
+# columns), and three TeamEnvironment objects in `outpost`: one valid, one
+# with a misspelled field, one with an out-of-range replica count. No
+# controller acts on the CRD, so status stays empty on purpose.
+bootstrap:
+  init:
+    - name: seed
+      description: "Creates the namespaces and the weak CRD, waits for it to be served, then creates the three TeamEnvironment objects"
+      type: file
+      source: bootstrap/seed.sh
+
+teardown:
+  keepCluster: false

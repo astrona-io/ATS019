@@ -1,0 +1,31 @@
+# yaml-language-server: $schema=https://cli.astrona.io/schema/lab-config.schema.json
+#
+# Manage Deletion With Finalizers And Owner References (PLAYGROUND) —
+# playground environment. A clean sandbox: it installs the Prometheus
+# Operator with one `Prometheus` resource that owns its objects, a ConfigMap
+# with a finalizer nothing will ever remove, and the TeamEnvironment CRD.
+# No task, no grading, no `astrona submit`.
+apiVersion: astrona.io/v1
+metadata:
+  name: ats-019-playground-020-02
+  docs:
+    guide: docs/overview.md
+
+runtime:
+  type: kind
+  kind:
+    image: kindest/node:v1.35.8
+
+bootstrap:
+  init:
+    - name: install-operator
+      description: "Installs the Prometheus Operator 0.94.1 from its bundle and waits for it"
+      type: file
+      source: bootstrap/01-install-operator.sh
+    - name: seed
+      description: "Creates the Prometheus resource, the ConfigMap with an orphaned finalizer and the TeamEnvironment CRD"
+      type: file
+      source: bootstrap/02-seed.sh
+
+teardown:
+  keepCluster: false

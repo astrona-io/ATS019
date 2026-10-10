@@ -1,0 +1,38 @@
+# yaml-language-server: $schema=https://cli.astrona.io/schema/lab-config.schema.json
+#
+# Read An Operator's Reconcile Loop (PLAYGROUND) — playground environment.
+# A clean sandbox: it installs the Prometheus Operator, one working
+# `Prometheus` resource and one that cannot start, then stays running for
+# free exploration. No task, no grading, no `astrona submit`.
+apiVersion: astrona.io/v1
+metadata:
+  name: ats-019-playground-020-01
+  docs:
+    guide: docs/overview.md
+
+runtime:
+  type: kind
+  kind:
+    image: kindest/node:v1.35.8
+    preloadImages:
+      - ghcr.io/stefanprodan/podinfo:6.15.0
+      - curlimages/curl:8.22.0
+
+# Starting state: the Prometheus Operator 0.94.1 in `default`; in `starfleet`
+# the `scout` workload with a ServiceMonitor, a ServiceAccount `prometheus`
+# with read RBAC, a working `Prometheus` resource `starfleet` and a
+# `Prometheus` resource `broken` that names a ServiceAccount that does not
+# exist, so its pod is never created.
+bootstrap:
+  init:
+    - name: install-operator
+      description: "Installs the Prometheus Operator 0.94.1 from its bundle and waits for it"
+      type: file
+      source: bootstrap/01-install-operator.sh
+    - name: seed
+      description: "Creates scout, the ServiceMonitor, the prometheus ServiceAccount and the two Prometheus resources"
+      type: file
+      source: bootstrap/02-seed.sh
+
+teardown:
+  keepCluster: false

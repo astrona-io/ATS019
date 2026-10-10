@@ -1,0 +1,417 @@
+# Curriculum blueprint — written by /astrona-course-domain-plan, consumed by
+# /astrona-course-domain-scaffold and /astrona-course-domain-build.
+#
+# This file is the design record for the course. Commit it. Edit it by hand and
+# re-run scaffold/build; both are idempotent and will not overwrite written prose.
+#
+# Schema: references/blueprint-schema.md in the astrona-course-domain-plan skill.
+#
+# Note: astrona.yaml already exists, but it holds only the Introduction
+# (module-intro); no numbered section exists yet, so this is planned as a new
+# course and scaffold keeps module-intro first.
+
+version: 1
+mode: new
+
+course:
+  id: ATS019
+  title: Platform APIs and Self-Service Capabilities
+  git_url: ssh://git@github.com/astrona-io/ATS019.git
+  description: >
+    Training material for the Platform APIs and Self-Service Capabilities
+    domain of the Certified Cloud Native Platform Engineer (CNPE) exam (25%).
+    The reader builds a platform API from the bottom up: a
+    CustomResourceDefinition that validates its own input, an operator whose
+    reconcile loop acts on it, a Crossplane composite resource that turns one
+    request into many in-cluster objects, and a self-service workflow around
+    it with Argo Workflows, Argo Events, Git requests and RBAC scoped to the
+    platform API. Breadth over depth: each tool is taught for the job the exam
+    asks of it, plus how to read its status when it fails. Everything runs
+    offline in a single-node kind cluster.
+  certification:
+    name: Certified Cloud Native Platform Engineer
+    code: CNPE
+    provider: CNCF / Linux Foundation
+    domain: Platform APIs and Self-Service Capabilities
+    weight: 25
+  environment:
+    runtime: kind
+    kind: "0.33.0"
+    kubernetes: "1.35.8"
+    kind_node_image: "kindest/node:v1.35.8"
+    crossplane: "2.4.2"
+    provider_kubernetes: "1.4.1"
+    function_patch_and_transform: "0.11.0"
+    prometheus_operator: "0.94.1"   # section 020 operator example
+    prometheus: "3.15.0"
+    argo_workflows: "4.1.5"
+    argo_events: "1.9.11"
+    argo_cd: "3.5.4"
+    gitea: "28.1.0"                 # plumbing only, never a lesson subject
+    helm: "4.3.0"                   # plumbing only (installs in bootstrap), never a lesson subject
+    podinfo: "6.15.0"
+    go_httpbin: "2.25.0"
+
+defaults:
+  playground: true
+  module_lab: false
+  capstone: true
+  section_quiz: true
+  final_quiz: true
+
+sections:
+  - id: section-010
+    title: Extending The Kubernetes API With CRDs
+    curriculum_item: "Designing and Creating Custom Resource Definitions (CRDs) for Platform Services"
+    description: >
+      The reader designs a platform service as a new Kubernetes resource type.
+      First the schema that makes the API server type, default, prune and
+      reject input, then versions and subresources so the API can evolve and
+      a controller can report status. It comes first because every later
+      section (operators, Crossplane, self-service) is built on custom
+      resources and reads their schema and status.
+    modules:
+      - id: module-01
+        title: Design A CRD Schema That Validates Input
+        objectives:
+          - Write a CustomResourceDefinition in apiextensions.k8s.io/v1 with a structural openAPIV3Schema for a platform service
+          - Mark fields as required and constrain them with enum, minimum, maximum and pattern
+          - Set default values and predict which unknown fields the API server prunes
+          - Write a CEL rule in x-kubernetes-validations, including a transition rule that uses oldSelf
+          - Add additionalPrinterColumns and a shortName so kubectl get shows the important fields
+          - Prove a rule works by applying a custom resource the API server must reject
+        outline:
+          - What a CRD adds to the API server, and what happens on kubectl apply of a custom resource
+          - The structural schema - types, required, enum, ranges and patterns
+          - Defaulting and pruning - what the API server writes back and what it drops
+          - CEL validation rules - self, oldSelf, messages and when a rule runs
+          - Printer columns, short names and categories for a usable kubectl get
+        diagrams:
+          - type: flowchart
+            shows: Path of a create request through the API server - decode, prune, default, schema validation, CEL rules, then etcd
+        playground: true
+        playground_env: >
+          kind cluster (Kubernetes 1.35) with no add-ons. A starter CRD
+          `teamenvironments.platform.starfleet.io` (kind TeamEnvironment) is
+          applied with a deliberately weak schema
+          (x-kubernetes-preserve-unknown-fields on spec, no required fields, no
+          printer columns), plus three example manifests on disk: a valid
+          TeamEnvironment, one with a typo in a field name, and one with an
+          out-of-range replica count, all of which the weak schema accepts.
+          Namespaces `starfleet` and `outpost` exist. No controller acts on the
+          CRD, so status stays empty on purpose.
+      - id: module-02
+        title: Version A CRD And Enable Subresources
+        objectives:
+          - Add a second version to a CRD and choose which version is served and which is the storage version
+          - Read which version an object is stored in from status.storedVersions
+          - Mark a version deprecated and read the warning kubectl prints
+          - Enable the status subresource and show that a spec update cannot change status
+          - Enable the scale subresource and scale a custom resource with kubectl scale
+        outline:
+          - Why platform APIs need versions - served, storage and deprecated
+          - Conversion without a webhook - what None conversion keeps and loses
+          - The status subresource - spec and status written by different actors
+          - The scale subresource - specReplicasPath, statusReplicasPath and kubectl scale
+        diagrams:
+          - type: flowchart
+            shows: A v1alpha1 client and a v1 client reading the same object, with the API server converting to and from the storage version
+          - type: sequence
+            shows: User updates spec through the main endpoint while a controller writes status through the /status subresource
+        playground: true
+        playground_env: >
+          kind cluster (Kubernetes 1.35) with no add-ons. The TeamEnvironment
+          CRD is installed with a full schema in one version only (v1alpha1),
+          with two TeamEnvironment objects already stored in v1alpha1 in
+          namespace `outpost`. No status or scale subresource is enabled yet.
+          A v1 schema file that renames nothing (so None conversion is safe) is
+          provided for the reader to add. No controller runs; the reader acts
+          as the controller with kubectl patch --subresource=status.
+    capstone:
+      title: Publish A Validated And Versioned Platform API Capstone
+      objective: >
+        The platform team must publish a `Database` API for tenant teams. The
+        reader writes the CRD with required and defaulted fields, a CEL rule
+        that forbids shrinking storage, printer columns, a second served
+        version with v1 as the storage version, and status and scale
+        subresources, then proves invalid requests are rejected and existing
+        objects are still readable.
+
+  - id: section-020
+    title: Platform Automation With Operators
+    curriculum_item: "Using Kubernetes Operators for Platform Automation and Integration"
+    description: >
+      The reader learns what makes a custom resource do something: a
+      controller running a reconcile loop. Using the Prometheus Operator, an
+      operator from the CNPE tool list, the reader follows a `Prometheus`
+      custom resource to the StatefulSet, Service and Secrets it creates,
+      reads status conditions and observedGeneration, and sees how finalizers
+      and owner references control deletion. It sits after CRDs because it
+      reads the status and subresources defined there, and before Crossplane
+      because Crossplane is itself a set of operators.
+    modules:
+      - id: module-01
+        title: Read An Operator's Reconcile Loop
+        objectives:
+          - Name the controller, CRDs and RBAC objects an operator installs, from the cluster
+          - Trace a custom resource to the objects its controller created through ownerReferences
+          - Read status.conditions and compare observedGeneration with metadata.generation to judge whether the controller has acted
+          - Find why a reconcile failed from conditions, events and the controller's logs
+          - Show that the controller restores an owned object that was changed or deleted by hand
+        outline:
+          - What an operator installs - CRDs, a controller Deployment, a ServiceAccount and RBAC
+          - The reconcile loop - desired state, actual state, act, write status
+          - Conditions, reasons and observedGeneration - reading status like a controller writes it
+          - Owned objects and drift - what the controller puts back
+        diagrams:
+          - type: sequence
+            shows: User applies a Prometheus resource, the Prometheus Operator watches it, creates a StatefulSet, Service and Secrets, then writes status conditions
+          - type: flowchart
+            shows: The reconcile loop - watch event, read desired, read actual, act, update status, requeue
+        playground: true
+        playground_env: >
+          kind cluster (Kubernetes 1.35) with the Prometheus Operator 0.94.1
+          installed from its bundle in `default`. In namespace `starfleet`, a
+          ServiceAccount `prometheus` with RBAC and a `Prometheus` resource
+          `starfleet` (one replica, small memory request) that is Available,
+          plus a second `Prometheus` resource `broken` that references a
+          ServiceAccount that does not exist, so its pods are never created and
+          its conditions say why. The `scout` Deployment and Service run in
+          `starfleet` with a ServiceMonitor.
+      - id: module-02
+        title: Manage Deletion With Finalizers And Owner References
+        objectives:
+          - Predict which dependent objects the garbage collector deletes when an owner is deleted
+          - Choose between foreground, background and orphan cascading deletion with kubectl delete --cascade
+          - Explain why an object with a finalizer stays in Terminating and which controller must remove the finalizer
+          - Diagnose an object stuck in Terminating and fix the cause instead of removing the finalizer by hand
+        outline:
+          - ownerReferences and the garbage collector - who deletes the children
+          - Cascading deletion modes and when a platform team wants each one
+          - Finalizers - cleanup before delete, and deletionTimestamp
+          - Stuck in Terminating - finding the missing controller, and why patching the finalizer away is the last resort
+        diagrams:
+          - type: state
+            shows: Lifecycle of an object with a finalizer - Active, deletionTimestamp set (Terminating), finalizer removed, deleted
+        playground: true
+        playground_env: >
+          kind cluster (Kubernetes 1.35) with the Prometheus Operator 0.94.1
+          installed and a `Prometheus` resource `starfleet` that owns its
+          StatefulSet, Service and Secrets. Namespace `starfleet` also has a
+          ConfigMap `scout-settings` that carries a custom finalizer
+          `platform.starfleet.io/cleanup` with no controller to remove it, so
+          deleting it leaves it in Terminating on purpose. The TeamEnvironment
+          CRD is installed so the reader can add ownerReferences between
+          custom resources and ConfigMaps by hand.
+    capstone:
+      title: Diagnose And Repair Operator-Managed Resources Capstone
+      objective: >
+        A tenant reports that its Prometheus instance never starts, that a
+        deleted environment left objects behind, and that a namespace cleanup
+        is stuck. The reader reads conditions and operator logs to fix the
+        ServiceAccount reference, adds the missing ownerReference so cleanup
+        cascades, and resolves the stuck Terminating object by restoring the
+        controller that owns its finalizer rather than removing the finalizer
+        by hand.
+
+  - id: section-030
+    title: Platform APIs With Crossplane
+    curriculum_item: "Implementing Workflows for Self-Service Provisioning Using Platform APIs"
+    description: >
+      The reader builds a platform API that turns one small request into many
+      objects. First a provider and its ProviderConfig, then a
+      CompositeResourceDefinition and a function-pipeline Composition, then a
+      composite resource that tenants request and the platform team traces
+      when it fails. The provider acts inside the cluster (provider-kubernetes),
+      so the pattern is shown offline and transfers to cloud
+      providers.
+    modules:
+      - id: module-01
+        title: Install A Crossplane Provider And ProviderConfig
+        objectives:
+          - Confirm Crossplane's pods, CRDs and package manager are healthy before installing anything on top
+          - Install a provider package and read INSTALLED and HEALTHY from kubectl get providers
+          - Configure a ProviderConfig for provider-kubernetes that uses an injected identity, and grant it the RBAC it needs
+          - Create a managed resource directly and read its Synced and Ready conditions
+          - Diagnose a managed resource that is not Synced because of missing provider permissions
+        outline:
+          - What Crossplane adds - packages, providers, managed resources and the control loop
+          - A running Crossplane and a provider package, and what HEALTHY means
+          - ProviderConfig and credentials - injected identity versus a Secret
+          - Managed resources - Synced versus Ready, and reading a failed sync
+        diagrams:
+          - type: flowchart
+            shows: Crossplane core, the provider-kubernetes package and controller, its ProviderConfig, and the managed Object it reconciles into a real ConfigMap
+        playground: true
+        playground_env: >
+          kind cluster (Kubernetes 1.35) with Crossplane 2.4.2 pre-installed in
+          `crossplane-system` and the `crossplane` CLI on the path. No
+          provider is installed yet; a provider manifest for provider-kubernetes
+          1.4.1 is ready to apply. The provider's service account deliberately
+          has no extra RBAC, so the first managed Object fails to sync until
+          the reader grants permissions. Needs outbound internet to pull from
+          xpkg.crossplane.io.
+      - id: module-02
+        title: Define A Platform API With An XRD And Composition
+        objectives:
+          - Write a CompositeResourceDefinition in apiextensions.crossplane.io/v2 with a namespaced scope and a validated schema
+          - Install function-patch-and-transform and reference it from a Composition in Pipeline mode
+          - Compose several in-cluster resources (Namespace, ResourceQuota, Deployment, Service) from one composite resource
+          - Patch values from the composite resource spec into composed resources and write fields back to status
+          - Preview what a Composition will produce with crossplane composition render before applying it
+        outline:
+          - From CRD to XRD - what Crossplane adds on top of a schema
+          - Compositions as a pipeline of functions
+          - Patch and transform - from the XR spec to composed resources and back to status
+          - Rendering locally to check a Composition before it reaches the cluster
+        diagrams:
+          - type: flowchart
+            shows: XRD defines the TeamEnvironment API, a Composition pipeline runs function-patch-and-transform, which returns Namespace, ResourceQuota, Deployment and Service
+          - type: er
+            shows: Relationships between XRD, Composition, composite resource and composed resources, with cardinality
+        playground: true
+        playground_env: >
+          kind cluster (Kubernetes 1.35) with Crossplane 2.4.2, provider-kubernetes
+          1.4.1 with a working ProviderConfig `in-cluster` and enough RBAC,
+          and function-patch-and-transform 0.11.0 installed and healthy. No XRD
+          or Composition exists yet. The `scout` image is pre-pulled. The
+          `crossplane` CLI and a local container runtime are available for
+          `crossplane composition render`. Needs outbound internet.
+      - id: module-03
+        title: Provision And Trace A Composite Resource
+        objectives:
+          - Request a composite resource in a tenant namespace and follow it to Ready
+          - Trace a composite resource to every composed and managed resource with crossplane resource trace
+          - Read Synced and Ready conditions on the composite resource and its composed resources to find the failing one
+          - Diagnose a Composition that references a missing function or patches a field that does not exist
+          - Choose between deleting a composite resource and orphaning its composed resources
+        outline:
+          - Requesting through the API - a tenant applies one small object
+          - Tracing the tree - from composite resource to managed resources to real objects
+          - Reading failure - which condition on which object says what went wrong
+          - Lifecycle - updates flowing down, deletion and what happens to composed resources
+        diagrams:
+          - type: sequence
+            shows: Tenant applies a TeamEnvironment, Crossplane runs the function pipeline, provider-kubernetes creates objects, conditions flow back up to Ready
+          - type: state
+            shows: Composite resource conditions over time - created, Synced True, waiting for composed resources, Ready True, or ReconcileError
+        playground: true
+        playground_env: >
+          kind cluster (Kubernetes 1.35) with Crossplane 2.4.2,
+          provider-kubernetes 1.4.1 with a working
+          ProviderConfig, and function-patch-and-transform 0.11.0. A working
+          TeamEnvironment XRD and Composition are installed. A second
+          Composition `teamenvironment-with-cache` deliberately references a
+          function that is not installed and patches a misspelled field, so a
+          composite resource that selects it stays not Ready. Namespace
+          `outpost` has one Ready TeamEnvironment. Needs outbound internet.
+    capstone:
+      title: Build A Self-Service Team Environment API Capstone
+      objective: >
+        The platform team must offer tenants a `TeamEnvironment` API. The reader
+        installs and configures provider-kubernetes, writes the XRD with
+        validation, writes a Pipeline Composition that creates a namespace,
+        quota, the `scout` Deployment and Service and reports the app URL in
+        status, fixes a broken patch found by tracing, and proves a tenant
+        request reaches Ready and `scout` answers a request from `shuttle`.
+
+  - id: section-040
+    title: Self-Service Provisioning Workflows
+    curriculum_item: "Using Automation Frameworks for Self-Service Provisioning / Implementing Workflows for Self-Service Provisioning Using Platform APIs"
+    description: >
+      The reader wraps the platform API in a self-service flow. Argo Workflows
+      runs multi-step provisioning jobs from reusable templates, Argo Events
+      starts them from an event, and a Git-based request flow with Argo CD and
+      tightly scoped RBAC lets a tenant team request a service through the
+      platform API and nothing else. It comes last because it uses the custom
+      resources, operators and composite resources from every earlier section.
+    modules:
+      - id: module-01
+        title: Run Provisioning Steps With Argo Workflows
+        objectives:
+          - Write a WorkflowTemplate with input parameters, steps and a DAG of dependent tasks
+          - Submit a Workflow from a WorkflowTemplate with the argo CLI and override a parameter
+          - Give a workflow a ServiceAccount with only the RBAC its steps need, and diagnose a step that fails on permissions
+          - Read a workflow's phase, node status and step logs to find the failing step
+          - Use a resource template step to create a custom resource and wait for a success condition
+        outline:
+          - What Argo Workflows runs - one pod per step, and the workflow controller
+          - WorkflowTemplate, parameters, steps and DAG
+          - The workflow ServiceAccount and RBAC
+          - Resource steps - creating a platform API object and waiting for Ready
+          - Reading a failed workflow from the CLI and the user interface
+        diagrams:
+          - type: flowchart
+            shows: DAG of a provisioning workflow - validate request, create TeamEnvironment, wait for Ready, smoke-test scout, notify
+          - type: sequence
+            shows: argo submit creates a Workflow, the workflow controller starts a pod per step, each step reports back, the Workflow reaches Succeeded
+        playground: true
+        playground_env: >
+          kind cluster (Kubernetes 1.35) with Argo Workflows 4.1.5 installed
+          in namespace `argo` with the server in auth-mode server and the
+          `argo` CLI on the path. Namespace `starfleet` has a ServiceAccount
+          `provisioner` with deliberately too few permissions. The
+          TeamEnvironment CRD is installed (plain CRD, no controller), so
+          resource steps can create objects and the reader sets status by
+          hand with kubectl patch --subresource=status to satisfy a success
+          condition.
+          Crossplane is not installed, to keep memory low.
+      - id: module-02
+        title: Trigger Workflows From Events With Argo Events
+        objectives:
+          - Install an EventBus and a webhook EventSource and send it an event with curl from shuttle
+          - Write a Sensor with a dependency and a trigger that submits a Workflow from a WorkflowTemplate
+          - Pass a value from the event payload into a workflow parameter
+          - Diagnose an event that does not start a workflow by reading EventSource and Sensor logs and status
+        outline:
+          - Event-driven provisioning - EventBus, EventSource, Sensor and trigger
+          - A webhook EventSource and a test event
+          - Sensor dependencies, filters and parameter mapping into a Workflow
+          - Following an event that went nowhere
+        diagrams:
+          - type: sequence
+            shows: shuttle posts JSON to the webhook EventSource, the event goes through the EventBus, the Sensor matches it and submits a Workflow with a parameter from the payload
+        playground: true
+        playground_env: >
+          kind cluster (Kubernetes 1.35) with Argo Workflows 4.1.5 and Argo
+          Events 1.9.11 installed, and a working `provision-environment`
+          WorkflowTemplate in `starfleet`. No EventBus, EventSource or Sensor
+          exists yet. The `shuttle` pod runs in `starfleet`. The Sensor's
+          ServiceAccount is created without permission to create Workflows, so
+          the first trigger fails on purpose.
+      - id: module-03
+        title: Offer Self-Service Through Git And Scoped RBAC
+        objectives:
+          - Design a request flow where a tenant adds a composite resource manifest to a Git repository and Argo CD applies it
+          - Write a Role and RoleBinding that let a tenant group create and read only the platform API kind in its own namespace
+          - Aggregate the platform API's permissions into the built-in edit and view ClusterRoles with an aggregation label
+          - Prove the tenant can request a TeamEnvironment but cannot create Deployments or read Secrets, with kubectl auth can-i --as
+          - Trace a Git request through Argo CD sync to a Ready composite resource
+        outline:
+          - What self-service means on a platform - a request API, not cluster access
+          - RBAC for a platform API - Roles, ClusterRole aggregation and auth can-i
+          - Requests through Git - Gitea repository, an Argo CD Application per tenant
+          - Following a request from commit to Ready
+        diagrams:
+          - type: flowchart
+            shows: Tenant commits a TeamEnvironment to Gitea, Argo CD syncs it into outpost, Crossplane composes it, status flows back to the tenant
+        playground: true
+        playground_env: >
+          kind cluster (Kubernetes 1.35) with Gitea 28.1.0 in namespace
+          `gitea` (user `platform`, organisation `starfleet`, repository
+          `outpost-requests` seeded with an empty `requests/` folder), Argo CD
+          3.5.4 with one Application pointing at that repository, and
+          Crossplane 2.4.2 with provider-kubernetes, function-patch-and-transform
+          and the TeamEnvironment XRD and Composition installed. A tenant user
+          `outpost-dev` (group `outpost-team`) is set up for impersonation and
+          has no RBAC yet. This is the heaviest playground in the course;
+          no Argo Workflows. Needs outbound internet.
+    capstone:
+      title: Deliver Self-Service Environment Provisioning Capstone
+      objective: >
+        The platform team must let the `outpost` team order an environment
+        without cluster access. The reader scopes RBAC so the team can only
+        manage TeamEnvironments in its namespace, wires a webhook event to a
+        WorkflowTemplate that creates the TeamEnvironment and waits for Ready,
+        fixes a Sensor that cannot submit workflows, and proves an order ends
+        with a Ready environment where `scout` answers from `shuttle`.
