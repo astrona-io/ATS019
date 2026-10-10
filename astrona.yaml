@@ -117,3 +117,40 @@ modules:
       - type: reading
         title: Summary
         path: sections/section-010/module-02/course-05-summary.md
+
+  - id: module-020
+    title: "Platform Automation With Operators"
+    description: >
+      The reader learns what makes a custom resource do something:
+      a controller running a reconcile loop. Using the Prometheus
+      Operator, an operator from the CNPE tool list, the reader
+      follows a `Prometheus` custom resource to the StatefulSet,
+      Service and Secrets it creates, reads status conditions and
+      observedGeneration, and sees how finalizers and owner
+      references control deletion. It sits after CRDs because it
+      reads the status and subresources defined there, and before
+      Crossplane because Crossplane is itself a set of operators.
+
+    content:
+      - type: reading
+        title: Section Overview
+        path: sections/section-020/README.md
+
+      - type: reading
+        title: "Read An Operator's Reconcile Loop"
+        path: sections/section-020/module-01/course.md
+      - type: reading
+        title: "What An Operator Installs"
+        path: sections/section-020/module-01/course-01-what-an-operator-installs.md
+      - type: reading
+        title: "Follow A Custom Resource To Its Objects"
+        path: sections/section-020/module-01/course-02-follow-a-custom-resource.md
+      - type: reading
+        title: "Read Conditions And observedGeneration"
+        path: sections/section-020/module-01/course-03-conditions-and-observed-generation.md
+      - type: reading
+        title: "Find Why A Reconcile Failed"
+        path: sections/section-020/module-01/course-04-find-why-a-reconcile-failed.md
+      - type: reading
+        title: Summary
+        path: sections/section-020/module-01/course-05-summary.md

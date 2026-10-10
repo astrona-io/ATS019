@@ -154,3 +154,4 @@ YAML
 
 kubectl -n starfleet rollout status deployment/scout --timeout=120s
 kubectl -n starfleet rollout status deployment/shuttle --timeout=120s
+kubectl -n starfleet wait --for=condition=Available --timeout=240s prometheus/starfleet
