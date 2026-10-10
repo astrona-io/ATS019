@@ -316,7 +316,7 @@ them as they are.
 | Kubernetes name | Image | What it is |
 | --- | --- | --- |
 | `scout` (Deployment and Service) | `ghcr.io/stefanprodan/podinfo:6.15.0` | Small web API on port `9898`; the default workload a platform API provisions |
-| `probe` (Deployment and Service) | `mccutchen/go-httpbin:v2.25.0` | HTTP echo server on port `8080`, used where a second workload is needed |
+| `probe` (Deployment and Service) | `mccutchen/go-httpbin:2.25.0` | HTTP echo server on port `8080`, used where a second workload is needed |
 | `shuttle` | `curlimages/curl` | Client pod; requests are sent from here with `kubectl exec deploy/shuttle -- curl ...` |
 
 Namespaces: `starfleet` is the platform team's namespace and `outpost` is a
@@ -361,6 +361,15 @@ organisation `starfleet`.
     an invalid value that does not change.
   - When schema checks fail, CEL rules are skipped and the error ends with
     `some validation rules were not checked because the object was invalid`.
+  - A CRD storage-version change adds the new version to
+    `status.storedVersions` at once; the API server never removes an old
+    entry (rewrite every object, then patch the CRD status). A plain
+    `kubectl get <resource>` uses the group's preferred version, chosen by
+    version priority (`v1` before `v1alpha1`), not by order in the CRD.
+  - A request to an unserved CRD version returns `Error from server
+    (NotFound)` (or `the server doesn't have a resource type` without cached
+    discovery). The scale subresource without `labelSelectorPath` returns no
+    `selector`, and `kubectl scale` is checked against the schema.
   - The `crossplane` CLI is released separately from Crossplane (repository
     `crossplane/cli`, download host `cli.crossplane.io`). There is no CLI
     2.4.2; use CLI **2.4.1** with Crossplane 2.4.2. Its commands are

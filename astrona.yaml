@@ -98,3 +98,22 @@ modules:
       - type: reading
         title: Summary
         path: sections/section-010/module-01/course-05-summary.md
+
+      - type: reading
+        title: "Version A CRD And Enable Subresources"
+        path: sections/section-010/module-02/course.md
+      - type: reading
+        title: "Served Versions And Storage Versions"
+        path: sections/section-010/module-02/course-01-served-and-storage-versions.md
+      - type: reading
+        title: "Deprecate A Served Version"
+        path: sections/section-010/module-02/course-02-deprecate-a-served-version.md
+      - type: reading
+        title: "Write Status Through The Status Subresource"
+        path: sections/section-010/module-02/course-03-status-subresource.md
+      - type: reading
+        title: "Scale A Custom Resource"
+        path: sections/section-010/module-02/course-04-scale-subresource.md
+      - type: reading
+        title: Summary
+        path: sections/section-010/module-02/course-05-summary.md

@@ -1,40 +1,39 @@
 # Version A CRD And Enable Subresources
 
-<!-- astrona:playground -->
-> [!NOTE]
-> This module has a playground — a throwaway environment to run the commands in.
-> ```bash
-> astrona run --git ssh://git@github.com/astrona-io/ATS019.git -c sections/section-010/module-02/playground
-> ```
+A platform API changes after teams start using it. A field gets a clearer name, a stable version replaces an alpha version, and a controller needs a safe place to write status. If the CustomResourceDefinition does not plan for those changes, every user and every controller must change at the same time.
 
-<!-- TODO(build): opening framing — what this module settles, and the contrast that sharpens its boundary. -->
+A CustomResourceDefinition (CRD) is a Kubernetes object that adds a new resource type to the API server. This module keeps the same `TeamEnvironment` kind and changes how the API server serves it. You add a second version, choose the storage version, deprecate the old version, then enable the `status` and `scale` subresources.
+
+Keep one sentence in mind: **versions decide how clients see a custom resource, and subresources decide which actor may write which part of it.** No controller runs in this module. You act like the controller when you write status, so the API server behaviour is visible.
+
+The module has four parts. **Served Versions And Storage Versions** adds `v1` beside `v1alpha1`, moves storage to `v1`, and reads `status.storedVersions`. **Deprecate A Served Version** marks `v1alpha1` as deprecated and reads the warning from the API server. **Write Status Through The Status Subresource** enables `/status` and proves that a normal spec write cannot change status. **Scale A Custom Resource** enables `/scale` and uses `kubectl scale` to change `spec.replicas`.
 
 ## Learning objectives
 
-- Add a second version to a CRD and choose which version is served and which is the storage version
-- Read which version an object is stored in from status.storedVersions
-- Mark a version deprecated and read the warning kubectl prints
-- Enable the status subresource and show that a spec update cannot change status
-- Enable the scale subresource and scale a custom resource with kubectl scale
+After this module you can:
+
+- Add a second version to a CRD and choose which version is served and which is the storage version.
+- Read which versions may still be in etcd from `status.storedVersions`, and why the API server never cleans that list by itself.
+- Mark a version deprecated and read the warning `kubectl` prints.
+- Enable the `status` subresource and show that a spec update cannot change status.
+- Enable the `scale` subresource and scale a custom resource with `kubectl scale`.
 
 ## Before you start
 
-<!-- TODO(build): assumed knowledge, and what the playground already provides. -->
+You need Kubernetes basics: namespaces, YAML manifests, custom resources, and the commands `kubectl get`, `kubectl apply`, `kubectl patch` and `kubectl scale`. You also need to know that `spec` is the desired state a user writes, and `status` is the observed state a controller writes.
 
-## Outline
+You write every file on your own machine, in a new, empty folder. Run every command from that folder.
 
-<!-- TODO(build): each beat below becomes a section of this module (or a deep-dive part via /astrona-course-deep-dive). Delete this Outline section once written. -->
+Your playground is a single-node `kind` cluster running Kubernetes 1.35, with no add-ons. It holds these objects:
 
-- Why platform APIs need versions - served, storage and deprecated
-- Conversion without a webhook - what None conversion keeps and loses
-- The status subresource - spec and status written by different actors
-- The scale subresource - specReplicasPath, statusReplicasPath and kubectl scale
+| Object | What it is |
+| --- | --- |
+| CRD `teamenvironments.platform.starfleet.io` | Adds the kind `TeamEnvironment` in version `v1alpha1`; the version is served and stored |
+| `TeamEnvironment` `alpha` in `outpost` | A small environment with 2 replicas |
+| `TeamEnvironment` `beta` in `outpost` | A medium environment with 3 replicas |
 
-## Diagrams planned
+The namespaces `starfleet` and `outpost` exist. No controller acts on the CRD, and no subresources are enabled at the start. Every command in the parts runs against the playground cluster, and `kubectl` already points at it.
 
-<!-- TODO(build): mermaid `flowchart` — A v1alpha1 client and a v1 client reading the same object, with the API server converting to and from the storage version -->
-<!-- TODO(build): mermaid `sequence` — User updates spec through the main endpoint while a controller writes status through the /status subresource -->
+Launch your playground now, and keep it running next to you while you read the parts:
 
-<!-- playground provides: kind cluster (Kubernetes 1.35) with no add-ons. The TeamEnvironment CRD is installed with a full schema in one version only (v1alpha1), with two TeamEnvironment objects already stored in v1alpha1 in namespace `outpost`. No status or scale subresource is enabled yet. A v1 schema file that renames nothing (so None conversion is safe) is provided for the reader to add. No controller runs; the reader acts as the controller with kubectl patch --subresource=status. -->
-
-<!-- module section-010/module-02 (Module 2) — stub written by /astrona-course-domain-scaffold, prose written by /astrona-course-domain-build. -->
+<!-- astrona:playground -->
