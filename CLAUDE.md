@@ -351,6 +351,21 @@ organisation `starfleet`.
     and renders a Composition locally with
     `crossplane composition render xr.yaml composition.yaml functions.yaml`.
     `crossplane beta trace` is the older name.
+- **Facts checked on Kubernetes 1.35.8 (2026-10-10):**
+  - `kubectl` sends requests with strict field validation, so an unknown
+    field in a custom resource is refused (`strict decoding error: unknown
+    field "spec.replcas"`), not pruned. Pruning is silent only for clients
+    without strict validation (`kubectl apply --validate=false`).
+  - The API server prunes and defaults custom resources on reads too, but
+    validates only on writes. Validation ratcheting is on: an update may keep
+    an invalid value that does not change.
+  - When schema checks fail, CEL rules are skipped and the error ends with
+    `some validation rules were not checked because the object was invalid`.
+  - The `crossplane` CLI is released separately from Crossplane (repository
+    `crossplane/cli`, download host `cli.crossplane.io`). There is no CLI
+    2.4.2; use CLI **2.4.1** with Crossplane 2.4.2. Its commands are
+    `crossplane resource trace` and `crossplane composition render`
+    (both still marked `[BETA]` in `--help`).
 - **Operators are used, not written.** The course never builds an operator
   in Go. The reconcile loop is shown with an operator from the CNPE list,
   the Prometheus Operator (a `Prometheus` resource and the StatefulSet,

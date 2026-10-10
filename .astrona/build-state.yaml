@@ -6,13 +6,13 @@ items:
 - key: section-010/module-01/playground
   kind: playground
   what: 'playground for module 1: Design A CRD Schema That Validates Input'
-  status: pending
-  note: ''
+  status: done
+  note: astrona CLI developer; kindest/node:v1.35.8; booted and verified 2026-10-10
 - key: section-010/module-01/course
   kind: course
   what: 'chapter for module 1: Design A CRD Schema That Validates Input'
-  status: pending
-  note: ''
+  status: done
+  note: landing + 4 parts + summary; real output from kubectl 1.35.8
 - key: section-010/module-02/playground
   kind: playground
   what: 'playground for module 2: Version A CRD And Enable Subresources'

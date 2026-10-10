@@ -83,88 +83,18 @@ modules:
       - type: reading
         title: "Design A CRD Schema That Validates Input"
         path: sections/section-010/module-01/course.md
-
       - type: reading
-        title: "Version A CRD And Enable Subresources"
-        path: sections/section-010/module-02/course.md
-
-  - id: module-020
-    title: "Platform Automation With Operators"
-    description: >
-      The reader learns what makes a custom resource do something: a
-      controller running a reconcile loop. Using the Prometheus
-      Operator, the reader follows a `Prometheus` custom resource to the
-      StatefulSet, Service and Secrets it creates, reads status conditions and
-      observedGeneration, and sees how finalizers and owner references
-      control deletion. It sits after CRDs because it reads the status
-      and subresources defined there, and before Crossplane because
-      Crossplane is itself a set of operators.
-
-    content:
+        title: "What A CRD Adds To The API Server"
+        path: sections/section-010/module-01/course-01-what-a-crd-adds.md
       - type: reading
-        title: Section Overview
-        path: sections/section-020/README.md
-
+        title: "Types, Required Fields, Defaults And Pruning"
+        path: sections/section-010/module-01/course-02-types-defaults-and-pruning.md
       - type: reading
-        title: "Read An Operator's Reconcile Loop"
-        path: sections/section-020/module-01/course.md
-
+        title: "Rules Across Fields With CEL"
+        path: sections/section-010/module-01/course-03-cel-rules.md
       - type: reading
-        title: "Manage Deletion With Finalizers And Owner References"
-        path: sections/section-020/module-02/course.md
-
-  - id: module-030
-    title: "Platform APIs With Crossplane"
-    description: >
-      The reader builds a platform API that turns one small request into
-      many objects. First a provider and its ProviderConfig, then a
-      CompositeResourceDefinition and a function-pipeline Composition,
-      then a composite resource that tenants request and the platform
-      team traces when it fails. The provider acts inside the cluster
-      (provider-kubernetes), so the pattern is shown
-      offline and transfers to cloud providers.
-
-    content:
+        title: "Printer Columns, Short Names And Categories"
+        path: sections/section-010/module-01/course-04-printer-columns-and-names.md
       - type: reading
-        title: Section Overview
-        path: sections/section-030/README.md
-
-      - type: reading
-        title: "Install A Crossplane Provider And ProviderConfig"
-        path: sections/section-030/module-01/course.md
-
-      - type: reading
-        title: "Define A Platform API With An XRD And Composition"
-        path: sections/section-030/module-02/course.md
-
-      - type: reading
-        title: "Provision And Trace A Composite Resource"
-        path: sections/section-030/module-03/course.md
-
-  - id: module-040
-    title: "Self-Service Provisioning Workflows"
-    description: >
-      The reader wraps the platform API in a self-service flow. Argo
-      Workflows runs multi-step provisioning jobs from reusable
-      templates, Argo Events starts them from an event, and a Git-based
-      request flow with Argo CD and tightly scoped RBAC lets a tenant
-      team request a service through the platform API and nothing else.
-      It comes last because it uses the custom resources, operators and
-      composite resources from every earlier section.
-
-    content:
-      - type: reading
-        title: Section Overview
-        path: sections/section-040/README.md
-
-      - type: reading
-        title: "Run Provisioning Steps With Argo Workflows"
-        path: sections/section-040/module-01/course.md
-
-      - type: reading
-        title: "Trigger Workflows From Events With Argo Events"
-        path: sections/section-040/module-02/course.md
-
-      - type: reading
-        title: "Offer Self-Service Through Git And Scoped RBAC"
-        path: sections/section-040/module-03/course.md
+        title: Summary
+        path: sections/section-010/module-01/course-05-summary.md
