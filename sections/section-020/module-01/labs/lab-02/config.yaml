@@ -1,0 +1,58 @@
+# yaml-language-server: $schema=https://cli.astrona.io/schema/lab-config.schema.json
+apiVersion: astrona.io/v1
+metadata:
+  name: ats-019-lab-020-01-02
+  docs:
+    prerequisites: prerequisites.md
+    question: question.md
+    solution: solution.md
+
+runtime:
+  type: kind
+  kind:
+    image: kindest/node:v1.35.8
+    preloadImages:
+      - quay.io/prometheus-operator/prometheus-operator:v0.94.1
+      - quay.io/prometheus-operator/prometheus-config-reloader:v0.94.1
+      - quay.io/prometheus/prometheus:v3.15.0-distroless
+      - ghcr.io/stefanprodan/podinfo:6.15.0
+
+bootstrap:
+  init:
+    - name: install-operator
+      description: "Installs the Prometheus Operator 0.94.1 from its bundle and waits for it"
+      type: file
+      source: bootstrap/01-install-operator.sh
+    - name: start-state
+      description: "Creates scout, a read-only ServiceAccount and the Prometheus resource tenant with two faults"
+      type: file
+      source: bootstrap/02-start-state.sh
+
+testing:
+  init:
+    - name: solution
+      description: Reference solution applied by `astrona test`
+      type: file
+      source: solution/apply.sh
+    - name: wait-available
+      description: Waits until the Prometheus resource is Reconciled and Available
+      type: file
+      source: testing/wait-available.sh
+
+validation:
+  scripts:
+    - name: scrape-secret
+      description: The Secret tenant-scrape holds the scout-extra job and the Prometheus resource still uses it
+      type: file
+      source: validation/validate-scrape-secret.sh
+    - name: reconciled
+      description: Reconciled and Available are True and observedGeneration equals generation
+      type: file
+      source: validation/validate-reconciled.sh
+    - name: service-account
+      description: Prometheus runs as a ServiceAccount that can read targets and nothing wider
+      type: file
+      source: validation/validate-service-account.sh
+
+teardown:
+  keepCluster: false

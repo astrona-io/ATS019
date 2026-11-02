@@ -1,0 +1,41 @@
+# yaml-language-server: $schema=https://cli.astrona.io/schema/lab-config.schema.json
+apiVersion: astrona.io/v1
+metadata:
+  name: ats-019-lab-020-02
+  docs:
+    prerequisites: prerequisites.md
+    question: question.md
+    solution: solution.md
+
+runtime:
+  type: kind
+  kind:
+    image: kindest/node:v1.35.8
+
+bootstrap:
+  init:
+    - name: seed-owned-objects
+      description: "Creates the TeamEnvironment CRD, two owners, three ConfigMaps and the baseline record"
+      type: file
+      source: bootstrap/01-seed-owned-objects.sh
+
+testing:
+  init:
+    - name: solution
+      description: Reference solution applied by `astrona test`
+      type: file
+      source: solution/apply.sh
+
+validation:
+  scripts:
+    - name: probe-handover
+      description: probe-data is the same object, owned only by probe-env-v2, and probe-env is gone
+      type: file
+      source: validation/validate-probe-handover.sh
+    - name: owner-cascade
+      description: scout-env and its dependent scout-config are gone, and the label-only ConfigMap remains
+      type: file
+      source: validation/validate-owner-cascade.sh
+
+teardown:
+  keepCluster: false

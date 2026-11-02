@@ -1,0 +1,49 @@
+# yaml-language-server: $schema=https://cli.astrona.io/schema/lab-config.schema.json
+apiVersion: astrona.io/v1
+metadata:
+  name: ats-019-lab-010-02-02
+  docs:
+    prerequisites: prerequisites.md
+    question: question.md
+    solution: solution.md
+
+runtime:
+  type: kind
+  kind:
+    image: kindest/node:v1.35.8
+
+bootstrap:
+  init:
+    - name: seed
+      description: "Creates the namespaces, the TeamEnvironment CRD (v1 only, no subresources), two objects (alpha, beta) and a record of their uids"
+      type: file
+      source: bootstrap/01-seed.sh
+
+testing:
+  init:
+    - name: solution
+      description: Reference solution applied by `astrona test`
+      type: file
+      source: solution/apply.sh
+    - name: wait-crd-ready
+      description: Waits until the CRD is Established and the scale endpoint answers
+      type: file
+      source: testing/wait-crd-ready.sh
+
+validation:
+  scripts:
+    - name: status-subresource
+      description: The status subresource is enabled, alpha and beta have status, and a normal write cannot change status
+      type: file
+      source: validation/validate-status-subresource.sh
+    - name: scale-subresource
+      description: The scale paths map to spec.replicas and status.readyReplicas, and beta is scaled to 4
+      type: file
+      source: validation/validate-scale-subresource.sh
+    - name: objects-kept
+      description: alpha and beta are the original objects and the schema still rejects bad input
+      type: file
+      source: validation/validate-objects-kept.sh
+
+teardown:
+  keepCluster: false

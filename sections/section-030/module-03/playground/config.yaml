@@ -1,0 +1,55 @@
+# yaml-language-server: $schema=https://cli.astrona.io/schema/lab-config.schema.json
+#
+# Provision And Trace A Composite Resource (PLAYGROUND) — playground
+# environment. Crossplane 2.4.2, provider-kubernetes 1.4.1 and
+# function-patch-and-transform 0.11.0 are running. The TeamEnvironment XRD, a
+# working Composition, a Composition that is broken on purpose and a `shuttle`
+# client pod are in place. No TeamEnvironment exists yet. No task, no grading,
+# no `astrona submit`. Needs outbound internet: Crossplane pulls packages
+# from xpkg.crossplane.io.
+apiVersion: astrona.io/v1
+metadata:
+  name: ats-019-playground-030-03
+  docs:
+    guide: docs/overview.md
+
+runtime:
+  type: kind
+  kind:
+    image: kindest/node:v1.35.8
+    preloadImages:
+      - xpkg.crossplane.io/crossplane/crossplane:v2.4.2
+      - ghcr.io/stefanprodan/podinfo:6.15.0
+
+bootstrap:
+  init:
+    - name: install-crossplane
+      description: "Installs Crossplane 2.4.2 in crossplane-system and waits for its CRDs"
+      type: file
+      source: bootstrap/01-install-crossplane.sh
+    - name: install-platform-api
+      description: "Installs provider-kubernetes, the function, the ProviderConfig, its RBAC and the TeamEnvironment XRD"
+      type: file
+      source: bootstrap/02-install-platform-api.sh
+    - name: install-crossplane-cli
+      description: "Downloads the crossplane CLI 2.4.1 into the lab work folder"
+      type: file
+      source: bootstrap/03-install-crossplane-cli.sh
+  manifests:
+    - name: shuttle
+      type: file
+      source: manifests/shuttle.yaml
+    - name: composition-teamenvironment
+      type: file
+      source: manifests/composition-teamenvironment.yaml
+    - name: composition-teamenvironment-with-cache
+      type: file
+      source: manifests/composition-teamenvironment-with-cache.yaml
+  waitFor:
+    - resource: deployment/shuttle
+      namespace: outpost
+      condition: Available
+      timeout: 180s
+
+teardown:
+  keepCluster: false

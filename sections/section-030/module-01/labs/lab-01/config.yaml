@@ -1,0 +1,47 @@
+# yaml-language-server: $schema=https://cli.astrona.io/schema/lab-config.schema.json
+apiVersion: astrona.io/v1
+metadata:
+  name: ats-019-lab-030-01
+  docs:
+    prerequisites: prerequisites.md
+    question: question.md
+    solution: solution.md
+
+runtime:
+  type: kind
+  kind:
+    image: kindest/node:v1.35.8
+    preloadImages:
+      - xpkg.crossplane.io/crossplane/crossplane:v2.4.2
+
+bootstrap:
+  init:
+    - name: install-crossplane
+      description: "Installs Crossplane 2.4.2 in crossplane-system and waits for the package manager CRDs"
+      type: file
+      source: bootstrap/01-install-crossplane.sh
+
+testing:
+  init:
+    - name: solution
+      description: Reference solution applied by `astrona test`
+      type: file
+      source: solution/apply.sh
+    - name: wait-provider-healthy
+      description: Waits until the provider reports Installed and Healthy
+      type: file
+      source: testing/wait-provider-healthy.sh
+
+validation:
+  scripts:
+    - name: provider-installed
+      description: provider-kubernetes 1.4.1 is Installed and Healthy and its CRDs exist
+      type: file
+      source: validation/validate-provider-installed.sh
+    - name: provider-identity
+      description: The provider pod runs under the ServiceAccount provider-kubernetes, set through a DeploymentRuntimeConfig
+      type: file
+      source: validation/validate-provider-identity.sh
+
+teardown:
+  keepCluster: false

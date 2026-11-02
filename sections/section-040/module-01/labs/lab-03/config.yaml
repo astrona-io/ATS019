@@ -1,0 +1,67 @@
+# yaml-language-server: $schema=https://cli.astrona.io/schema/lab-config.schema.json
+#
+# Wait For A TeamEnvironment With A Resource Step (ats-019-lab-040-03)
+# Astrona hands-on lab. kind runtime: a single-node Kubernetes 1.35 cluster
+# with Argo Workflows 4.1.5 and the TeamEnvironment CRD (no controller; the
+# grader writes status.phase). Needs outbound internet for the install manifest.
+apiVersion: astrona.io/v1
+metadata:
+  name: ats-019-lab-040-03
+  docs:
+    prerequisites: prerequisites.md
+    question: question.md
+    solution: solution.md
+
+runtime:
+  type: kind
+  kind:
+    image: kindest/node:v1.35.8
+    preloadImages:
+      - quay.io/argoproj/workflow-controller:v4.1.5
+      - quay.io/argoproj/argoexec:v4.1.5
+
+bootstrap:
+  init:
+    - name: install-argo-workflows
+      description: "Installs Argo Workflows 4.1.5 in the namespace argo"
+      type: file
+      source: bootstrap/01-install-argo-workflows.sh
+  manifests:
+    - name: lab-start
+      description: "Namespaces, the provisioner ServiceAccount and the TeamEnvironment CRD"
+      type: file
+      source: manifests/lab-start.yaml
+  waitFor:
+    - resource: deploy/workflow-controller
+      namespace: argo
+    - resource: crd/teamenvironments.platform.starfleet.io
+      condition: Established
+
+testing:
+  init:
+    - name: apply-solution
+      description: "Applies the reference Role, RoleBinding and WorkflowTemplate"
+      type: file
+      source: solution/apply.sh
+    - name: run-solution-request
+      description: "Runs request-environment, plays the controller and waits for Succeeded"
+      type: file
+      source: testing/run-request-environment.sh
+
+validation:
+  scripts:
+    - name: verify-permissions
+      description: "Checks provisioner can get, list, watch and create TeamEnvironments in outpost and nothing wider"
+      type: file
+      source: validation/validate-permissions.sh
+    - name: verify-template
+      description: "Checks the WorkflowTemplate request-environment: ServiceAccount and parameters"
+      type: file
+      source: validation/validate-template.sh
+    - name: verify-wait-for-ready
+      description: "Runs the template twice: it must keep waiting, then Succeed on Ready and Fail on Failed"
+      type: file
+      source: validation/validate-wait-for-ready.sh
+
+teardown:
+  keepCluster: false

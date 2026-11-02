@@ -1,0 +1,130 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: starfleet
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: outpost
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: provisioner
+  namespace: starfleet
+---
+# In Argo Workflows 4.x the executor in every step pod writes its result into a
+# WorkflowTaskResult object. This part of the permissions is correct.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: workflow-executor
+  namespace: starfleet
+rules:
+  - apiGroups: ["argoproj.io"]
+    resources: ["workflowtaskresults"]
+    verbs: ["create", "patch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: workflow-executor
+  namespace: starfleet
+subjects:
+  - kind: ServiceAccount
+    name: default
+    namespace: starfleet
+  - kind: ServiceAccount
+    name: provisioner
+    namespace: starfleet
+roleRef:
+  kind: Role
+  name: workflow-executor
+  apiGroup: rbac.authorization.k8s.io
+---
+# The fault, part 1: this Role covers Deployments but not Services.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: provisioner-scout
+  namespace: outpost
+rules:
+  - apiGroups: ["apps"]
+    resources: ["deployments"]
+    verbs: ["get", "create", "patch"]
+---
+# The fault, part 2: the subject names the namespace outpost, but the
+# ServiceAccount provisioner lives in starfleet.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: provisioner-scout
+  namespace: outpost
+subjects:
+  - kind: ServiceAccount
+    name: provisioner
+    namespace: outpost
+roleRef:
+  kind: Role
+  name: provisioner-scout
+  apiGroup: rbac.authorization.k8s.io
+---
+apiVersion: argoproj.io/v1alpha1
+kind: WorkflowTemplate
+metadata:
+  name: deploy-scout
+  namespace: starfleet
+spec:
+  entrypoint: deploy
+  serviceAccountName: provisioner
+  arguments:
+    parameters:
+      - name: namespace
+        value: outpost
+  templates:
+    - name: deploy
+      steps:
+        - - name: scout-deployment
+            template: apply-deployment
+        - - name: scout-service
+            template: apply-service
+    - name: apply-deployment
+      resource:
+        action: apply
+        manifest: |
+          apiVersion: apps/v1
+          kind: Deployment
+          metadata:
+            name: scout
+            namespace: {{workflow.parameters.namespace}}
+          spec:
+            replicas: 1
+            selector:
+              matchLabels:
+                app: scout
+            template:
+              metadata:
+                labels:
+                  app: scout
+              spec:
+                containers:
+                  - name: scout
+                    image: ghcr.io/stefanprodan/podinfo:6.15.0
+                    ports:
+                      - containerPort: 9898
+    - name: apply-service
+      resource:
+        action: apply
+        manifest: |
+          apiVersion: v1
+          kind: Service
+          metadata:
+            name: scout
+            namespace: {{workflow.parameters.namespace}}
+          spec:
+            selector:
+              app: scout
+            ports:
+              - port: 9898
+                targetPort: 9898

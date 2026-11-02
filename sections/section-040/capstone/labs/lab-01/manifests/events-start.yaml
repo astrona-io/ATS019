@@ -1,0 +1,63 @@
+# The starting state of the order path. It is broken on purpose in four places:
+#   1. the webhook endpoint is /order, but orders arrive on /provision
+#   2. the Sensor ServiceAccount has no Role, so the trigger is forbidden
+#   3. the Sensor has no data filter, so it accepts every tier
+#   4. the Sensor does not copy body.team into the team parameter
+# The WorkflowTemplate request-environment that the Sensor refers to does not
+# exist yet.
+apiVersion: argoproj.io/v1alpha1
+kind: EventBus
+metadata:
+  name: default
+  namespace: starfleet
+spec:
+  jetstream:
+    version: latest
+---
+apiVersion: argoproj.io/v1alpha1
+kind: EventSource
+metadata:
+  name: provision
+  namespace: starfleet
+spec:
+  service:
+    ports:
+      - port: 12000
+        targetPort: 12000
+  webhook:
+    request:
+      port: "12000"
+      endpoint: /order
+      method: POST
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Sensor
+metadata:
+  name: provision
+  namespace: starfleet
+spec:
+  template:
+    serviceAccountName: operate-workflow-sa
+  dependencies:
+    - name: request-dep
+      eventSourceName: provision
+      eventName: request
+  triggers:
+    - template:
+        name: submit-request-environment
+        argoWorkflow:
+          operation: submit
+          source:
+            resource:
+              apiVersion: argoproj.io/v1alpha1
+              kind: Workflow
+              metadata:
+                generateName: request-environment-
+              spec:
+                serviceAccountName: provisioner
+                arguments:
+                  parameters:
+                    - name: team
+                      value: unset
+                workflowTemplateRef:
+                  name: request-environment

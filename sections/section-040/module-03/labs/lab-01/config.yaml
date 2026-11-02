@@ -1,0 +1,70 @@
+# yaml-language-server: $schema=https://cli.astrona.io/schema/lab-config.schema.json
+#
+# Scope A Tenant To One Platform API With RBAC — graded lab. The cluster has
+# the namespaces `starfleet` and `outpost` and the TeamEnvironment API as a
+# plain CustomResourceDefinition (no controller, no add-ons: this lab is only
+# about authorization). The tenant identity is the user `outpost-dev` in the
+# group `outpost-team`. No RBAC exists for it at the start.
+apiVersion: astrona.io/v1
+metadata:
+  name: ats-019-lab-040-03
+  docs:
+    prerequisites: prerequisites.md
+    question: question.md
+    solution: solution.md
+
+runtime:
+  type: kind
+  kind:
+    image: kindest/node:v1.35.8
+
+bootstrap:
+  init:
+    - name: seed-platform-api
+      description: "Creates the namespaces and the TeamEnvironment CRD"
+      type: file
+      source: bootstrap/01-seed.sh
+
+testing:
+  init:
+    - name: apply-reference-solution
+      description: "Applies the reference Role and RoleBinding"
+      type: file
+      source: solution/apply.sh
+
+validation:
+  script:
+    name: tenant-can-request-and-read
+    description: "The group can create, get, list and watch TeamEnvironment in outpost"
+    type: file
+    source: validation/validate-01-allowed.sh
+    points: 20
+    hint: "Check the apiGroups, the resource name (plural) and the verbs of the Role."
+  scripts:
+    - name: only-four-verbs
+      description: "The group cannot update, patch or delete a TeamEnvironment"
+      type: file
+      source: validation/validate-02-verbs.sh
+      points: 20
+      hint: "List only create, get, list and watch. Do not use a wildcard."
+    - name: only-one-resource
+      description: "The group cannot create Deployments, read Secrets or change RBAC"
+      type: file
+      source: validation/validate-03-resources.sh
+      points: 20
+      hint: "A Role that names one resource grants nothing else. Do not bind edit or cluster-admin."
+    - name: only-one-namespace
+      description: "The rights stop at the edge of outpost"
+      type: file
+      source: validation/validate-04-namespace.sh
+      points: 20
+      hint: "Use a RoleBinding in outpost, not a ClusterRoleBinding."
+    - name: bound-to-the-group
+      description: "Members of outpost-team get the rights; the user alone does not"
+      type: file
+      source: validation/validate-05-group.sh
+      points: 20
+      hint: "The subject of the RoleBinding is the group, not the user."
+
+teardown:
+  keepCluster: false

@@ -1,0 +1,129 @@
+# yaml-language-server: $schema=https://cli.astrona.io/schema/lab-config.schema.json
+#
+# Deliver A Tenant Request Through Argo CD — graded troubleshooting lab. The
+# cluster starts with Crossplane, the TeamEnvironment XRD and Composition,
+# Gitea (plumbing) with the repository starfleet/outpost-requests, and Argo CD
+# 3.5.4. The Application `outpost-requests` and the AppProject `outpost` start
+# broken on purpose: the Application reads a folder that does not exist and has
+# no automated sync, and the project does not allow a TeamEnvironment. The
+# fault is the material; the bootstrap never fixes it. Needs outbound internet.
+apiVersion: astrona.io/v1
+metadata:
+  name: ats-019-lab-040-03-02
+  docs:
+    prerequisites: prerequisites.md
+    question: question.md
+    solution: solution.md
+
+runtime:
+  type: kind
+  kind:
+    image: kindest/node:v1.35.8
+    preloadImages:
+      - xpkg.crossplane.io/crossplane/crossplane:v2.4.2
+      - quay.io/argoproj/argocd:v3.5.4
+      - gitea/gitea:1.24.5-rootless
+
+bootstrap:
+  init:
+    - name: install-crossplane
+      description: "Installs Crossplane 2.4.2 in crossplane-system and waits for its CRDs"
+      type: file
+      source: bootstrap/01-install-crossplane.sh
+    - name: install-platform-api
+      description: "Installs provider-kubernetes, the function, RBAC, the TeamEnvironment XRD and Composition"
+      type: file
+      source: bootstrap/02-install-platform-api.sh
+    - name: install-gitea
+      description: "Starts Gitea and creates the repository starfleet/outpost-requests"
+      type: file
+      source: bootstrap/03-install-gitea.sh
+    - name: install-argocd
+      description: "Installs Argo CD 3.5.4 in the argocd namespace"
+      type: file
+      source: bootstrap/04-install-argocd.sh
+  manifests:
+    - name: shuttle
+      type: file
+      source: manifests/shuttle.yaml
+    - name: appproject-outpost
+      type: file
+      source: manifests/appproject-outpost.yaml
+    - name: application-outpost-requests
+      type: file
+      source: manifests/application-outpost-requests.yaml
+  waitFor:
+    - resource: deploy/crossplane
+      namespace: crossplane-system
+      condition: Available
+      timeout: 300s
+    - resource: deploy/gitea
+      namespace: gitea
+      condition: Available
+      timeout: 300s
+    - resource: deploy/argocd-server
+      namespace: argocd
+      condition: Available
+      timeout: 300s
+    - resource: deploy/argocd-repo-server
+      namespace: argocd
+      condition: Available
+      timeout: 300s
+    - resource: deploy/shuttle
+      namespace: outpost
+      condition: Available
+      timeout: 180s
+
+testing:
+  init:
+    - name: apply-reference-solution
+      description: "Fixes the project and Application, commits the request and waits for Ready"
+      type: file
+      source: solution/apply.sh
+    - name: wait-for-ready
+      description: "Waits until the TeamEnvironment drifter is Ready"
+      type: file
+      source: testing/wait-for-ready.sh
+
+validation:
+  script:
+    name: project-is-narrow
+    description: "The AppProject allows one repository, one namespace and exactly the TeamEnvironment kind"
+    type: file
+    source: validation/validate-01-project.sh
+    points: 20
+    hint: "Add the TeamEnvironment kind to the project. Do not use a wildcard and do not allow cluster-scoped kinds."
+  scripts:
+    - name: application-is-scoped
+      description: "The Application is in the outpost project, reads requests and syncs automatically"
+      type: file
+      source: validation/validate-02-application.sh
+      points: 20
+      hint: "Read the Application conditions. Keep project outpost. Set automated with prune and selfHeal."
+    - name: request-came-through-git
+      description: "The request file is in Git and Argo CD created the TeamEnvironment from it"
+      type: file
+      source: validation/validate-03-delivered.sh
+      points: 20
+      hint: "Commit requests/drifter.yaml. Do not run kubectl apply on the request."
+    - name: argocd-synced-and-healthy
+      description: "The Application is Synced and Healthy"
+      type: file
+      source: validation/validate-04-synced.sh
+      points: 10
+      hint: "Refresh the Application and read its sync status and conditions."
+    - name: composite-ready
+      description: "The TeamEnvironment is Ready and Synced with its Deployment available"
+      type: file
+      source: validation/validate-05-ready.sh
+      points: 15
+      hint: "Read the conditions of the composite resource when the Application is Synced."
+    - name: workload-answers
+      description: "A request from shuttle to the scout Service returns 200"
+      type: file
+      source: validation/validate-06-answers.sh
+      points: 15
+      hint: "Wait until the Deployment scout has an available pod."
+
+teardown:
+  keepCluster: false

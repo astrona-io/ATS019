@@ -1,0 +1,204 @@
+# Starting state of the capstone. Three faults live in the namespace `outpost`:
+#   1. The Prometheus resource `outpost-metrics` names a ServiceAccount that does not exist
+#      and a Secret (`extra-scrape`) that does not exist, so it does not reconcile.
+#   2. The ConfigMaps `scout-env-settings` and `scout-env-limits` belong to the
+#      TeamEnvironment `scout-env` but carry no ownerReference.
+#   3. The ConfigMap `scout-settings` carries the finalizer `platform.starfleet.io/cleanup`.
+#      Its deletion is requested by bootstrap/02-seed.sh. The cleanup Job is suspended and
+#      its ServiceAccount may not delete `scout-cache`.
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: outpost
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: prometheus
+  namespace: outpost
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: outpost-prometheus
+rules:
+  - apiGroups: [""]
+    resources: ["services", "endpoints", "pods"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: ["discovery.k8s.io"]
+    resources: ["endpointslices"]
+    verbs: ["get", "list", "watch"]
+  - nonResourceURLs: ["/metrics"]
+    verbs: ["get"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: outpost-prometheus
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: outpost-prometheus
+subjects:
+  - kind: ServiceAccount
+    name: prometheus
+    namespace: outpost
+---
+apiVersion: monitoring.coreos.com/v1
+kind: Prometheus
+metadata:
+  name: outpost-metrics
+  namespace: outpost
+spec:
+  replicas: 1
+  serviceAccountName: prometheus-reader
+  additionalScrapeConfigs:
+    name: extra-scrape
+    key: jobs.yaml
+  resources:
+    requests:
+      memory: 100Mi
+---
+apiVersion: platform.starfleet.io/v1alpha1
+kind: TeamEnvironment
+metadata:
+  name: scout-env
+  namespace: outpost
+spec:
+  team: outpost
+  size: small
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: scout-env-settings
+  namespace: outpost
+  labels:
+    team: outpost
+data:
+  mode: small
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: scout-env-limits
+  namespace: outpost
+  labels:
+    team: outpost
+data:
+  mode: small
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: shared-notes
+  namespace: outpost
+  labels:
+    team: outpost
+data:
+  owner: platform-team
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: scout-cache
+  namespace: outpost
+data:
+  state: temporary
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: scout-settings
+  namespace: outpost
+  annotations:
+    platform.starfleet.io/cleanup-job: scout-cleanup
+  finalizers:
+    - platform.starfleet.io/cleanup
+data:
+  PODINFO_UI_MESSAGE: hello from outpost
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: scout-cleanup
+  namespace: outpost
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: scout-cleanup
+  namespace: outpost
+rules:
+  - apiGroups: [""]
+    resources: ["configmaps"]
+    resourceNames: ["scout-settings"]
+    verbs: ["get", "list", "watch", "patch"]
+  - apiGroups: [""]
+    resources: ["configmaps"]
+    resourceNames: ["scout-cache"]
+    verbs: ["get", "list", "watch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: scout-cleanup
+  namespace: outpost
+subjects:
+  - kind: ServiceAccount
+    name: scout-cleanup
+    namespace: outpost
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: scout-cleanup
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: scout-cleanup
+  namespace: outpost
+spec:
+  suspend: true
+  backoffLimit: 1
+  template:
+    spec:
+      serviceAccountName: scout-cleanup
+      restartPolicy: Never
+      initContainers:
+        - name: wait-for-deletion
+          image: registry.k8s.io/kubectl:v1.35.8
+          command: ["kubectl"]
+          args:
+            - "-n"
+            - outpost
+            - wait
+            - "--for=jsonpath={.metadata.deletionTimestamp}"
+            - configmap/scout-settings
+            - "--timeout=60s"
+          resources:
+            requests: {cpu: 10m, memory: 16Mi}
+            limits: {memory: 64Mi}
+        - name: delete-cache
+          image: registry.k8s.io/kubectl:v1.35.8
+          command: ["kubectl"]
+          args: ["-n", outpost, delete, configmap, scout-cache, "--ignore-not-found=true", "--wait=true", "--timeout=60s"]
+          resources:
+            requests: {cpu: 10m, memory: 16Mi}
+            limits: {memory: 64Mi}
+      containers:
+        - name: release-finalizer
+          image: registry.k8s.io/kubectl:v1.35.8
+          command: ["kubectl"]
+          args:
+            - "-n"
+            - outpost
+            - patch
+            - configmap
+            - scout-settings
+            - "--type=json"
+            - "-p"
+            - '[{"op":"test","path":"/metadata/finalizers","value":["platform.starfleet.io/cleanup"]},{"op":"remove","path":"/metadata/finalizers/0"}]'
+          resources:
+            requests: {cpu: 10m, memory: 16Mi}
+            limits: {memory: 64Mi}

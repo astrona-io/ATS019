@@ -191,3 +191,27 @@ You can now publish a custom resource with versioning, a deprecated old version,
 > - **Expecting `kubectl scale` to update status.** It writes desired replicas. A controller writes observed replicas.
 > - **Forgetting to enable `status` before relying on `statusReplicasPath`.** The scale endpoint can read status, but a controller still needs a safe way to write it.
 > - **Thinking `/scale` creates pods.** It only changes the custom resource. A controller must act on the new desired state.
+
+## Your mission: Enable The Status And Scale Subresources
+
+You can now enable the `status` and `scale` subresources, write status as a controller would and resize a custom resource with `kubectl scale`. The mission asks you to enable both subresources on a fresh `TeamEnvironment` CRD, write status for two objects, scale one of them to 4 replicas and keep the schema limit.
+
+Pause the playground first:
+
+```sh
+astrona stop ats-019-playground-010-02
+```
+
+Start the lab, then submit your answer:
+
+```sh
+astrona run --git ssh://git@github.com/astrona-io/ATS019.git -c sections/section-010/module-02/labs/lab-02
+astrona submit -c sections/section-010/module-02/labs/lab-02
+```
+
+When you finish, remove the lab and resume the playground:
+
+```sh
+astrona destroy ats-019-lab-010-02-02
+astrona start ats-019-playground-010-02
+```

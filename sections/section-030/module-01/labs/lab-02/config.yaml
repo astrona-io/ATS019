@@ -1,0 +1,52 @@
+# yaml-language-server: $schema=https://cli.astrona.io/schema/lab-config.schema.json
+apiVersion: astrona.io/v1
+metadata:
+  name: ats-019-lab-030-01-02
+  docs:
+    prerequisites: prerequisites.md
+    question: question.md
+    solution: solution.md
+
+runtime:
+  type: kind
+  kind:
+    image: kindest/node:v1.35.8
+    preloadImages:
+      - xpkg.crossplane.io/crossplane/crossplane:v2.4.2
+
+bootstrap:
+  manifests:
+    - name: lab-start
+      description: ProviderConfig, the stuck Object and the Role that is too small
+      type: file
+      source: manifests/lab-start.yaml
+  init:
+    - name: install-crossplane-and-provider
+      description: "Installs Crossplane 2.4.2 and provider-kubernetes 1.4.1 and waits until the provider is healthy"
+      type: file
+      source: bootstrap/01-install-crossplane-and-provider.sh
+
+testing:
+  init:
+    - name: solution
+      description: Reference solution applied by `astrona test`
+      type: file
+      source: solution/apply.sh
+    - name: wait-object-ready
+      description: Waits until the Object reports Synced and Ready
+      type: file
+      source: testing/wait-object-ready.sh
+
+validation:
+  scripts:
+    - name: object-synced
+      description: The Object scout is Synced and Ready, is unchanged and its Service exists
+      type: file
+      source: validation/validate-object-synced.sh
+    - name: provider-rbac
+      description: The provider may manage Services in outpost and nothing wider
+      type: file
+      source: validation/validate-provider-rbac.sh
+
+teardown:
+  keepCluster: false

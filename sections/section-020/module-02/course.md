@@ -1,38 +1,36 @@
 # Manage Deletion With Finalizers And Owner References
 
-<!-- astrona:playground -->
-> [!NOTE]
-> This module has a playground — a throwaway environment to run the commands in.
-> ```bash
-> astrona run --git ssh://git@github.com/astrona-io/ATS019.git -c sections/section-020/module-02/playground
-> ```
+Deleting a platform request must also remove the objects it created. Some objects can go at once. Others must stay until a controller finishes cleanup. Kubernetes records both decisions in the object's metadata, so you can predict what deletion will do before you run it.
 
-<!-- TODO(build): opening framing — what this module settles, and the contrast that sharpens its boundary. -->
+An `ownerReference` is a link from a dependent object to its owner. The garbage collector is a Kubernetes controller that deletes dependents whose owners are gone. A finalizer is a name in `metadata.finalizers` that keeps an object in the API until the component responsible for that name finishes its work and removes it.
+
+The module has four parts. **Owner References And The Garbage Collector** reads the objects owned by Prometheus and gives a custom resource its own dependent ConfigMap. **Choose A Cascading Deletion Mode** compares background, foreground and orphan deletion. **Finalizers And deletionTimestamp** requests deletion of an object that cannot finish cleanup. **Restore A Cleanup Worker** finds why cleanup stopped, starts the worker and proves that both cleanup and deletion finish.
 
 ## Learning objectives
 
-- Predict which dependent objects the garbage collector deletes when an owner is deleted
-- Choose between foreground, background and orphan cascading deletion with kubectl delete --cascade
-- Explain why an object with a finalizer stays in Terminating and which controller must remove the finalizer
-- Diagnose an object stuck in Terminating and fix the cause instead of removing the finalizer by hand
+After this module you can:
+
+- Predict which dependent objects the garbage collector deletes when an owner is deleted.
+- Choose foreground, background or orphan cascading deletion with `kubectl delete --cascade`.
+- Explain why a finalizer keeps an object in a terminating state and which component must remove it.
+- Diagnose a stuck deletion and restore cleanup instead of removing the finalizer by hand.
 
 ## Before you start
 
-<!-- TODO(build): assumed knowledge, and what the playground already provides. -->
+You need Kubernetes basics: namespaces, ConfigMaps, StatefulSets, Jobs, ServiceAccounts and the commands `kubectl get`, `kubectl apply`, `kubectl delete` and `kubectl logs`. A CustomResourceDefinition (CRD) adds a resource type to the Kubernetes application programming interface (API). A custom resource is one object of that type. An operator is a controller packaged with CRDs that manages an application for you.
 
-## Outline
+Write each example file in a new, empty folder on your machine. Run every command from that folder. Your playground runs Kubernetes 1.35.8 and Prometheus Operator 0.94.1 in a single-node `kind` cluster.
 
-<!-- TODO(build): each beat below becomes a section of this module (or a deep-dive part via /astrona-course-deep-dive). Delete this Outline section once written. -->
+| Namespace | What is in it |
+| --- | --- |
+| `default` | The `prometheus-operator` controller Deployment |
+| `starfleet` | An available `Prometheus` resource `starfleet`, its StatefulSet, Service and Secrets, and the ServiceAccount `prometheus` |
+| `starfleet` | `scout-settings`, a ConfigMap with the finalizer `platform.starfleet.io/cleanup`, and `scout-cache`, which the cleanup worker must delete first |
+| `starfleet` | The suspended Job `scout-cleanup`, with a ServiceAccount and permissions limited to those two ConfigMaps |
+| `outpost` | An empty namespace for ownership examples |
 
-- ownerReferences and the garbage collector - who deletes the children
-- Cascading deletion modes and when a platform team wants each one
-- Finalizers - cleanup before delete, and deletionTimestamp
-- Stuck in Terminating - finding the missing controller, and why patching the finalizer away is the last resort
+The `TeamEnvironment` CRD is installed, but no controller acts on its objects. You add their owner references by hand to see what Kubernetes itself does. The cleanup Job is a small, one-time recovery example, not a full operator. It starts suspended, so no worker removes the custom finalizer until you restore it. All required container images are preloaded, and `kubectl` points at this playground.
 
-## Diagrams planned
+Launch your playground now, and keep it running while you read:
 
-<!-- TODO(build): mermaid `state` — Lifecycle of an object with a finalizer - Active, deletionTimestamp set (Terminating), finalizer removed, deleted -->
-
-<!-- playground provides: kind cluster (Kubernetes 1.35) with the Prometheus Operator 0.94.1 installed and a `Prometheus` resource `starfleet` that owns its StatefulSet, Service and Secrets. Namespace `starfleet` also has a ConfigMap `scout-settings` that carries a custom finalizer `platform.starfleet.io/cleanup` with no controller to remove it, so deleting it leaves it in Terminating on purpose. The TeamEnvironment CRD is installed so the reader can add ownerReferences between custom resources and ConfigMaps by hand. -->
-
-<!-- module section-020/module-02 (Module 2) — stub written by /astrona-course-domain-scaffold, prose written by /astrona-course-domain-build. -->
+<!-- astrona:playground -->

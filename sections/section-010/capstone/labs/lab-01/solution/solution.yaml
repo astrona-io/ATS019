@@ -1,0 +1,142 @@
+# Reference solution, applied only by `astrona test`. Keep in step with solution.md.
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  name: databases.platform.starfleet.io
+spec:
+  group: platform.starfleet.io
+  scope: Namespaced
+  names:
+    kind: Database
+    plural: databases
+    singular: database
+    shortNames:
+      - db
+  conversion:
+    strategy: None
+  versions:
+    - name: v1alpha1
+      served: true
+      storage: false
+      deprecated: true
+      deprecationWarning: "platform.starfleet.io/v1alpha1 Database is deprecated; use platform.starfleet.io/v1"
+      schema:
+        openAPIV3Schema:
+          type: object
+          required:
+            - spec
+          properties:
+            spec:
+              type: object
+              required:
+                - team
+                - engine
+              x-kubernetes-validations:
+                - rule: "self.replicas == 1 || self.storageGB >= 20"
+                  message: "more than 1 replica needs at least 20 GB of storage"
+              properties:
+                team:
+                  type: string
+                  minLength: 1
+                  maxLength: 30
+                  x-kubernetes-validations:
+                    - rule: "self == oldSelf"
+                      message: "team cannot be changed after creation"
+                engine:
+                  type: string
+                  enum:
+                    - postgres
+                    - mysql
+                storageGB:
+                  type: integer
+                  minimum: 1
+                  maximum: 500
+                  default: 10
+                  x-kubernetes-validations:
+                    - rule: "self >= oldSelf"
+                      message: "storage can grow but cannot shrink"
+                replicas:
+                  type: integer
+                  minimum: 1
+                  maximum: 5
+                  default: 1
+            status:
+              type: object
+              properties:
+                readyReplicas:
+                  type: integer
+                  minimum: 0
+                phase:
+                  type: string
+    - name: v1
+      served: true
+      storage: true
+      subresources:
+        status: {}
+        scale:
+          specReplicasPath: .spec.replicas
+          statusReplicasPath: .status.readyReplicas
+      additionalPrinterColumns:
+        - name: Engine
+          type: string
+          jsonPath: .spec.engine
+        - name: Storage
+          type: integer
+          jsonPath: .spec.storageGB
+        - name: Replicas
+          type: integer
+          jsonPath: .spec.replicas
+        - name: Ready
+          type: integer
+          jsonPath: .status.readyReplicas
+        - name: Age
+          type: date
+          jsonPath: .metadata.creationTimestamp
+      schema:
+        openAPIV3Schema:
+          type: object
+          required:
+            - spec
+          properties:
+            spec:
+              type: object
+              required:
+                - team
+                - engine
+              x-kubernetes-validations:
+                - rule: "self.replicas == 1 || self.storageGB >= 20"
+                  message: "more than 1 replica needs at least 20 GB of storage"
+              properties:
+                team:
+                  type: string
+                  minLength: 1
+                  maxLength: 30
+                  x-kubernetes-validations:
+                    - rule: "self == oldSelf"
+                      message: "team cannot be changed after creation"
+                engine:
+                  type: string
+                  enum:
+                    - postgres
+                    - mysql
+                storageGB:
+                  type: integer
+                  minimum: 1
+                  maximum: 500
+                  default: 10
+                  x-kubernetes-validations:
+                    - rule: "self >= oldSelf"
+                      message: "storage can grow but cannot shrink"
+                replicas:
+                  type: integer
+                  minimum: 1
+                  maximum: 5
+                  default: 1
+            status:
+              type: object
+              properties:
+                readyReplicas:
+                  type: integer
+                  minimum: 0
+                phase:
+                  type: string

@@ -1,0 +1,74 @@
+# yaml-language-server: $schema=https://cli.astrona.io/schema/lab-config.schema.json
+#
+# Offer Self-Service Through Git And Scoped RBAC (PLAYGROUND) — playground
+# environment. A clean sandbox: Crossplane 2.4.2 with provider-kubernetes
+# 1.4.1, function-patch-and-transform 0.11.0 and the working TeamEnvironment
+# XRD and Composition; Gitea (plumbing) with the repository
+# starfleet/outpost-requests; Argo CD 3.5.4 with one Application; the tenant
+# namespace `outpost`. No task, no grading, no `astrona submit`. Needs
+# outbound internet: Crossplane pulls packages from xpkg.crossplane.io and
+# the bootstrap downloads the Argo CD install manifest from GitHub.
+apiVersion: astrona.io/v1
+metadata:
+  name: ats-019-playground-040-03
+  docs:
+    guide: docs/overview.md
+
+runtime:
+  type: kind
+  kind:
+    image: kindest/node:v1.35.8
+    preloadImages:
+      - xpkg.crossplane.io/crossplane/crossplane:v2.4.2
+      - quay.io/argoproj/argocd:v3.5.4
+      - gitea/gitea:1.24.5-rootless
+
+bootstrap:
+  init:
+    - name: install-crossplane
+      description: "Installs Crossplane 2.4.2 in crossplane-system and waits for its CRDs"
+      type: file
+      source: bootstrap/01-install-crossplane.sh
+    - name: install-platform-api
+      description: "Installs provider-kubernetes, the function, RBAC, the TeamEnvironment XRD and Composition"
+      type: file
+      source: bootstrap/02-install-platform-api.sh
+    - name: install-gitea
+      description: "Starts Gitea and creates the repository starfleet/outpost-requests"
+      type: file
+      source: bootstrap/03-install-gitea.sh
+    - name: install-argocd
+      description: "Installs Argo CD 3.5.4 in the argocd namespace"
+      type: file
+      source: bootstrap/04-install-argocd.sh
+  manifests:
+    - name: shuttle
+      type: file
+      source: manifests/shuttle.yaml
+    - name: outpost-requests-application
+      type: file
+      source: manifests/application-outpost-requests.yaml
+  waitFor:
+    - resource: deploy/crossplane
+      namespace: crossplane-system
+      condition: Available
+      timeout: 300s
+    - resource: deploy/gitea
+      namespace: gitea
+      condition: Available
+      timeout: 300s
+    - resource: deploy/argocd-server
+      namespace: argocd
+      condition: Available
+      timeout: 300s
+    - resource: deploy/argocd-repo-server
+      namespace: argocd
+      condition: Available
+      timeout: 300s
+    - resource: deploy/shuttle
+      namespace: outpost
+      condition: Available
+      timeout: 180s
+
+teardown:
+  keepCluster: false

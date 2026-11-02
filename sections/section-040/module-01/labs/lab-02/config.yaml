@@ -1,0 +1,67 @@
+# yaml-language-server: $schema=https://cli.astrona.io/schema/lab-config.schema.json
+#
+# Fix A Provisioning Workflow That Fails On Permissions (ats-019-lab-040-02)
+# Astrona hands-on lab. kind runtime: a single-node Kubernetes 1.35 cluster
+# with Argo Workflows 4.1.5. Starts broken on purpose: the ServiceAccount
+# provisioner has too few permissions in outpost. Needs outbound internet for
+# the install manifest.
+apiVersion: astrona.io/v1
+metadata:
+  name: ats-019-lab-040-02
+  docs:
+    prerequisites: prerequisites.md
+    question: question.md
+    solution: solution.md
+
+runtime:
+  type: kind
+  kind:
+    image: kindest/node:v1.35.8
+    preloadImages:
+      - quay.io/argoproj/workflow-controller:v4.1.5
+      - quay.io/argoproj/argoexec:v4.1.5
+      - ghcr.io/stefanprodan/podinfo:6.15.0
+
+bootstrap:
+  init:
+    - name: install-argo-workflows
+      description: "Installs Argo Workflows 4.1.5 in the namespace argo"
+      type: file
+      source: bootstrap/01-install-argo-workflows.sh
+  manifests:
+    - name: lab-start
+      description: "Namespaces, the provisioner ServiceAccount, the WorkflowTemplate deploy-scout and the faulty RBAC in outpost"
+      type: file
+      source: manifests/lab-start.yaml
+  waitFor:
+    - resource: deploy/workflow-controller
+      namespace: argo
+
+testing:
+  init:
+    - name: apply-solution
+      description: "Applies the reference Role and RoleBinding"
+      type: file
+      source: solution/apply.sh
+    - name: run-solution-workflow
+      description: "Runs deploy-scout once and waits for Succeeded"
+      type: file
+      source: testing/run-deploy-scout.sh
+
+validation:
+  scripts:
+    - name: verify-template-unchanged
+      description: "Checks deploy-scout still runs as provisioner and still has the two resource steps"
+      type: file
+      source: validation/validate-template-unchanged.sh
+    - name: verify-least-privilege
+      description: "Checks provisioner can get, create and patch Deployments and Services in outpost and nothing wider"
+      type: file
+      source: validation/validate-least-privilege.sh
+    - name: verify-workflow-succeeds
+      description: "Runs deploy-scout from scratch and checks the scout Deployment and Service"
+      type: file
+      source: validation/validate-workflow-succeeds.sh
+
+teardown:
+  keepCluster: false

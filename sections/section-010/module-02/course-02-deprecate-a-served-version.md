@@ -280,3 +280,27 @@ For the rest of the module, use the `v1` version only. You have now seen the dif
 > - **Removing a version before clients stop using it.** `served: false` breaks requests that still name that version.
 > - **Deleting the schema for an unserved version.** The CRD still needs a schema for every listed version. Without one, the API server refuses the CRD with `spec.versions[0].schema.openAPIV3Schema: Required value`.
 > - **Forgetting that `kubectl` prints warnings on standard error.** A script that captures only standard output may miss the deprecation warning.
+
+## Your mission: Add A v1 Version And Deprecate v1alpha1
+
+You can now serve two versions of a CRD, choose the storage version and deprecate the old version. The mission asks you to add `v1` to the `TeamEnvironment` CRD of a fresh cluster, deprecate `v1alpha1`, keep the existing objects and create a new object through `v1`.
+
+Pause the playground first:
+
+```sh
+astrona stop ats-019-playground-010-02
+```
+
+Start the lab, then submit your answer:
+
+```sh
+astrona run --git ssh://git@github.com/astrona-io/ATS019.git -c sections/section-010/module-02/labs/lab-01
+astrona submit -c sections/section-010/module-02/labs/lab-01
+```
+
+When you finish, remove the lab and resume the playground:
+
+```sh
+astrona destroy ats-019-lab-010-02
+astrona start ats-019-playground-010-02
+```

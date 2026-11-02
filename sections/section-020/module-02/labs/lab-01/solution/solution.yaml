@@ -1,0 +1,9 @@
+# The new owner. The ConfigMap move needs its UID, so apply.sh does that part.
+apiVersion: platform.starfleet.io/v1alpha1
+kind: TeamEnvironment
+metadata:
+  name: probe-env-v2
+  namespace: outpost
+spec:
+  team: outpost
+  size: medium

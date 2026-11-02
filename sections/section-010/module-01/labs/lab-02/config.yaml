@@ -1,0 +1,48 @@
+# yaml-language-server: $schema=https://cli.astrona.io/schema/lab-config.schema.json
+apiVersion: astrona.io/v1
+metadata:
+  name: ats-019-lab-010-01-02
+  docs:
+    prerequisites: prerequisites.md
+    question: question.md
+    solution: solution.md
+
+runtime:
+  type: kind
+  kind:
+    image: kindest/node:v1.35.8
+
+# Starting state: the namespaces, the TeamEnvironment CRD with a typed schema but no CEL
+# rules, no printer columns, no short name and no category, and one valid TeamEnvironment
+# named alpha (small, 2 replicas). No add-ons are needed.
+bootstrap:
+  init:
+    - name: seed
+      description: "Creates the namespaces, the TeamEnvironment CRD with a typed schema and the object alpha"
+      type: file
+      source: bootstrap/01-seed.sh
+
+testing:
+  init:
+    - name: solution
+      description: Reference solution applied by `astrona test`
+      type: file
+      source: solution/apply.sh
+
+validation:
+  scripts:
+    - name: cel-rules
+      description: A small environment runs at most 2 replicas on create and update, and the team cannot change
+      type: file
+      source: validation/validate-cel-rules.sh
+    - name: printer-columns
+      description: kubectl get teamenv shows Team, Size, Replicas and Age, and the category platform lists the objects
+      type: file
+      source: validation/validate-printer-columns.sh
+    - name: schema-kept
+      description: The typed schema, the version and the object alpha are still in place
+      type: file
+      source: validation/validate-schema-kept.sh
+
+teardown:
+  keepCluster: false

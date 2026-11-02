@@ -1,0 +1,27 @@
+# Starting state. The platform team began the RBAC for provider-kubernetes and stopped:
+# the Role only covers Deployments. The ServiceAccount provider-kubernetes does not exist
+# yet. It appears when the learner installs the provider with that ServiceAccount name.
+# Do not fix this file in the bootstrap: the missing Service rule is part of the task.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: provider-kubernetes-workloads
+  namespace: outpost
+rules:
+  - apiGroups: ["apps"]
+    resources: ["deployments"]
+    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: provider-kubernetes-workloads
+  namespace: outpost
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: provider-kubernetes-workloads
+subjects:
+  - kind: ServiceAccount
+    name: provider-kubernetes
+    namespace: crossplane-system

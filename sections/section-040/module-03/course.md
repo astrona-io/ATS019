@@ -1,39 +1,37 @@
 # Offer Self-Service Through Git And Scoped RBAC
 
-<!-- astrona:playground -->
-> [!NOTE]
-> This module has a playground — a throwaway environment to run the commands in.
-> ```bash
-> astrona run --git ssh://git@github.com/astrona-io/ATS019.git -c sections/section-040/module-03/playground
-> ```
+A platform API is only self-service when a tenant team can use it without help from the platform team and without more rights than it needs. This module settles two questions. Who may create a `TeamEnvironment` request, and how does that request reach the cluster? The answer to the first is Role-Based Access Control (RBAC). The answer to the second is a Git repository that Argo CD watches.
 
-<!-- TODO(build): opening framing — what this module settles, and the contrast that sharpens its boundary. -->
+A tenant that holds `cluster-admin` can do anything, so it can also break the platform. A tenant that holds no rights cannot ask for anything. The goal is the narrow case between them: the tenant creates and reads one kind of object in its own namespace, and nothing else.
+
+The module has four parts. **Scope A Tenant With A Role And RoleBinding** gives the group `outpost-team` access to `TeamEnvironment` objects in `outpost` and proves the limits with `kubectl auth can-i`. **Aggregate Platform API Permissions Into edit And view** adds the same permissions to the built-in `edit` and `view` ClusterRoles with a label. **Deliver Requests Through Git With Argo CD** writes the `AppProject` and `Application` that turn a committed file into a cluster object. **Follow A Request From Commit To Ready** commits a request, then reads the Argo CD status and the composite resource status to find where a request stops.
 
 ## Learning objectives
 
-- Design a request flow where a tenant adds a composite resource manifest to a Git repository and Argo CD applies it
-- Write a Role and RoleBinding that let a tenant group create and read only the platform API kind in its own namespace
-- Aggregate the platform API's permissions into the built-in edit and view ClusterRoles with an aggregation label
-- Prove the tenant can request a TeamEnvironment but cannot create Deployments or read Secrets, with kubectl auth can-i --as
-- Trace a Git request through Argo CD sync to a Ready composite resource
+After this module you can:
+
+- Design a request flow where a tenant adds a composite resource manifest to a Git repository and Argo CD applies it.
+- Write a Role and RoleBinding that let a tenant group create and read only the platform API kind in its own namespace.
+- Aggregate the platform API's permissions into the built-in `edit` and `view` ClusterRoles with an aggregation label.
+- Prove with `kubectl auth can-i --as` that the tenant can request a `TeamEnvironment` but cannot create Deployments or read Secrets.
+- Trace a Git request through an Argo CD sync to a `Ready` composite resource.
 
 ## Before you start
 
-<!-- TODO(build): assumed knowledge, and what the playground already provides. -->
+You need Kubernetes basics: namespaces, Roles, `kubectl get` and `kubectl apply`. You also need to know what a composite resource is: an object of a platform API kind that Crossplane turns into other objects. The `TeamEnvironment` kind is one such platform API. A tenant creates one in a namespace, and Crossplane composes a Deployment and a Service from it.
 
-## Outline
+Write each example file in a new, empty folder on your machine and run every command from that folder. Your playground runs Kubernetes 1.35.8, Crossplane 2.4.2 and Argo CD 3.5.4 in a single-node `kind` cluster. It needs outbound internet and takes longer to start than other playgrounds.
 
-<!-- TODO(build): each beat below becomes a section of this module (or a deep-dive part via /astrona-course-deep-dive). Delete this Outline section once written. -->
+| Where | What is there |
+| --- | --- |
+| Crossplane | `provider-kubernetes`, `function-patch-and-transform`, and the `TeamEnvironment` XRD and Composition, all installed |
+| Namespace `gitea` | An in-cluster Git server with the repository `starfleet/outpost-requests`, which holds an empty `requests/` folder |
+| Namespace `argocd` | Argo CD, with one `Application` that watches that repository |
+| Namespace `outpost` | The tenant namespace |
+| Tenant identity | The user `outpost-dev` in the group `outpost-team`, which you impersonate with `kubectl --as`. It has no RBAC yet |
 
-- What self-service means on a platform - a request API, not cluster access
-- RBAC for a platform API - Roles, ClusterRole aggregation and auth can-i
-- Requests through Git - Gitea repository, an Argo CD Application per tenant
-- Following a request from commit to Ready
+Gitea is only the Git server for the playground. You never learn its commands or web page: a Git server is where the request file is stored, and the lesson is about what Argo CD does with it.
 
-## Diagrams planned
+Launch your playground now, and keep it running while you read:
 
-<!-- TODO(build): mermaid `flowchart` — Tenant commits a TeamEnvironment to Gitea, Argo CD syncs it into outpost, Crossplane composes it, status flows back to the tenant -->
-
-<!-- playground provides: kind cluster (Kubernetes 1.35) with Gitea 28.1.0 in namespace `gitea` (user `platform`, organisation `starfleet`, repository `outpost-requests` seeded with an empty `requests/` folder), Argo CD 3.5.4 with one Application pointing at that repository, and Crossplane 2.4.2 with provider-kubernetes, function-patch-and-transform and the TeamEnvironment XRD and Composition installed. A tenant user `outpost-dev` (group `outpost-team`) is set up for impersonation and has no RBAC yet. This is the heaviest playground in the course; no Argo Workflows. Needs outbound internet. -->
-
-<!-- module section-040/module-03 (Module 3) — stub written by /astrona-course-domain-scaffold, prose written by /astrona-course-domain-build. -->
+<!-- astrona:playground -->

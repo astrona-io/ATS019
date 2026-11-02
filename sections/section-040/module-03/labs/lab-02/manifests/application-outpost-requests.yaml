@@ -1,0 +1,16 @@
+# Starting state with faults: the path names a folder that does not exist
+# (`request`), and there is no automated sync.
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: outpost-requests
+  namespace: argocd
+spec:
+  project: outpost
+  source:
+    repoURL: http://gitea-http.gitea.svc:3000/starfleet/outpost-requests.git
+    targetRevision: HEAD
+    path: request
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: outpost

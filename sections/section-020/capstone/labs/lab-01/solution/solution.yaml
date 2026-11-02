@@ -1,0 +1,24 @@
+# Reference end state for the objects that can be applied as they are.
+# The values that must be read from the cluster (the TeamEnvironment UID) are set in apply.sh.
+apiVersion: v1
+kind: Secret
+metadata:
+  name: extra-scrape
+  namespace: outpost
+stringData:
+  jobs.yaml: "[]"
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: scout-cleanup
+  namespace: outpost
+rules:
+  - apiGroups: [""]
+    resources: ["configmaps"]
+    resourceNames: ["scout-settings"]
+    verbs: ["get", "list", "watch", "patch"]
+  - apiGroups: [""]
+    resources: ["configmaps"]
+    resourceNames: ["scout-cache"]
+    verbs: ["get", "list", "watch", "delete"]

@@ -1,0 +1,18 @@
+# The two owners that exist at the start. No controller acts on them.
+apiVersion: platform.starfleet.io/v1alpha1
+kind: TeamEnvironment
+metadata:
+  name: scout-env
+  namespace: outpost
+spec:
+  team: outpost
+  size: small
+---
+apiVersion: platform.starfleet.io/v1alpha1
+kind: TeamEnvironment
+metadata:
+  name: probe-env
+  namespace: outpost
+spec:
+  team: outpost
+  size: small

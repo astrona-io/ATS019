@@ -1,0 +1,9 @@
+apiVersion: platform.starfleet.io/v1alpha1
+kind: TeamEnvironment
+metadata:
+  name: scout-env
+  namespace: outpost
+spec:
+  team: outpost
+  size: small
+  replicas: 2

@@ -1,0 +1,9 @@
+apiVersion: platform.starfleet.io/v1
+kind: TeamEnvironment
+metadata:
+  name: gamma
+  namespace: outpost
+spec:
+  team: outpost
+  size: large
+  replicas: 4
