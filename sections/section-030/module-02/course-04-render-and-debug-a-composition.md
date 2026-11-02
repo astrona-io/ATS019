@@ -97,30 +97,6 @@ A few seconds later, `Synced` and `Ready` should be `True` again. Always read th
 
 You wrote an XRD and a Composition, patched values in both directions, and previewed the result without touching the cluster. You also read the status of a Composition that points at a missing function. A question remains for the platform team: how does a tenant know which of its requests are healthy across many namespaces?
 
-## Your mission: Repair A Broken Composition
-
-You can now preview a Composition and find a bad function reference from the XR status. The mission gives you a platform API whose Composition does not produce a workload, and asks you to find the fault and restore a request that answers with `200`.
-
-Pause the playground:
-
-```sh
-astrona stop ats-019-playground-030-02
-```
-
-Run and submit the lab:
-
-```sh
-astrona run --git ssh://git@github.com/astrona-io/ATS019.git -c sections/section-030/module-02/labs/lab-03
-astrona submit -c sections/section-030/module-02/labs/lab-03
-```
-
-When you are done, remove the lab and resume the playground:
-
-```sh
-astrona destroy ats-019-lab-030-02-03
-astrona start ats-019-playground-030-02
-```
-
 ## Common pitfalls
 
 > [!WARNING]

@@ -72,27 +72,3 @@ You can now give a tenant a narrow set of rights and extend the built-in roles w
 > - **Editing the built-in `edit` ClusterRole.** The control plane overwrites changes to an aggregated role. Add a labelled ClusterRole instead.
 > - **A wrong label value.** The label value must be the string `"true"`. Without quotes, YAML reads a boolean, and Kubernetes rejects it as a label value.
 > - **Binding tenants to `edit` or `view` for convenience.** `edit` reads Secrets, and `view` reads most namespaced objects. Tenant rights should list only the platform API.
-
-## Your mission: Scope A Tenant To One Platform API With RBAC
-
-You can now write a Role, a RoleBinding and an aggregated ClusterRole, and prove their limits with `kubectl auth can-i`. The mission asks you to give the group `outpost-team` the right to create and read `TeamEnvironment` objects in `outpost`, and to prove that it cannot create Deployments or read Secrets.
-
-Pause the playground first:
-
-```sh
-astrona stop ats-019-playground-040-03
-```
-
-Start the lab and send your work for grading:
-
-```sh
-astrona run --git ssh://git@github.com/astrona-io/ATS019.git -c sections/section-040/module-03/labs/lab-01
-astrona submit -c sections/section-040/module-03/labs/lab-01
-```
-
-When the lab is done, remove it and start the playground again:
-
-```sh
-astrona destroy ats-019-lab-040-03
-astrona start ats-019-playground-040-03
-```

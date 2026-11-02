@@ -141,27 +141,3 @@ You can now create a managed resource, read `Synced` and `Ready`, and trace a fa
 > - **Granting access in the wrong namespace.** The Role goes in the namespace of the object the provider manages, not in `crossplane-system`.
 > - **Reading only `Ready`.** `Synced` holds the reason and message of a failure.
 > - **Deleting the Service by hand.** The provider recreates it; delete the `Object` instead.
-
-## Your mission: Repair A Provider That Cannot Sync An Object
-
-You can now diagnose a sync failure and grant only the permission it needs. The mission gives you a cluster where an `Object` is stuck with `Synced False`. You find the cause and fix it without widening access beyond what the provider needs.
-
-Pause the playground first:
-
-```sh
-astrona stop ats-019-playground-030-01
-```
-
-Start the lab, then submit your answer:
-
-```sh
-astrona run --git ssh://git@github.com/astrona-io/ATS019.git -c sections/section-030/module-01/labs/lab-02
-astrona submit -c sections/section-030/module-01/labs/lab-02
-```
-
-When you finish, remove the lab and resume the playground:
-
-```sh
-astrona destroy ats-019-lab-030-01-02
-astrona start ats-019-playground-030-01
-```

@@ -163,30 +163,6 @@ kubectl -n outpost exec deploy/shuttle -- curl -s -o /dev/null -w '%{http_code}\
 
 You should see `200`. One request now travels from a pod, through a Service, to a Deployment, and every object was created from a single `TeamEnvironment`. Both composed objects use the fixed name `scout`, so this simple Composition supports one `TeamEnvironment` per namespace.
 
-## Your mission: Patch A Composition To Honour Tenant Requests
-
-You can now copy values into composed resources, write values back to status, and prove the result with a request. The mission gives you a Composition that ignores one tenant field and asks you to patch it so that the workload follows the request.
-
-Pause the playground:
-
-```sh
-astrona stop ats-019-playground-030-02
-```
-
-Run and submit the lab:
-
-```sh
-astrona run --git ssh://git@github.com/astrona-io/ATS019.git -c sections/section-030/module-02/labs/lab-02
-astrona submit -c sections/section-030/module-02/labs/lab-02
-```
-
-When you are done, remove the lab and resume the playground:
-
-```sh
-astrona destroy ats-019-lab-030-02-02
-astrona start ats-019-playground-030-02
-```
-
 ## Common pitfalls
 
 > [!WARNING]

@@ -262,27 +262,3 @@ You can now write a structural schema that types every field, requires the ones 
 > - **Expecting a new schema to fix stored objects.** Validation runs on writes only. Old values stay until an update changes them.
 > - **Testing typos only with `kubectl`.** `kubectl` uses strict validation and refuses unknown fields; other clients get silent pruning.
 > - **Forgetting that defaults change what a controller sees.** A default in the schema is written into every object, so it becomes part of your API.
-
-## Your mission: Make A CRD Schema Reject Bad Input
-
-You can now write a structural schema that types every field, requires the important ones, limits their values, sets defaults and prunes unknown fields. The mission gives you a CRD with a weak schema and asks you to replace it so the API server refuses bad objects, without deleting the CRD or the object that already exists.
-
-Pause the playground first:
-
-```sh
-astrona stop ats-019-playground-010-01
-```
-
-Start the lab, then submit your answer:
-
-```sh
-astrona run --git ssh://git@github.com/astrona-io/ATS019.git -c sections/section-010/module-01/labs/lab-01
-astrona submit -c sections/section-010/module-01/labs/lab-01
-```
-
-When you finish, remove the lab and resume the playground:
-
-```sh
-astrona destroy ats-019-lab-010-01
-astrona start ats-019-playground-010-01
-```

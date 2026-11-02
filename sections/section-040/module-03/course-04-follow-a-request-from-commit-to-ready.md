@@ -101,27 +101,3 @@ You now know how one request travels and which status to read at each step: Argo
 > - **Waiting for the three-minute poll.** Use the refresh annotation when you test a change.
 > - **Fixing a drifted object with `kubectl edit`.** With `selfHeal: true`, Argo CD reverts it. Change the file in Git.
 > - **Assuming `Synced` means `Ready`.** `Synced` on the Application means the file was applied. Only `Ready` on the composite resource means the environment works.
-
-## Your mission: Deliver A Tenant Request Through Argo CD
-
-You can now limit a repository with an AppProject, write an Application with automated sync and follow a request to `Ready`. The mission asks you to fix an Application that cannot deliver a request into `outpost`, and to get a committed `TeamEnvironment` to `Ready`.
-
-Pause the playground first:
-
-```sh
-astrona stop ats-019-playground-040-03
-```
-
-Start the lab and send your work for grading:
-
-```sh
-astrona run --git ssh://git@github.com/astrona-io/ATS019.git -c sections/section-040/module-03/labs/lab-02
-astrona submit -c sections/section-040/module-03/labs/lab-02
-```
-
-When the lab is done, remove it and start the playground again:
-
-```sh
-astrona destroy ats-019-lab-040-03-02
-astrona start ats-019-playground-040-03
-```

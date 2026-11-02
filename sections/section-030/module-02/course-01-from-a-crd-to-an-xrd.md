@@ -103,30 +103,6 @@ kubectl apply -f teamenvironment-invalid.yaml
 
 You should see an error from the server that names `spec.replicas` and says the value must be less than or equal to 3. Nothing is stored, so no Composition could ever act on it. A schema is the first safety rule of a platform API.
 
-## Your mission: Define A Platform API With An XRD
-
-You can now write an XRD with a namespaced scope, defaults and limits, and prove that it rejects a bad request. The mission asks you to define a platform API of your own from a written specification and show that it accepts a valid request and refuses an invalid one.
-
-First pause the playground:
-
-```sh
-astrona stop ats-019-playground-030-02
-```
-
-Run and submit the lab:
-
-```sh
-astrona run --git ssh://git@github.com/astrona-io/ATS019.git -c sections/section-030/module-02/labs/lab-01
-astrona submit -c sections/section-030/module-02/labs/lab-01
-```
-
-When you are done, remove the lab and resume the playground:
-
-```sh
-astrona destroy ats-019-lab-030-02
-astrona start ats-019-playground-030-02
-```
-
 ## Common pitfalls
 
 > [!WARNING]

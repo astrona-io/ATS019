@@ -83,27 +83,3 @@ You now know how a provider arrives: a `Provider` object names a package, the pa
 > - **Installing a provider before Crossplane is ready.** Check the Deployments and the `pkg.crossplane.io` CRDs first.
 > - **Leaving the version tag off `spec.package`.** Pin the tag so every cluster runs the same provider version.
 > - **Forgetting outbound internet.** The package manager pulls from `xpkg.crossplane.io`; a blocked connection leaves `INSTALLED` unset.
-
-## Your mission: Install provider-kubernetes And Reach Healthy
-
-You can now install a provider and read its status. The mission asks you to install `provider-kubernetes` 1.4.1 on a fresh cluster with a fixed ServiceAccount name and prove that it is healthy.
-
-Pause the playground first:
-
-```sh
-astrona stop ats-019-playground-030-01
-```
-
-Start the lab, then submit your answer:
-
-```sh
-astrona run --git ssh://git@github.com/astrona-io/ATS019.git -c sections/section-030/module-01/labs/lab-01
-astrona submit -c sections/section-030/module-01/labs/lab-01
-```
-
-When you finish, remove the lab and resume the playground:
-
-```sh
-astrona destroy ats-019-lab-030-01
-astrona start ats-019-playground-030-01
-```

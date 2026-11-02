@@ -121,27 +121,3 @@ You now have a method with three steps. Read the conditions on the composite res
 > - **Reading only the composite resource.** The reason for a `Ready: False` is often on a composed `Object` further down the tree.
 > - **Relying on events.** Events expire. Read `status.conditions` and keep the message.
 > - **Fixing the Composition and expecting an instant change.** Crossplane reconciles on a timer. Wait a minute or check again before you assume the fix did not work.
-
-## Your mission: Fix A Failing Composition Found By Tracing
-
-You can now find the failing object in a composite resource and read its condition. The mission gives you a request that stays not ready. You must find the faults in its Composition, fix them in the Composition and not in the request, and show that the request reaches `Ready` and that `scout` answers.
-
-First pause the playground:
-
-```sh
-astrona stop ats-019-playground-030-03
-```
-
-Start the lab, then submit your work when you are done:
-
-```sh
-astrona run --git ssh://git@github.com/astrona-io/ATS019.git -c sections/section-030/module-03/labs/lab-02
-astrona submit -c sections/section-030/module-03/labs/lab-02
-```
-
-When the lab is finished, remove it and start the playground again:
-
-```sh
-astrona destroy ats-019-lab-030-03-02
-astrona start ats-019-playground-030-03
-```

@@ -119,11 +119,8 @@ Strict guidelines:
   graded labs at the end of a module. In `astrona.yaml`, put each lab (its
   `question.md` reading and the `lab` entry) right after the reading part it
   tests. If a part teaches a gradeable skill and no lab covers it, create a
-  new lab. That part then ends with a `## Your mission: <lab title>` section:
-  one sentence on what the reader can now do, one on what the mission asks,
-  then pause the playground (`astrona stop <playground name>`), the
-  `astrona run` and `astrona submit` commands, and finally
-  `astrona destroy <lab name>` plus `astrona start <playground name>`.
+  new lab. The part does not end with a mission section: the `question.md`
+  reading and the `lab` entry that follow it carry the task.
 - **Renew the playground before hands-on work.** Every reading part that
   runs commands has `<!-- astrona:playground:renew -->` exactly once, on its
   own line, right before the first hands-on step (the first "Save this as"

@@ -186,27 +186,3 @@ You can now diagnose a stuck deletion by identifying the finalizer owner, checki
 > - **Removing the finalizer before cleanup.** The request disappears while resources it was meant to release may remain.
 > - **Checking only whether a worker pod runs.** Read the Job condition, each container's logs and the cleanup targets.
 > - **Changing the Job template during recovery.** The installed template is immutable; this example changes only suspension.
-
-## Your mission: Restore A Cleanup Worker That Cannot Finish
-
-You can now find the component behind a finalizer, check its permissions and restore its cleanup in the right order. The mission gives you a ConfigMap that has been terminating for a long time. You find why its worker cannot finish, repair it without widening access and prove that the worker, not you, released the finalizer.
-
-Pause the playground first:
-
-```sh
-astrona stop ats-019-playground-020-02
-```
-
-Start the lab, then submit your answer:
-
-```sh
-astrona run --git ssh://git@github.com/astrona-io/ATS019.git -c sections/section-020/module-02/labs/lab-02
-astrona submit -c sections/section-020/module-02/labs/lab-02
-```
-
-When you finish, remove the lab and resume the playground:
-
-```sh
-astrona destroy ats-019-lab-020-02-02
-astrona start ats-019-playground-020-02
-```

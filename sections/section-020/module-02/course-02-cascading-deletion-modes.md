@@ -178,27 +178,3 @@ You can now choose whether cleanup runs after the owner disappears, blocks the o
 > - **Treating background deletion as proof of full cleanup.** Wait for or inspect the dependent objects too.
 > - **Using orphan deletion to fix a failed cleanup.** It preserves resources and transfers cleanup responsibility to you.
 > - **Confusing `--wait=false` with orphan deletion.** Waiting controls the client; cascading controls the dependents.
-
-## Your mission: Hand Over A Dependent Before Deleting Its Owner
-
-You can now predict which dependents the garbage collector deletes and choose a cascading deletion mode. The mission gives you a cluster where a ConfigMap must survive the deletion of its owner and a second ConfigMap must go with its owner. You move the first one to a new owner, delete both old owners and prove that a shared label did not decide anything.
-
-Pause the playground first:
-
-```sh
-astrona stop ats-019-playground-020-02
-```
-
-Start the lab, then submit your answer:
-
-```sh
-astrona run --git ssh://git@github.com/astrona-io/ATS019.git -c sections/section-020/module-02/labs/lab-01
-astrona submit -c sections/section-020/module-02/labs/lab-01
-```
-
-When you finish, remove the lab and resume the playground:
-
-```sh
-astrona destroy ats-019-lab-020-02
-astrona start ats-019-playground-020-02
-```

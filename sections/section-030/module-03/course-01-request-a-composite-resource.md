@@ -100,27 +100,3 @@ The tenant never created the Deployment. Crossplane and `provider-kubernetes` cr
 > - **Reading `Synced: True` as success.** `Synced` only says Crossplane applied the Composition. Wait for `Ready`, then send a request to the workload.
 > - **Applying the request in the wrong namespace.** A namespaced composite resource creates its objects for the namespace it lives in. A request in `default` does not provision anything for `outpost`.
 > - **Checking the workload right after `apply`.** Crossplane works after the command returns. Use `kubectl wait` before the first check.
-
-## Your mission: Provision A TeamEnvironment And Prove It Answers
-
-You can now request a composite resource from a tenant namespace and prove that the workload it provisions answers. The mission asks you to request a `TeamEnvironment` from `outpost`, wait for `Ready`, and show that `scout` returns `200` to a request from `shuttle`.
-
-First pause the playground:
-
-```sh
-astrona stop ats-019-playground-030-03
-```
-
-Start the lab, then submit your work when you are done:
-
-```sh
-astrona run --git ssh://git@github.com/astrona-io/ATS019.git -c sections/section-030/module-03/labs/lab-01
-astrona submit -c sections/section-030/module-03/labs/lab-01
-```
-
-When the lab is finished, remove it and start the playground again:
-
-```sh
-astrona destroy ats-019-lab-030-03
-astrona start ats-019-playground-030-03
-```

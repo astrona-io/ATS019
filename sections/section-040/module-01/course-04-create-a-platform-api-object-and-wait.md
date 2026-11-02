@@ -134,27 +134,3 @@ You now know how to make a workflow create a platform API object, wait for the p
 > - **Missing `watch` and `list` in the Role.** The step can create the object but cannot see the change that it waits for.
 > - **Reusing a fixed object name.** The second `create` fails with `AlreadyExists`. Delete the old object or use a new name.
 > - **Writing status with a normal patch.** With the status subresource enabled, use `--subresource=status`.
-
-## Your mission: Wait For A TeamEnvironment With A Resource Step
-
-You can now create a custom resource from a workflow and end the step on a status condition. The mission asks you to complete a workflow that requests a `TeamEnvironment` and succeeds only when the object reports `Ready`.
-
-Pause the playground first:
-
-```sh
-astrona stop ats-019-playground-040-01
-```
-
-Start the lab and submit your work when you are ready:
-
-```sh
-astrona run --git ssh://git@github.com/astrona-io/ATS019.git -c sections/section-040/module-01/labs/lab-03
-astrona submit -c sections/section-040/module-01/labs/lab-03
-```
-
-When you are done, remove the lab and start the playground again:
-
-```sh
-astrona destroy ats-019-lab-040-01-03
-astrona start ats-019-playground-040-01
-```

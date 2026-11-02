@@ -201,27 +201,3 @@ You now know which identity a step pod uses, how to prove its permissions with `
 > - **Forgetting the RoleBinding subject namespace.** A ServiceAccount subject needs `namespace: starfleet`.
 > - **Fixing a permission error with `cluster-admin`.** It hides the real rule and gives the workflow too much power.
 > - **Reading only `kubectl get workflows`.** The table shows `Failed`. The reason is in the node message and the pod log.
-
-## Your mission: Fix A Provisioning Workflow That Fails On Permissions
-
-You can now find a permission failure in a Workflow and fix it with a narrow Role. The mission gives you a workflow whose steps fail with `forbidden`, and asks you to make it succeed without using `cluster-admin`.
-
-Pause the playground first:
-
-```sh
-astrona stop ats-019-playground-040-01
-```
-
-Start the lab and submit your work when you are ready:
-
-```sh
-astrona run --git ssh://git@github.com/astrona-io/ATS019.git -c sections/section-040/module-01/labs/lab-02
-astrona submit -c sections/section-040/module-01/labs/lab-02
-```
-
-When you are done, remove the lab and start the playground again:
-
-```sh
-astrona destroy ats-019-lab-040-01-02
-astrona start ats-019-playground-040-01
-```

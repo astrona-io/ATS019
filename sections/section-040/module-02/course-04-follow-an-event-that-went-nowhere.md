@@ -71,27 +71,3 @@ You now have a repeatable method. Start at the request, then read the EventSourc
 > - **Skipping the Sensor log.** Filter drops, name mismatches and `forbidden` errors all show there.
 > - **Fixing RBAC with a broad role.** Grant `create` on `workflows` in the namespace, and nothing more.
 > - **Changing the Workflow when the event never arrived.** Find the first component that did not do its job.
-
-## Your mission: Find Why An Event Starts No Workflow
-
-You can now trace one event along the path and name the component that broke it. The mission gives you a Sensor that receives events but starts no Workflow. Find the fault, fix it in the right object, and prove it with a request from `shuttle`.
-
-Pause the playground first:
-
-```sh
-astrona stop ats-019-playground-040-02
-```
-
-Run the lab and submit your work:
-
-```sh
-astrona run --git ssh://git@github.com/astrona-io/ATS019.git -c sections/section-040/module-02/labs/lab-02
-astrona submit -c sections/section-040/module-02/labs/lab-02
-```
-
-When you finish, remove the lab and start the playground again:
-
-```sh
-astrona destroy ats-019-lab-040-02-02
-astrona start ats-019-playground-040-02
-```

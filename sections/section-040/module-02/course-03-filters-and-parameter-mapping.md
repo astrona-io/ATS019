@@ -110,27 +110,3 @@ The Sensor can now accept the right events and pass their data on. The next ques
 > - **Posting without the JSON header.** The body is then not parsed as JSON, so a filter or `dataKey` on `body.team` fails.
 > - **A wrong `dest` index.** `parameters.0` is the first entry in the list. Count from zero, and keep the parameter in the resource so the path exists.
 > - **Expecting an error for a filtered event.** The EventSource returns `200`. Only the missing Workflow shows the drop.
-
-## Your mission: Trigger A Provisioning Workflow From A Webhook
-
-You can now build the path from an event to a Workflow. The mission asks you to create the EventBus, the webhook EventSource and the Sensor with a filter and a parameter mapping. A request from `shuttle` must start a Workflow that uses the posted team name.
-
-Pause the playground first:
-
-```sh
-astrona stop ats-019-playground-040-02
-```
-
-Run the lab and submit your work:
-
-```sh
-astrona run --git ssh://git@github.com/astrona-io/ATS019.git -c sections/section-040/module-02/labs/lab-01
-astrona submit -c sections/section-040/module-02/labs/lab-01
-```
-
-When you finish, remove the lab and start the playground again:
-
-```sh
-astrona destroy ats-019-lab-040-02
-astrona start ats-019-playground-040-02
-```

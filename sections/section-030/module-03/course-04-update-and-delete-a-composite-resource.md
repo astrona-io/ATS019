@@ -82,27 +82,3 @@ You now know the whole life of a request: the tenant applies it, Crossplane and 
 > - **Orphaning to avoid a stuck deletion.** Orphan deletion keeps the workload and leaves it without a composite resource. Find why the deletion is stuck instead.
 > - **Deleting the composed `Object` resources by hand.** Crossplane recreates them while the composite resource exists, and the tenant sees a flapping workload. Delete the composite resource.
 > - **Believing the garbage collector removed the workload.** The garbage collector only deletes the `Object`. `provider-kubernetes` deletes the real Deployment and Service after that.
-
-## Your mission: Delete A Composite Resource Without Losing Its Workload
-
-You can now choose between deleting a composite resource and orphaning its composed resources. The mission asks you to remove a `TeamEnvironment` so that its `scout` workload still answers with `200`, and then to clean up the orphaned `Object` resources.
-
-First pause the playground:
-
-```sh
-astrona stop ats-019-playground-030-03
-```
-
-Start the lab, then submit your work when you are done:
-
-```sh
-astrona run --git ssh://git@github.com/astrona-io/ATS019.git -c sections/section-030/module-03/labs/lab-03
-astrona submit -c sections/section-030/module-03/labs/lab-03
-```
-
-When the lab is finished, remove it and start the playground again:
-
-```sh
-astrona destroy ats-019-lab-030-03-03
-astrona start ats-019-playground-030-03
-```

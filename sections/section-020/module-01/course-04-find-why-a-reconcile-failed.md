@@ -186,27 +186,3 @@ You can now find why a reconcile failed: read the conditions first, follow the o
 > - **Creating the pod or the StatefulSet by hand.** The controller owns them and changes them back. Fix the custom resource.
 > - **Creating a ServiceAccount with the wrong name to silence the error.** It may work, but the RBAC binding for Prometheus names `prometheus`, so the new account cannot read any targets.
 > - **Reading old log lines.** Use `--since` and search for the `<namespace>/<name>` key, so you read the error for this object and this attempt.
-
-## Your mission: Repair A Prometheus Resource That Cannot Reconcile
-
-You can now find why a reconcile failed from conditions, events and the operator log. The mission gives you a `Prometheus` resource that never gets a pod. You find every cause and fix each one where it lives, without removing configuration and without giving Prometheus more access than it needs.
-
-Pause the playground first:
-
-```sh
-astrona stop ats-019-playground-020-01
-```
-
-Start the lab, then submit your answer:
-
-```sh
-astrona run --git ssh://git@github.com/astrona-io/ATS019.git -c sections/section-020/module-01/labs/lab-02
-astrona submit -c sections/section-020/module-01/labs/lab-02
-```
-
-When you finish, remove the lab and resume the playground:
-
-```sh
-astrona destroy ats-019-lab-020-01-02
-astrona start ats-019-playground-020-01
-```

@@ -185,27 +185,3 @@ You can now store a provisioning flow once, pass input to it and choose between 
 > - **Using `{{inputs.parameters.x}}` outside a template that declares it.** At the top level, use `{{workflow.parameters.x}}`.
 > - **Putting steps of one stage in separate lists.** Each outer list item is a new stage, so those steps run one after the other.
 > - **Expecting a template change to affect a running Workflow.** Only new Workflows use the new definition.
-
-## Your mission: Submit A Parameterized Provisioning WorkflowTemplate
-
-You can now write a WorkflowTemplate with parameters, steps and a DAG, and submit a Workflow from it. The mission asks you to build a template that meets a stated order of tasks, and then to submit it with an overridden parameter.
-
-Pause the playground first:
-
-```sh
-astrona stop ats-019-playground-040-01
-```
-
-Start the lab and submit your work when you are ready:
-
-```sh
-astrona run --git ssh://git@github.com/astrona-io/ATS019.git -c sections/section-040/module-01/labs/lab-01
-astrona submit -c sections/section-040/module-01/labs/lab-01
-```
-
-When you are done, remove the lab and start the playground again:
-
-```sh
-astrona destroy ats-019-lab-040-01
-astrona start ats-019-playground-040-01
-```

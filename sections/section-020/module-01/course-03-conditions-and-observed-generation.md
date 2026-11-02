@@ -129,27 +129,3 @@ You can now read a controller's conditions, tell `Reconciled` from `Available`, 
 > - **Expecting `generation` to change for every edit.** Only `spec` changes raise it. A new label or annotation does not.
 > - **Reading only one condition.** `Reconciled True` means the operator built its objects; it does not mean the pods run. Read `Available` too.
 > - **Leaving the controller scaled down.** Every custom resource of that kind stops being reconciled until the controller runs again.
-
-## Your mission: Make A Stale Operator Status Current
-
-You can now read conditions and judge a status with `observedGeneration`. The mission gives you a `Prometheus` resource that reports `True` while its status is older than its `spec`. You find out why, and you make the controller act without touching the resource or the objects it owns.
-
-Pause the playground first:
-
-```sh
-astrona stop ats-019-playground-020-01
-```
-
-Start the lab, then submit your answer:
-
-```sh
-astrona run --git ssh://git@github.com/astrona-io/ATS019.git -c sections/section-020/module-01/labs/lab-01
-astrona submit -c sections/section-020/module-01/labs/lab-01
-```
-
-When you finish, remove the lab and resume the playground:
-
-```sh
-astrona destroy ats-019-lab-020-01
-astrona start ats-019-playground-020-01
-```
