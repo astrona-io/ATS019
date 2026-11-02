@@ -1,0 +1,409 @@
+# Knowledge check for section 030. Contract:
+# schemas/question-bank.schema.json. Keep question ids stable once published.
+schema_version: 1
+kind: question_bank
+id: ats019-030
+course_id: ATS019
+exam_code: CNPE
+status: draft
+provenance: Original practice material; not official exam questions.
+scope:
+  type: section
+  id: section-030
+  title: "Platform APIs With Crossplane"
+placement:
+  position: after
+  reading: sections/section-030/capstone/labs/lab-01/question.md
+questions:
+  - id: ats019-030-q01
+    type: single_choice
+    difficulty: beginner
+    learning_objective: "Read INSTALLED and HEALTHY on a provider."
+    source_readings:
+      - sections/section-030/module-01/course-01-crossplane-and-provider-packages.md
+    prompt: "A `Provider` object for `provider-kubernetes` shows `INSTALLED True` and `HEALTHY False` in `kubectl get providers`. What does this tell you?"
+    options:
+      - id: a
+        text: "The provider is running, but the ProviderConfig has the wrong credentials."
+        explanation: "The ProviderConfig is not part of these two columns, and the provider would not be Healthy False for wrong credentials alone."
+      - id: b
+        text: "The package manager unpacked the package and created its CRDs, but the provider pod is not running and ready."
+        explanation: "Correct. INSTALLED means the package is unpacked with its CRDs, and HEALTHY False means the provider pod is not running and ready."
+      - id: c
+        text: "The package manager could not download the package from `xpkg.crossplane.io`."
+        explanation: "If the download had failed, INSTALLED would not be True."
+      - id: d
+        text: "The provider is ready to create managed resources, because the CRDs exist."
+        explanation: "The CRDs exist, but a provider that is not healthy cannot reconcile managed resources."
+    correct_option: b
+    explanation: "`INSTALLED` means the package manager downloaded the package and created its CRDs. `HEALTHY` means the provider pod runs and is ready. Neither column checks credentials, and a blocked download leaves `INSTALLED` unset."
+
+  - id: ats019-030-q02
+    type: single_choice
+    difficulty: intermediate
+    learning_objective: "Explain why a DeploymentRuntimeConfig sets a fixed ServiceAccount name."
+    source_readings:
+      - sections/section-030/module-01/course-02-providerconfig-and-injected-identity.md
+    prompt: "Why does the course create a `DeploymentRuntimeConfig` with a `serviceAccountTemplate` before it installs `provider-kubernetes`?"
+    options:
+      - id: a
+        text: "The ServiceAccount of a provider is needed so the provider can download its package."
+        explanation: "The ServiceAccount is not used to download the package."
+      - id: b
+        text: "Without it, the provider cannot use the `InjectedIdentity` source."
+        explanation: "InjectedIdentity works with any ServiceAccount of the provider pod, so the fixed name is not required for it."
+      - id: c
+        text: "It grants the provider access to the objects it will manage."
+        explanation: "The DeploymentRuntimeConfig grants no permissions at all."
+      - id: d
+        text: "Crossplane otherwise generates the ServiceAccount name with a random suffix, and a fixed name makes the later RBAC binding simple."
+        explanation: "Correct. A fixed ServiceAccount name lets a RoleBinding refer to the ServiceAccount."
+    correct_option: d
+    explanation: "The `DeploymentRuntimeConfig` only sets options for the provider Deployment, here the ServiceAccount name. It grants no permissions. A fixed name lets a RoleBinding refer to the ServiceAccount."
+
+  - id: ats019-030-q03
+    type: single_choice
+    difficulty: intermediate
+    learning_objective: "Explain the InjectedIdentity credentials source."
+    source_readings:
+      - sections/section-030/module-01/course-02-providerconfig-and-injected-identity.md
+    prompt: "A ProviderConfig for `provider-kubernetes` uses `credentials.source: InjectedIdentity`. Which statement is correct?"
+    options:
+      - id: a
+        text: "The provider acts as the ServiceAccount of its own pod, so Kubernetes RBAC decides what it may do."
+        explanation: "Correct. The provider uses the identity of its own pod, so Kubernetes RBAC decides what it may do."
+      - id: b
+        text: "The ProviderConfig grants the provider the permissions it needs in the cluster."
+        explanation: "The ProviderConfig only names the identity and never changes RBAC."
+      - id: c
+        text: "The provider reads a kubeconfig from a Secret in `crossplane-system`."
+        explanation: "Reading a kubeconfig from a Secret is the Secret source, not InjectedIdentity."
+      - id: d
+        text: "The provider uses the identity of the user who applied the managed resource."
+        explanation: "The provider does not use the identity of the user who applied the managed resource."
+    correct_option: a
+    explanation: "With `InjectedIdentity`, no secret is stored. The ProviderConfig only names the identity. It never changes RBAC. The `Secret` source is the one that reads a kubeconfig."
+
+  - id: ats019-030-q04
+    type: single_choice
+    difficulty: intermediate
+    learning_objective: "Check provider permissions with kubectl auth can-i."
+    source_readings:
+      - sections/section-030/module-01/course-02-providerconfig-and-injected-identity.md
+    prompt: "You run `kubectl auth can-i create services -n outpost --as=system:serviceaccount:crossplane-system:provider-kubernetes` right after installing the provider and its ProviderConfig. What is the result, and why?"
+    options:
+      - id: a
+        text: "`yes`, because the provider is installed and healthy."
+        explanation: "A healthy provider does not receive access to Services automatically."
+      - id: b
+        text: "`yes`, because the ProviderConfig names the injected identity."
+        explanation: "The ProviderConfig names the identity but grants no permissions."
+      - id: c
+        text: "`no`, because the Crossplane RBAC manager gives a provider access only to its own CRDs and a few core kinds, not to Services."
+        explanation: "Correct. The Crossplane RBAC manager gives a provider access only to its own CRDs and a few core kinds."
+      - id: d
+        text: "`no`, because the ProviderConfig is in the wrong namespace."
+        explanation: "The result is not about the namespace of the ProviderConfig, which is not the cause of the missing access."
+    correct_option: c
+    explanation: "Only you know which objects a provider must manage, so Crossplane does not grant that access. You add a Role and a RoleBinding."
+
+  - id: ats019-030-q05
+    type: single_choice
+    difficulty: intermediate
+    learning_objective: "Fix a managed resource that is not Synced because of missing permissions."
+    source_readings:
+      - sections/section-030/module-01/course-03-managed-resources-and-failed-syncs.md
+    prompt: "An `Object` that wraps a Service shows `Synced False`, and the `Synced` message ends with a `forbidden` error for the ServiceAccount `system:serviceaccount:crossplane-system:provider-kubernetes`. What is the correct fix?"
+    options:
+      - id: a
+        text: "Edit the manifest inside the `Object`, because it is invalid."
+        explanation: "The error is a forbidden error from the API server, so the manifest inside the Object is not the problem."
+      - id: b
+        text: "Create a Role for `services` in `outpost` and bind it to that ServiceAccount."
+        explanation: "Correct. A Role for services in outpost bound to the provider ServiceAccount grants only the missing permission."
+      - id: c
+        text: "Bind `cluster-admin` to the provider ServiceAccount."
+        explanation: "cluster-admin grants far more than the provider needs."
+      - id: d
+        text: "Create the Service by hand so the provider only has to read it."
+        explanation: "Creating the Service by hand does not fix the missing permission of the provider."
+    correct_option: b
+    explanation: "The error comes from the API server, and the identity is the provider ServiceAccount, so the ProviderConfig worked. The missing permission is on `services` in `outpost`. Grant only that, in that namespace."
+
+  - id: ats019-030-q06
+    type: single_choice
+    difficulty: beginner
+    learning_objective: "Tell the Synced and Ready conditions apart."
+    source_readings:
+      - sections/section-030/module-01/course-03-managed-resources-and-failed-syncs.md
+    prompt: "What is the difference between the `Synced` and `Ready` conditions on a managed resource?"
+    options:
+      - id: a
+        text: "`Synced` says whether the provider could reconcile the resource. `Ready` says whether the external resource exists and is usable."
+        explanation: "Correct. Synced describes the reconcile, and Ready describes the external resource."
+      - id: b
+        text: "`Synced` says the external resource is usable. `Ready` says the provider could connect."
+        explanation: "This swaps the meaning of the two conditions."
+      - id: c
+        text: "`Synced` is set by the tenant. `Ready` is set by Crossplane."
+        explanation: "Neither condition is set by the tenant."
+      - id: d
+        text: "They mean the same, and Crossplane sets both at the same time."
+        explanation: "The two conditions are separate and can have different values."
+    correct_option: a
+    explanation: "A failed reconcile gives `Synced False`, and the message and events say why. `Ready` describes the external resource itself."
+
+  - id: ats019-030-q07
+    type: single_choice
+    difficulty: intermediate
+    learning_objective: "Describe what happens when a managed resource is deleted."
+    source_readings:
+      - sections/section-030/module-01/course-03-managed-resources-and-failed-syncs.md
+    prompt: "What happens to the Service when you run `kubectl -n outpost delete objects.kubernetes.m.crossplane.io scout` with the default settings?"
+    options:
+      - id: a
+        text: "The Service stays, because the provider never deletes what it created."
+        explanation: "The provider does delete what it created when the Object is deleted."
+      - id: b
+        text: "The Service stays until you delete it by hand."
+        explanation: "There is no need to delete the Service by hand, because the provider removes it."
+      - id: c
+        text: "The provider deletes the Service before the `Object` disappears, because the default deletion policy is `Delete`."
+        explanation: "Correct. The default deletion policy is Delete, so the provider removes the Service before the Object disappears."
+      - id: d
+        text: "The `Object` stays until you delete the Service."
+        explanation: "The Object does not wait for you to delete the Service."
+    correct_option: c
+    explanation: "Deleting the `Object` is the correct way to remove what it created. If you delete the Service by hand, the provider recreates it."
+
+  - id: ats019-030-q08
+    type: single_choice
+    difficulty: beginner
+    learning_objective: "Relate an XRD to a CRD and name its default scope."
+    source_readings:
+      - sections/section-030/module-02/course-01-from-a-crd-to-an-xrd.md
+    prompt: "How does an XRD in Crossplane 2.x relate to a CRD, and what is the default scope?"
+    options:
+      - id: a
+        text: "The XRD replaces the CRD, so no CRD exists in the cluster. The scope is `Cluster` by default."
+        explanation: "A CRD does exist in the cluster, and the default scope is not Cluster."
+      - id: b
+        text: "The XRD creates a CRD, and tenants must request through claims by default."
+        explanation: "Claims are not the default in Crossplane 2.x."
+      - id: c
+        text: "The XRD is a plain CRD with a different `kind`. The scope is `Namespaced` only when you add claims."
+        explanation: "The XRD is not a plain CRD, and the scope does not depend on claims."
+      - id: d
+        text: "Crossplane creates a real CRD from the XRD schema. The XRD uses `apiextensions.crossplane.io/v2` and the scope is `Namespaced` by default."
+        explanation: "Correct. Crossplane creates a real CRD from the XRD schema, and the scope is Namespaced by default."
+    correct_option: d
+    explanation: "Claims exist only for `scope: LegacyCluster`. A namespaced composite resource lives in the tenant namespace and is created directly."
+
+  - id: ats019-030-q09
+    type: single_choice
+    difficulty: intermediate
+    learning_objective: "Show that XRD schema validation runs in the API server."
+    source_readings:
+      - sections/section-030/module-02/course-01-from-a-crd-to-an-xrd.md
+    prompt: "A `TeamEnvironment` with `spec.replicas: 9` is applied, and the XRD schema sets `maximum: 3` for `replicas`. What happens?"
+    options:
+      - id: a
+        text: "The API server rejects the object, and nothing is stored, so no Composition can act on it."
+        explanation: "Correct. The API server validates the schema before Crossplane sees the object."
+      - id: b
+        text: "Crossplane accepts the object, and the Composition lowers the value to 3."
+        explanation: "The Composition does not change the value, because the object is refused first."
+      - id: c
+        text: "The object is stored, and the XR reports `Synced False`."
+        explanation: "The object is not stored, so the XR never reports Synced False."
+      - id: d
+        text: "The object is stored, and the provider refuses to create the Deployment."
+        explanation: "The provider never sees the object, because the API server refuses it."
+    correct_option: a
+    explanation: "The API server validates the composite resource with the OpenAPI v3 schema before Crossplane sees it."
+
+  - id: ats019-030-q10
+    type: single_choice
+    difficulty: intermediate
+    learning_objective: "Write a Composition in Pipeline mode."
+    source_readings:
+      - sections/section-030/module-02/course-02-compose-resources-with-a-pipeline.md
+    prompt: "Which Composition setup is correct in Crossplane 2.x?"
+    options:
+      - id: a
+        text: "`mode: Resources`, with a list of base resources and patches under `spec.resources`."
+        explanation: "The mode with a resources list no longer exists in Crossplane 2.x."
+      - id: b
+        text: "`mode: Pipeline`, with each step calling a composition function through `functionRef.name`."
+        explanation: "Correct. Pipeline mode calls functions, and functionRef.name is the name of the installed Function object."
+      - id: c
+        text: "`mode: Pipeline`, with `functionRef.name` set to the package address of the function."
+        explanation: "functionRef.name must be the Function object name, not the package address."
+      - id: d
+        text: "No mode is needed, because Crossplane creates the resources itself."
+        explanation: "A Composition always needs mode: Pipeline, and a function creates the resources."
+    correct_option: b
+    explanation: "The old mode with a plain `resources:` list no longer exists. The `functionRef` name must equal the name of the installed `Function` object, not the package name."
+
+  - id: ats019-030-q11
+    type: single_choice
+    difficulty: intermediate
+    learning_objective: "Explain a FromCompositeFieldPath patch."
+    source_readings:
+      - sections/section-030/module-02/course-03-patch-values-in-and-out.md
+    prompt: "A Composition has a patch with `type: FromCompositeFieldPath`, `fromFieldPath: spec.replicas` and `toFieldPath: spec.forProvider.manifest.spec.replicas`. What does it do, and which component applies the result in the cluster?"
+    options:
+      - id: a
+        text: "It copies the Deployment replica count into the XR status. Crossplane then updates the Deployment."
+        explanation: "This describes the opposite direction, and the XR status is not the source here."
+      - id: b
+        text: "It copies the value into the XRD schema. The API server then updates the Deployment."
+        explanation: "The patch does not change the XRD schema, and the API server does not update the Deployment."
+      - id: c
+        text: "It copies the value from the XR into the composed `Object` manifest. `provider-kubernetes` then updates the real Deployment."
+        explanation: "Correct. The patch copies the value from the XR into the Object manifest, and provider-kubernetes updates the real Deployment."
+      - id: d
+        text: "It copies the value into the XR, and the Deployment is changed by the function."
+        explanation: "The patch writes into the composed Object, not into the XR, and the function does not change the Deployment."
+    correct_option: c
+    explanation: "`ToCompositeFieldPath` is the patch type for the other direction. A status value written that way is kept only when the XRD schema declares the field."
+
+  - id: ats019-030-q12
+    type: single_choice
+    difficulty: advanced
+    learning_objective: "Declare status fields that a ToCompositeFieldPath patch writes."
+    source_readings:
+      - sections/section-030/module-02/course-03-patch-values-in-and-out.md
+    prompt: "A `ToCompositeFieldPath` patch writes to `status.availableReplicas`, but the XRD schema does not declare that status field. What happens?"
+    options:
+      - id: a
+        text: "The API server prunes the field, so it never shows on the XR."
+        explanation: "Correct. The API server prunes status fields that the XRD schema does not declare."
+      - id: b
+        text: "The field appears on the XR, because status is never validated."
+        explanation: "Status fields are pruned when the schema does not declare them."
+      - id: c
+        text: "The XRD is rejected the next time it is applied."
+        explanation: "The XRD is not rejected, because the patch runs only when the XR is reconciled."
+      - id: d
+        text: "The provider creates the field on the Deployment."
+        explanation: "The patch writes to the XR status, not to the Deployment."
+    correct_option: a
+    explanation: "The XRD must declare every status field you want to keep."
+
+  - id: ats019-030-q13
+    type: single_choice
+    difficulty: intermediate
+    learning_objective: "Preview a Composition with crossplane composition render."
+    source_readings:
+      - sections/section-030/module-02/course-04-render-and-debug-a-composition.md
+    prompt: "What does `crossplane composition render xr.yaml composition-teamenvironment.yaml functions.yaml` do?"
+    options:
+      - id: a
+        text: "It applies the Composition to the cluster and prints the composed resources."
+        explanation: "Render does not apply anything to the cluster."
+      - id: b
+        text: "It checks that the provider has the RBAC it needs to create the resources."
+        explanation: "Render does not check the RBAC of the provider."
+      - id: c
+        text: "It prints the tree of an XR that already exists in the cluster."
+        explanation: "Printing the tree of an existing XR is done by crossplane resource trace."
+      - id: d
+        text: "It runs the pipeline on your machine and prints the resources it would create, without changing the cluster."
+        explanation: "Correct. Render runs the pipeline locally and prints the resources without changing the cluster."
+    correct_option: d
+    explanation: "Render runs each function as a container, so it needs a container runtime and outbound internet. It shows the resources, not whether the provider can create them."
+
+  - id: ats019-030-q14
+    type: single_choice
+    difficulty: intermediate
+    learning_objective: "Find the failing composed resource with crossplane resource trace."
+    source_readings:
+      - sections/section-030/module-03/course-02-trace-a-composite-resource.md
+      - sections/section-030/module-03/course-03-read-a-failing-composite-resource.md
+    prompt: "A composite resource stays not ready. `crossplane resource trace teamenvironment cache-env -n outpost -o wide` shows one `Object` row with `Synced False`. What is the best next step?"
+    options:
+      - id: a
+        text: "Delete the `Object`, because the XR will fix itself."
+        explanation: "Deleting the Object does not find the cause, and the XR does not fix itself."
+      - id: b
+        text: "Describe that `Object` and read its conditions and events, which come from `provider-kubernetes`."
+        explanation: "Correct. The conditions and events of the Object come from provider-kubernetes and show the cause."
+      - id: c
+        text: "Edit `spec.crossplane.resourceRefs` on the XR to remove the row."
+        explanation: "Crossplane owns resourceRefs, so a manual change is overwritten."
+      - id: d
+        text: "Re-apply the XR in the `default` namespace."
+        explanation: "Applying the XR in another namespace does not fix the failing Object."
+    correct_option: b
+    explanation: "The method has three steps: read the XR conditions, trace down to the row that is not ready, then read that object. Crossplane owns `resourceRefs`, so a manual change is overwritten."
+
+  - id: ats019-030-q15
+    type: single_choice
+    difficulty: advanced
+    learning_objective: "Diagnose a Composition that references a missing function."
+    source_readings:
+      - sections/section-030/module-02/course-04-render-and-debug-a-composition.md
+      - sections/section-030/module-03/course-03-read-a-failing-composite-resource.md
+    prompt: "A composite resource has `Synced False` with reason `ReconcileError`. The message names a function that is not installed. Where do you fix it?"
+    options:
+      - id: a
+        text: "In the XR, by deleting the `spec.crossplane` block."
+        explanation: "Deleting the spec.crossplane block in the XR does not install the missing function."
+      - id: b
+        text: "In the ProviderConfig, by changing the credentials."
+        explanation: "The credentials in the ProviderConfig have nothing to do with a missing function."
+      - id: c
+        text: "In the Composition, by installing the function or by naming one that exists in `functionRef.name`."
+        explanation: "Correct. The function name is set in the Composition, so you install the function or name one that exists."
+      - id: d
+        text: "In the XRD, by lowering the schema version."
+        explanation: "Lowering the schema version of the XRD does not fix the Composition."
+    correct_option: c
+    explanation: "When Crossplane cannot run the pipeline, it changes no composed objects. The API server accepts such a Composition, because it only checks the shape."
+
+  - id: ats019-030-q16
+    type: single_choice
+    difficulty: advanced
+    learning_objective: "Explain how deleting a composite resource removes the workload."
+    source_readings:
+      - sections/section-030/module-03/course-04-update-and-delete-a-composite-resource.md
+    prompt: "A tenant deletes a ready `TeamEnvironment` with `kubectl delete teamenvironment scout-env` and the default cascade. Which components remove the Deployment `scout`?"
+    options:
+      - id: a
+        text: "The garbage collector deletes the composed `Object`, and then `provider-kubernetes` deletes the real Deployment."
+        explanation: "Correct. The garbage collector deletes the Object, and provider-kubernetes then deletes the real Deployment."
+      - id: b
+        text: "The garbage collector deletes the Deployment directly through an owner reference."
+        explanation: "The Deployment has no owner reference to the XR, so the garbage collector does not delete it directly."
+      - id: c
+        text: "Nothing deletes it, because the Deployment has no owner."
+        explanation: "The workload is deleted, because the provider removes it after the Object goes."
+      - id: d
+        text: "The function deletes it when the pipeline runs a last time."
+        explanation: "A function does not run a last time to delete resources."
+    correct_option: a
+    explanation: "The `Object` has the XR as owner, but the Deployment has no owner reference to the XR. The provider removes the Deployment after the `Object` goes."
+
+  - id: ats019-030-q17
+    type: single_choice
+    difficulty: advanced
+    learning_objective: "Orphan composed resources when deleting a composite resource."
+    source_readings:
+      - sections/section-030/module-03/course-04-update-and-delete-a-composite-resource.md
+    prompt: "A platform team must remove a `TeamEnvironment` but keep the running `scout` workload for another team. What do they run, and what is the result?"
+    options:
+      - id: a
+        text: "`kubectl delete teamenvironment scout-env`. The workload stays, because the default cascade is orphan."
+        explanation: "The default cascade is not orphan, so the workload is deleted."
+      - id: b
+        text: "`kubectl delete teamenvironment scout-env --cascade=orphan`. The `Object` resources and the workload stay, with no composite resource as owner."
+        explanation: "Correct. With --cascade=orphan the Object resources and the workload stay, with no composite resource as owner."
+      - id: c
+        text: "`kubectl delete teamenvironment scout-env --cascade=orphan`. The workload is deleted, but the `Object` resources stay."
+        explanation: "With an orphan delete the workload is not deleted."
+      - id: d
+        text: "`kubectl delete objects --all`. The XR stays, and the workload stays."
+        explanation: "Deleting all Object resources deletes their real objects, so the workload does not stay."
+    correct_option: b
+    explanation: "After an orphan delete, nothing updates the `Object` resources when the Composition changes, and the platform team owns the cleanup. Deleting an orphaned `Object` still deletes its real object."

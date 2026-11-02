@@ -217,7 +217,10 @@ modules:
             url: https://kubernetes.io/docs/tasks/extend-kubernetes/custom-resources/custom-resource-definition-versioning/
           - name: "Common Expression Language in Kubernetes"
             url: https://kubernetes.io/docs/reference/using-api/cel/
-
+      - type: quiz
+        title: "Knowledge Check: Extending The Kubernetes API With CRDs"
+        path: sections/section-010/quiz.yaml
+        question_count: 15
   - id: module-020
     title: "Platform Automation With Operators"
     description: >
@@ -381,7 +384,10 @@ modules:
             url: https://prometheus-operator.dev/docs/getting-started/introduction/
           - name: "Role-based access control"
             url: https://kubernetes.io/docs/reference/access-authn-authz/rbac/
-
+      - type: quiz
+        title: "Knowledge Check: Platform Automation With Operators"
+        path: sections/section-020/quiz.yaml
+        question_count: 14
   - id: module-030
     title: "Platform APIs With Crossplane"
     description: >
@@ -634,7 +640,10 @@ modules:
             url: https://docs.crossplane.io/v2.4/composition/compositions/
           - name: "Using RBAC authorization"
             url: https://kubernetes.io/docs/reference/access-authn-authz/rbac/
-
+      - type: quiz
+        title: "Knowledge Check: Platform APIs With Crossplane"
+        path: sections/section-030/quiz.yaml
+        question_count: 17
   - id: module-040
     title: "Self-Service Provisioning Workflows"
     description: >
@@ -865,3 +874,11 @@ modules:
             url: https://argo-workflows.readthedocs.io/en/latest/workflow-templates/
           - name: "Compositions"
             url: https://docs.crossplane.io/v2.4/composition/compositions/
+      - type: quiz
+        title: "Knowledge Check: Self-Service Provisioning Workflows"
+        path: sections/section-040/quiz.yaml
+        question_count: 16
+      - type: quiz
+        title: "Final Quiz: Platform APIs And Self-Service Capabilities"
+        path: sections/final-domain-quiz.yaml
+        question_count: 24

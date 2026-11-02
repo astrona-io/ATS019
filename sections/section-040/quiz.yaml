@@ -1,0 +1,387 @@
+# Knowledge check for section 040. Contract:
+# schemas/question-bank.schema.json. Keep question ids stable once published.
+schema_version: 1
+kind: question_bank
+id: ats019-040
+course_id: ATS019
+exam_code: CNPE
+status: draft
+provenance: Original practice material; not official exam questions.
+scope:
+  type: section
+  id: section-040
+  title: "Self-Service Provisioning Workflows"
+placement:
+  position: after
+  reading: sections/section-040/capstone/labs/lab-01/question.md
+questions:
+  - id: ats019-040-q01
+    type: single_choice
+    difficulty: beginner
+    learning_objective: "Explain that a WorkflowTemplate stores a definition and runs nothing"
+    source_readings:
+      - sections/section-040/module-01/course-01-what-argo-workflows-runs.md
+      - sections/section-040/module-01/course-02-build-a-reusable-workflowtemplate.md
+    prompt: "You run `kubectl apply -f workflowtemplate-provision-environment.yaml` in the namespace `starfleet`. The command succeeds, but no pod appears. What is the reason?"
+    options:
+      - id: a
+        text: "The workflow controller runs a WorkflowTemplate only after you restart it."
+        explanation: "The controller does not need a restart. A WorkflowTemplate never runs by itself."
+      - id: b
+        text: "A WorkflowTemplate only stores a definition. A Workflow that uses `workflowTemplateRef`, or `argo submit --from workflowtemplate/<name>`, starts a run."
+        explanation: "Correct. Creating the template stores it, and a separate Workflow object starts each run."
+      - id: c
+        text: "A WorkflowTemplate needs a `generateName` field before it can run."
+        explanation: "`generateName` only picks a name for a new object. It does not start a run."
+      - id: d
+        text: "The WorkflowTemplate must be created in the namespace `argo`."
+        explanation: "The template can live in the namespace where you use it, and its namespace does not decide whether it runs."
+    correct_option: b
+    explanation: "A WorkflowTemplate has the same `spec` as a Workflow, but creating it runs nothing. Each run is a normal Workflow object that points at the template."
+
+  - id: ats019-040-q02
+    type: single_choice
+    difficulty: beginner
+    learning_objective: "Submit a Workflow from a WorkflowTemplate and override a parameter"
+    source_readings:
+      - sections/section-040/module-01/course-02-build-a-reusable-workflowtemplate.md
+    prompt: "A WorkflowTemplate has two parameters in `spec.arguments.parameters`: `team` with the default `outpost` and `replicas` with the default `\"1\"`. You submit a Workflow with `workflowTemplateRef` and only this argument: `replicas` with the value `\"2\"`. Which values does the run use?"
+    options:
+      - id: a
+        text: "`team` is `outpost` and `replicas` is `2`."
+        explanation: "Correct. The Workflow value for `replicas` wins, and `team` keeps the default of the template."
+      - id: b
+        text: "`team` is empty and `replicas` is `2`."
+        explanation: "A parameter that the Workflow does not set keeps its default, so `team` is not empty."
+      - id: c
+        text: "`team` is `outpost` and `replicas` is `1`."
+        explanation: "The argument in the Workflow overrides the default, so `replicas` is `2`."
+      - id: d
+        text: "The Workflow is refused, because it must set every parameter."
+        explanation: "A Workflow does not have to set parameters that have a default."
+    correct_option: a
+    explanation: "The values in the Workflow are merged with the defaults of the template, and the Workflow wins. The parameter `replicas` is overridden, and `team` keeps its default. The same override works on the command line with `argo submit --from workflowtemplate/<name> -p replicas=2`."
+
+  - id: ats019-040-q03
+    type: single_choice
+    difficulty: intermediate
+    learning_objective: "Choose a DAG for tasks that depend on several other tasks"
+    source_readings:
+      - sections/section-040/module-01/course-02-build-a-reusable-workflowtemplate.md
+    prompt: "A provisioning flow has two checks, `validate-team` and `validate-size`, that do not depend on each other. A task called `create` must start only after both checks finish. Which design does this?"
+    options:
+      - id: a
+        text: "A `steps` template with `create` in the first stage and the two checks in the second stage."
+        explanation: "The stages run in order, so `create` would run before the checks."
+      - id: b
+        text: "A `steps` template with each task in its own stage, so all three run at the same time."
+        explanation: "Tasks in separate stages run one after the other, not at the same time."
+      - id: c
+        text: "A `dag` template where `create` has `dependencies: [validate-team, validate-size]`."
+        explanation: "Correct. The two checks start together, and `create` starts when both are done."
+      - id: d
+        text: "Two Workflows that run one after the other."
+        explanation: "This is not needed. One `dag` template expresses the dependencies in a single Workflow."
+    correct_option: c
+    explanation: "In a `dag` template, a task starts when all tasks it names in `dependencies` are done. The two checks have no dependencies, so they start together. In a `steps` template, each outer list item is a stage that runs in order, and only steps in the same stage run at the same time."
+
+  - id: ats019-040-q04
+    type: single_choice
+    difficulty: intermediate
+    learning_objective: "Identify the ServiceAccount that workflow step pods use"
+    source_readings:
+      - sections/section-040/module-01/course-03-give-the-workflow-a-serviceaccount.md
+    prompt: "The steps of a Workflow create a Deployment in the namespace `outpost`. The Workflow runs in `starfleet` and does not set `spec.serviceAccountName`. Which identity does the API server check for the step pods?"
+    options:
+      - id: a
+        text: "The `default` ServiceAccount of the namespace `starfleet`."
+        explanation: "Correct. The step pods run in `starfleet`, so they use the `default` ServiceAccount of that namespace."
+      - id: b
+        text: "The user who ran `kubectl create`."
+        explanation: "The pods run as a ServiceAccount, not as the user who created the Workflow."
+      - id: c
+        text: "The ServiceAccount of the workflow controller in the namespace `argo`."
+        explanation: "The controller creates the pods, but the pods do not run as the controller account."
+      - id: d
+        text: "The `default` ServiceAccount of the namespace `outpost`."
+        explanation: "The account comes from the namespace where the pod runs, not from the namespace of the objects it creates."
+    correct_option: a
+    explanation: "A pod runs as a ServiceAccount. When the field is empty, the step pods use the `default` ServiceAccount of the namespace where the pod runs. That account is shared, so give each workflow its own ServiceAccount and a narrow Role."
+
+  - id: ats019-040-q05
+    type: single_choice
+    difficulty: intermediate
+    learning_objective: "Fix a workflow step that fails on permissions with a narrow Role"
+    source_readings:
+      - sections/section-040/module-01/course-03-give-the-workflow-a-serviceaccount.md
+    prompt: "A Workflow runs as the ServiceAccount `provisioner` in `starfleet` and ends as `Failed`. The log of the `main` container says that `system:serviceaccount:starfleet:provisioner` cannot create `deployments.apps` in the namespace `outpost`. Which fix is correct and narrow?"
+    options:
+      - id: a
+        text: "Bind `cluster-admin` to `provisioner`."
+        explanation: "This works, but it gives a provisioning workflow far more power than it needs."
+      - id: b
+        text: "Create a Role in `starfleet` that allows `*` on `*`."
+        explanation: "A Role in `starfleet` gives no rights in `outpost`, and `*` on `*` is far too broad."
+      - id: c
+        text: "Create a Role in `outpost` for the resources and verbs the steps use, and bind it to the ServiceAccount `provisioner` in `starfleet`."
+        explanation: "Correct. The Role sits where the objects are created, and the RoleBinding subject names the ServiceAccount with its own namespace."
+      - id: d
+        text: "Run the Workflow again as the `default` ServiceAccount of `outpost`."
+        explanation: "That account has no rights for these steps either, and it is shared by every pod in `outpost`."
+    correct_option: c
+    explanation: "The objects are created in `outpost`, so the Role must be in `outpost`. The RoleBinding subject names the ServiceAccount with `namespace: starfleet`. Options A and B work but give a provisioning workflow far more power than it needs. To find the fault, read the Workflow phase, then the failed node and its message, then the `main` log. The command `kubectl auth can-i ... --as=system:serviceaccount:starfleet:provisioner` proves the fix."
+
+  - id: ats019-040-q06
+    type: single_choice
+    difficulty: intermediate
+    learning_objective: "Explain how a resource template step waits for a success condition"
+    source_readings:
+      - sections/section-040/module-01/course-04-create-a-platform-api-object-and-wait.md
+    prompt: "A Workflow has one `resource` step with `action: create` and `successCondition: status.phase == Ready`. The step created the `TeamEnvironment`. The Workflow stays in the phase `Running` with no error for several minutes. Which explanation is most likely?"
+    options:
+      - id: a
+        text: "The step is waiting for the object to report `status.phase: Ready`, and nothing has set it yet."
+        explanation: "Correct. The step ends only when the success condition is true."
+      - id: b
+        text: "The ServiceAccount is missing the verb `delete`, so the step cannot finish."
+        explanation: "The step does not delete the object. A missing verb would show as an error, not as a silent wait."
+      - id: c
+        text: "A `successCondition` makes the step run `kubectl create` again every minute."
+        explanation: "The step watches the object. It does not create it again."
+      - id: d
+        text: "A `resource` step always ends after the object is created, so the Workflow is stuck in the controller."
+        explanation: "With a `successCondition`, the step keeps watching until the condition is true."
+    correct_option: a
+    explanation: "With a `successCondition`, the step watches the object and ends when the expression is true. A `failureCondition` ends it as failed. The wait has no timeout unless you set `activeDeadlineSeconds`. The step also needs `get`, `list` and `watch` on the object to see the change. When a Workflow does not move, read the status of the object that the step watches."
+
+  - id: ats019-040-q07
+    type: single_choice
+    difficulty: beginner
+    learning_objective: "Name the roles of the EventSource, EventBus and Sensor"
+    source_readings:
+      - sections/section-040/module-02/course-01-eventbus-and-webhook-eventsource.md
+      - sections/section-040/module-02/course-02-a-sensor-that-submits-a-workflow.md
+    prompt: "A tenant sends a JSON request to a webhook. Which statement describes the roles of the Argo Events objects correctly?"
+    options:
+      - id: a
+        text: "The EventBus receives the HTTP request and the Sensor creates the Workflow."
+        explanation: "The EventBus does not receive HTTP requests. The EventSource does."
+      - id: b
+        text: "The EventSource receives the HTTP request and publishes the event to the EventBus. The Sensor reads the event from the EventBus and runs the trigger that creates the Workflow."
+        explanation: "Correct. Each object does one job in this order."
+      - id: c
+        text: "The EventSource reads the event from the EventBus and the workflow controller creates the Workflow."
+        explanation: "The EventSource publishes events, and the Sensor creates the Workflow."
+      - id: d
+        text: "The Sensor receives the HTTP request and the EventBus runs the trigger."
+        explanation: "The Sensor does not receive HTTP requests, and the EventBus does not run triggers."
+    correct_option: b
+    explanation: "The EventSource runs the HTTP server, and the EventBus carries events inside the namespace. The Sensor pod runs the trigger and creates the Workflow object with its own ServiceAccount. The Argo Workflows controller only runs the Workflow after it exists."
+
+  - id: ats019-040-q08
+    type: single_choice
+    difficulty: intermediate
+    learning_objective: "Diagnose an event that does not start a workflow from the Sensor log"
+    source_readings:
+      - sections/section-040/module-02/course-02-a-sensor-that-submits-a-workflow.md
+      - sections/section-040/module-02/course-04-follow-an-event-that-went-nowhere.md
+    prompt: "A webhook EventSource named `provision` has a webhook named `request` on the endpoint `/provision`. A client posts a valid request and gets `200`, but no Workflow appears. The Sensor log says that the ServiceAccount `operate-workflow-sa` cannot create `workflows` in the API group `argoproj.io`. What is the correct fix?"
+    options:
+      - id: a
+        text: "Add a `service` block to the EventSource."
+        explanation: "The EventSource already accepted the request, so its service is not the fault."
+      - id: b
+        text: "Create a Role in `starfleet` that allows `create` on `workflows` (and read verbs if wanted), and bind it to `operate-workflow-sa`."
+        explanation: "Correct. The Sensor pod creates the Workflow, so its ServiceAccount needs `create` on `workflows`."
+      - id: c
+        text: "Change `eventName` in the Sensor to `provision`."
+        explanation: "`provision` is the EventSource name. The event name is `request`, and the log shows a permission error, not a name mismatch."
+      - id: d
+        text: "Bind `cluster-admin` to `operate-workflow-sa`."
+        explanation: "This fixes the error, but it grants far more than the trigger needs."
+    correct_option: b
+    explanation: "The Sensor pod creates the Workflow, so its ServiceAccount needs `create` on `workflows`. The `200` proves only that the EventSource accepted the request. Option D fixes the error but grants far more than the trigger needs. Send a new event after the fix, because the failed event does not run again."
+
+  - id: ats019-040-q09
+    type: single_choice
+    difficulty: intermediate
+    learning_objective: "Use a data filter on a Sensor dependency"
+    source_readings:
+      - sections/section-040/module-02/course-03-filters-and-parameter-mapping.md
+    prompt: "A Sensor dependency has a data filter with `path: body.tier`, `type: string` and the values `standard` and `premium`. A client posts `{\"team\":\"drifter\",\"tier\":\"trial\"}` with the header `Content-Type: application/json`. What happens?"
+    options:
+      - id: a
+        text: "The EventSource returns `200`, the Sensor drops the event, and no Workflow starts."
+        explanation: "Correct. The EventSource accepts the request, and the Sensor filter drops the event without an error to the caller."
+      - id: b
+        text: "The EventSource returns an error status, because the tier is not allowed."
+        explanation: "The EventSource does not apply the filter. The Sensor does."
+      - id: c
+        text: "The Sensor starts a Workflow, and the filter only changes its name."
+        explanation: "A filter decides whether the trigger runs. It does not rename a Workflow."
+      - id: d
+        text: "The EventBus rejects the event and the client sees `404`."
+        explanation: "The EventBus does not filter events, and the client already received `200`."
+    correct_option: a
+    explanation: "The EventSource accepts any valid request on its endpoint and publishes it. The Sensor applies the filter and drops the event, so no trigger runs. The caller gets no error. Only the missing Workflow, and the Sensor log, show the drop."
+
+  - id: ats019-040-q10
+    type: single_choice
+    difficulty: advanced
+    learning_objective: "Pass a value from the event payload into a workflow parameter"
+    source_readings:
+      - sections/section-040/module-02/course-03-filters-and-parameter-mapping.md
+    prompt: "A Sensor starts a Workflow whose first argument is the parameter `team`. You want the value of `team` to come from the posted JSON field `team`. Which trigger parameter does this?"
+    options:
+      - id: a
+        text: "`src: {dependencyName: request-dep, dataKey: team}` with `dest: spec.arguments.parameters.team`"
+        explanation: "Webhook data has no top-level `team` key, and `dest` must use the list position, not the parameter name."
+      - id: b
+        text: "`src: {dependencyName: request-dep, dataKey: body.team}` with `dest: spec.arguments.parameters.0.value`"
+        explanation: "Correct. The posted JSON starts with `body.`, and the first parameter is `parameters.0`."
+      - id: c
+        text: "`src: {dependencyName: request-dep, dataKey: header.team}` with `dest: spec.arguments.parameters.1.value`"
+        explanation: "`header.team` reads an HTTP header, not the JSON field, and `parameters.1` is the second parameter."
+      - id: d
+        text: "`src: {dependencyName: request-dep, dataKey: body}` with `dest: spec.arguments.team`"
+        explanation: "`body` is the whole payload, and `spec.arguments.team` is not a path in the Workflow."
+    correct_option: b
+    explanation: "Webhook event data has `header` and `body`, so a posted JSON field starts with `body.`. The `dest` is a dotted path into the trigger resource, and list positions count from zero, so the first parameter is `parameters.0`. The request must carry `Content-Type: application/json`, or the body is not parsed as JSON."
+
+  - id: ats019-040-q11
+    type: single_choice
+    difficulty: advanced
+    learning_objective: "Find a name mismatch between a Sensor and an EventSource"
+    source_readings:
+      - sections/section-040/module-02/course-04-follow-an-event-that-went-nowhere.md
+    prompt: "A client posts to the webhook and gets `200`. The EventSource log shows the published event. The Sensor log shows no event and no trigger error, and no Workflow appears. The Sensor dependency has `eventName: requests`, but the EventSource webhook is named `request`. Which statement is correct?"
+    options:
+      - id: a
+        text: "The fault is in the permissions of the Sensor ServiceAccount."
+        explanation: "A permission fault shows as an error in the Sensor log. This log shows no event at all."
+      - id: b
+        text: "The fault is in the WorkflowTemplate."
+        explanation: "The trigger never ran, so the WorkflowTemplate was never used."
+      - id: c
+        text: "The EventBus is missing."
+        explanation: "The EventSource log shows that it published the event, so the EventBus works."
+      - id: d
+        text: "The Sensor waits for an event that no EventSource publishes, so it never sees the event. Set `eventName: request`."
+        explanation: "Correct. The `eventName` of the dependency must match the webhook name exactly."
+    correct_option: d
+    explanation: "The `eventSourceName` and `eventName` of a dependency must match the EventSource name and the name under `webhook` exactly. Follow the path of the event in order: the request status, the EventSource status and log, the Sensor status and log, and last the Workflow. The first component whose evidence does not match its job holds the fault."
+
+  - id: ats019-040-q12
+    type: single_choice
+    difficulty: intermediate
+    learning_objective: "Prove what a tenant group can do with kubectl auth can-i"
+    source_readings:
+      - sections/section-040/module-03/course-01-scope-a-tenant-with-a-role-and-rolebinding.md
+    prompt: "The group `outpost-team` has a RoleBinding in `outpost` to a Role that allows `create`, `get`, `list` and `watch` on `teamenvironments` in the group `platform.starfleet.io`. You run `kubectl auth can-i create teamenvironments.platform.starfleet.io -n starfleet --as outpost-dev --as-group outpost-team`. What is the answer, and why?"
+    options:
+      - id: a
+        text: "`yes`, because the group has the Role."
+        explanation: "The Role is bound only in `outpost`, and this check asks about `starfleet`."
+      - id: b
+        text: "`no`, because a RoleBinding grants rights only in its own namespace."
+        explanation: "Correct. The RoleBinding is in `outpost`, so the rights end at that namespace."
+      - id: c
+        text: "`yes`, because `create` on a custom resource works in every namespace."
+        explanation: "Custom resources follow the same namespace rules as built-in objects."
+      - id: d
+        text: "`no`, because `--as-group` cannot be combined with `--as`."
+        explanation: "The two flags work together, and the group is needed for the check."
+    correct_option: b
+    explanation: "The RoleBinding is in `outpost`, so the rights end at that namespace. A good check also covers a denied action, such as `create deployments.apps` or `get secrets`, and a second namespace. Without `--as-group`, the identity has no group and the check returns `no` even when the Role is right."
+
+  - id: ats019-040-q13
+    type: single_choice
+    difficulty: advanced
+    learning_objective: "Aggregate platform API permissions into the built-in edit ClusterRole"
+    source_readings:
+      - sections/section-040/module-03/course-02-aggregate-platform-api-permissions.md
+    prompt: "The platform team adds a new kind, `TeamEnvironment`. People who already hold the built-in `edit` ClusterRole must get access to it with no extra binding. Which action does this?"
+    options:
+      - id: a
+        text: "Edit the built-in `edit` ClusterRole and add the new rules."
+        explanation: "A controller overwrites direct changes to an aggregated role."
+      - id: b
+        text: "Create a ClusterRole with the label `rbac.authorization.k8s.io/aggregate-to-edit: \"true\"` and rules for `teamenvironments`."
+        explanation: "Correct. The control plane copies the rules of every ClusterRole with this label into `edit`."
+      - id: c
+        text: "Create a Role in every namespace and bind it to every user."
+        explanation: "This needs extra bindings, which the task rules out."
+      - id: d
+        text: "Create a ClusterRole with `aggregationRule` for the label `aggregate-to-tenant`."
+        explanation: "This defines a new aggregated role. It does not add rules to the built-in `edit` role."
+    correct_option: b
+    explanation: "The built-in `edit` ClusterRole is an aggregated role. A controller in the control plane copies the rules of every ClusterRole that carries its label into it. Direct changes to `edit` are overwritten. The label value must be the quoted string `\"true\"`. Use aggregation to extend built-in roles for the platform's own users. Do not bind tenants to `edit`, because it can read Secrets and create Deployments."
+
+  - id: ats019-040-q14
+    type: single_choice
+    difficulty: advanced
+    learning_objective: "Limit what an Argo CD AppProject may sync"
+    source_readings:
+      - sections/section-040/module-03/course-03-deliver-requests-through-git-with-argo-cd.md
+    prompt: "An Argo CD `AppProject` for the tenant lists one repository in `sourceRepos`, one destination namespace `outpost`, and this `namespaceResourceWhitelist`: group `platform.starfleet.io`, kind `TeamEnvironment`. No `clusterResourceWhitelist` is set. A request file in the repository contains a `ClusterRole`. What happens when Argo CD syncs the Application in this project?"
+    options:
+      - id: a
+        text: "Argo CD applies the `ClusterRole`, because the repository is allowed."
+        explanation: "The repository list does not allow every kind. The resource whitelists decide that."
+      - id: b
+        text: "Argo CD applies the `ClusterRole` in the namespace `outpost`."
+        explanation: "A ClusterRole is cluster-scoped and has no namespace."
+      - id: c
+        text: "Argo CD refuses the `ClusterRole`, because the project allows no cluster-scoped resource kind."
+        explanation: "Correct. Without a `clusterResourceWhitelist`, the project may create no cluster-scoped resource."
+      - id: d
+        text: "Argo CD moves the `ClusterRole` to the project `default`."
+        explanation: "Argo CD never moves an object to another project."
+    correct_option: c
+    explanation: "An AppProject limits the repositories, destinations and resource kinds of its Applications. With no `clusterResourceWhitelist`, the project may create no cluster-scoped resource such as a Namespace or a ClusterRole. This stops a request file from granting itself more rights. An Application in the project `default` has no such limit."
+
+  - id: ats019-040-q15
+    type: single_choice
+    difficulty: intermediate
+    learning_objective: "Explain automated sync with prune and self-heal"
+    source_readings:
+      - sections/section-040/module-03/course-03-deliver-requests-through-git-with-argo-cd.md
+    prompt: "An Application has `syncPolicy.automated` with `prune: true` and `selfHeal: true`. A platform engineer fixes a drifted `TeamEnvironment` with `kubectl edit`, and later a tenant deletes its request file from Git. What happens?"
+    options:
+      - id: a
+        text: "The `kubectl edit` change stays, and the object stays after the file is deleted."
+        explanation: "`selfHeal` reverts the change, and `prune` deletes the object."
+      - id: b
+        text: "Argo CD reverts the `kubectl edit` change, and it deletes the object from the cluster after the file is deleted."
+        explanation: "Correct. `selfHeal` keeps the cluster equal to Git, and `prune` removes objects whose file left Git."
+      - id: c
+        text: "Argo CD keeps the `kubectl edit` change, and it deletes the object after the file is deleted."
+        explanation: "With `selfHeal: true`, Argo CD reverts the manual change."
+      - id: d
+        text: "Argo CD reverts the `kubectl edit` change, and it keeps the object after the file is deleted."
+        explanation: "With `prune: true`, Argo CD deletes the object."
+    correct_option: b
+    explanation: "With `selfHeal: true`, Argo CD reverts changes made directly in the cluster, so Git stays the single source of truth. With `prune: true`, it deletes a cluster object when its file leaves Git. Change the file in Git instead of editing the object."
+
+  - id: ats019-040-q16
+    type: single_choice
+    difficulty: advanced
+    learning_objective: "Trace a Git request through Argo CD sync to a Ready composite resource"
+    source_readings:
+      - sections/section-040/module-03/course-04-follow-a-request-from-commit-to-ready.md
+    prompt: "A tenant commits a `TeamEnvironment` file. The Application shows `Synced`. The command `kubectl -n outpost get teamenvironment drifter` shows `SYNCED True` and `READY False` for several minutes. Where do you look next?"
+    options:
+      - id: a
+        text: "The Application `status.conditions`, because Argo CD built the environment."
+        explanation: "The Application is `Synced`, so Argo CD did its job. Crossplane builds the environment."
+      - id: b
+        text: "The Git server log, because the file is probably wrong."
+        explanation: "The file reached the cluster, so Git is not the fault."
+      - id: c
+        text: "The AppProject, because it blocked the object."
+        explanation: "The object exists in the cluster, so the project did not block it."
+      - id: d
+        text: "The conditions of the composite resource, with `kubectl -n outpost describe teamenvironment drifter`. The `Message` names the composed object or function that failed."
+        explanation: "Correct. Crossplane reports the failure on the composite resource."
+    correct_option: d
+    explanation: "`Synced` on the Application means the file reached the cluster. The object exists, so Git and Argo CD did their jobs. Crossplane builds the environment and reports its own conditions on the composite resource, and only `Ready True` there means the environment works. If the object does not exist, read the Application first. A project violation, or a request that the API server refuses (for example `size: huge`), shows in the Application conditions and sync result message."

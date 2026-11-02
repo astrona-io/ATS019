@@ -1,0 +1,363 @@
+# Knowledge check for section 010. Contract:
+# schemas/question-bank.schema.json. Keep question ids stable once published.
+schema_version: 1
+kind: question_bank
+id: ats019-010
+course_id: ATS019
+exam_code: CNPE
+status: draft
+provenance: Original practice material; not official exam questions.
+scope:
+  type: section
+  id: section-010
+  title: "Extending The Kubernetes API With CRDs"
+placement:
+  position: after
+  reading: sections/section-010/capstone/labs/lab-01/question.md
+questions:
+  - id: ats019-010-q01
+    type: single_choice
+    difficulty: beginner
+    learning_objective: "Predict which unknown fields the API server prunes"
+    source_readings:
+      - sections/section-010/module-01/course-02-types-defaults-and-pruning.md
+    prompt: "A CRD has `spec` as an object with `x-kubernetes-preserve-unknown-fields: true` and no `properties`. A user applies a `TeamEnvironment` with the field `replcas: 3` instead of `replicas`. What happens?"
+    options:
+      - id: a
+        text: "The API server prunes `replcas` and stores the object"
+        explanation: "The schema keeps unknown fields under spec, so the API server does not prune them."
+      - id: b
+        text: "The API server refuses the object because the field is unknown"
+        explanation: "The schema declares no properties and keeps unknown fields, so the API server has nothing to refuse."
+      - id: c
+        text: "The API server stores `replcas` exactly as written and reports nothing"
+        explanation: "Correct. The schema describes nothing under spec, so the field is stored as written and nothing is reported."
+      - id: d
+        text: "The API server renames `replcas` to `replicas`"
+        explanation: "The API server never renames a field."
+    correct_option: c
+    explanation: "The schema describes nothing under `spec` and keeps unknown fields, so nothing is pruned or checked. A controller that reads `spec.replicas` finds nothing."
+
+  - id: ats019-010-q02
+    type: single_choice
+    difficulty: intermediate
+    learning_objective: "Predict which unknown fields the API server prunes"
+    source_readings:
+      - sections/section-010/module-01/course-01-what-a-crd-adds.md
+      - sections/section-010/module-01/course-02-types-defaults-and-pruning.md
+    prompt: "In which order does the API server process a create request for a custom resource?"
+    options:
+      - id: a
+        text: "Schema validation, pruning, defaulting, CEL rules"
+        explanation: "Schema validation needs the defaults to exist first, so it does not run before pruning and defaulting."
+      - id: b
+        text: "Defaulting, CEL rules, pruning, schema validation"
+        explanation: "Pruning and defaulting run before validation, not after CEL rules."
+      - id: c
+        text: "CEL rules, schema validation, defaulting, pruning"
+        explanation: "CEL rules run last, after the schema checks."
+      - id: d
+        text: "Pruning, defaulting, schema validation, CEL rules"
+        explanation: "Correct. The API server prunes, fills defaults, checks the schema, then runs the CEL rules."
+    correct_option: d
+    explanation: "The API server decodes the request, prunes unknown fields, fills defaults, checks the schema, runs the CEL rules, then runs admission webhooks. Defaults exist before validation runs, so a rule can read a defaulted field."
+
+  - id: ats019-010-q03
+    type: single_choice
+    difficulty: beginner
+    learning_objective: "Set default values and predict which unknown fields the API server prunes"
+    source_readings:
+      - sections/section-010/module-01/course-02-types-defaults-and-pruning.md
+    prompt: "A `spec` has `required: [team, size, contact]`, and `replicas` has `default: 1` and `maximum: 5`. A user applies an object that leaves out `replicas`. Which result is correct?"
+    options:
+      - id: a
+        text: "The API server stores the object with `replicas: 1`"
+        explanation: "Correct. The field is not in required and has a default, so the API server fills it in before validation."
+      - id: b
+        text: "The API server rejects the object with `spec.replicas: Required value`"
+        explanation: "replicas is not in required, and the default is applied before validation, so nothing is missing."
+      - id: c
+        text: "The API server stores the object without `replicas`"
+        explanation: "The default is written into the object, so replicas is stored."
+      - id: d
+        text: "The API server stores the object with `replicas: 5`"
+        explanation: "The default is 1. The value 5 is only the maximum."
+    correct_option: a
+    explanation: "A field that is not in `required` and has a `default` receives that default before validation. Every reader of the object, including a controller, sees `replicas: 1`."
+
+  - id: ats019-010-q04
+    type: single_choice
+    difficulty: intermediate
+    learning_objective: "Prove a rule works by applying a custom resource the API server must reject"
+    source_readings:
+      - sections/section-010/module-01/course-02-types-defaults-and-pruning.md
+    prompt: "`kubectl apply` sends an object with an unknown field `spec.replcas` to a CRD with a structural schema. What does the user see?"
+    options:
+      - id: a
+        text: "The object is created and `replcas` is dropped silently"
+        explanation: "kubectl asks for strict field validation, so the API server refuses the field instead of dropping it."
+      - id: b
+        text: "The object is created and `replcas` is stored"
+        explanation: "The API server does not store unknown fields when the client asks for strict validation."
+      - id: c
+        text: "An error: `spec.replcas: Required value`"
+        explanation: "The field is unknown, not required, so the error is not about a required value."
+      - id: d
+        text: "An error: `strict decoding error: unknown field \"spec.replcas\"`"
+        explanation: "Correct. kubectl uses strict field validation, so the API server refuses the unknown field."
+    correct_option: d
+    explanation: "`kubectl` asks for strict field validation, so the API server refuses unknown fields. A client without strict validation (or `kubectl apply --validate=false`) gets silent pruning instead."
+
+  - id: ats019-010-q05
+    type: single_choice
+    difficulty: advanced
+    learning_objective: "Mark fields as required and constrain them with enum, minimum, maximum and pattern"
+    source_readings:
+      - sections/section-010/module-01/course-02-types-defaults-and-pruning.md
+      - sections/section-010/module-01/course-04-printer-columns-and-names.md
+    prompt: "A CRD schema is made stricter: `size` must now be one of `small`, `medium`, `large`. An object already stored has `size: huge`. What happens when a user changes only `spec.contact` on that object to a valid value?"
+    options:
+      - id: a
+        text: "The update is refused, because the stored object is invalid"
+        explanation: "Validation ratcheting lets an update keep an invalid value that does not change."
+      - id: b
+        text: "The update is accepted, because validation ratcheting allows an unchanged invalid value"
+        explanation: "Correct. The invalid size value is unchanged, so ratcheting allows the update."
+      - id: c
+        text: "The API server changes `size` to `small`"
+        explanation: "The API server never rewrites a field value on its own."
+      - id: d
+        text: "The API server deletes the object"
+        explanation: "An update does not delete the object."
+    correct_option: b
+    explanation: "Validation ratcheting lets an update keep a value that is already invalid, as long as the value does not change. A change to another invalid value is still refused."
+
+  - id: ats019-010-q06
+    type: single_choice
+    difficulty: intermediate
+    learning_objective: "Write a CEL rule in x-kubernetes-validations"
+    source_readings:
+      - sections/section-010/module-01/course-03-cel-rules.md
+    prompt: "Which CEL rule on `spec` makes a `small` environment run at most 2 replicas?"
+    options:
+      - id: a
+        text: "`self.size == 'small' && self.replicas <= 2`"
+        explanation: "This rule is false for every medium and large environment, so it would refuse them."
+      - id: b
+        text: "`self.replicas <= 2`"
+        explanation: "This rule limits every environment to 2 replicas, not only small ones."
+      - id: c
+        text: "`self.size != 'small' || self.replicas <= 2`"
+        explanation: "Correct. The rule is true when the size is not small or when there are at most 2 replicas."
+      - id: d
+        text: "`oldSelf.size != 'small' || oldSelf.replicas <= 2`"
+        explanation: "A rule that uses oldSelf is a transition rule and does not run on create."
+    correct_option: c
+    explanation: "The rule must be true for every valid object. It is true when the size is not small, or when there are at most 2 replicas. The option `self.size == 'small' && ...` would refuse every medium and large environment. The option with `oldSelf` is a transition rule that does not run on create."
+
+  - id: ats019-010-q07
+    type: single_choice
+    difficulty: intermediate
+    learning_objective: "Write a CEL transition rule that uses oldSelf"
+    source_readings:
+      - sections/section-010/module-01/course-03-cel-rules.md
+    prompt: "A field `team` has the rule `self == oldSelf`. Which statement is correct?"
+    options:
+      - id: a
+        text: "The rule runs only on update, so the field cannot be changed after creation"
+        explanation: "Correct. A rule with oldSelf is a transition rule, skipped on create and refusing any update that changes the field."
+      - id: b
+        text: "The rule runs on create and update, and it blocks both"
+        explanation: "A transition rule is skipped on create because there is no old value."
+      - id: c
+        text: "The rule runs only on create, so the field must equal its default"
+        explanation: "The rule compares the new and old values and has nothing to do with the default."
+      - id: d
+        text: "The rule runs only when the field is missing"
+        explanation: "The rule does not check whether the field is missing."
+    correct_option: a
+    explanation: "A rule that uses `oldSelf` is a transition rule. It is skipped on create, because there is no old value, and it refuses any update that changes the field."
+
+  - id: ats019-010-q08
+    type: single_choice
+    difficulty: intermediate
+    learning_objective: "Prove a rule works by applying a custom resource the API server must reject"
+    source_readings:
+      - sections/section-010/module-01/course-03-cel-rules.md
+    prompt: "A dry run with `kubectl apply --dry-run=server` of an object with `size: huge` prints schema errors and ends with `some validation rules were not checked because the object was invalid`. What does the last line mean?"
+    options:
+      - id: a
+        text: "The CEL rules passed"
+        explanation: "The CEL rules did not run, so they did not pass."
+      - id: b
+        text: "The CRD has a syntax error in a CEL rule"
+        explanation: "The message says the rules were not checked, not that a rule has a syntax error."
+      - id: c
+        text: "The object was stored anyway"
+        explanation: "A dry run never stores the object."
+      - id: d
+        text: "The API server skipped the CEL rules because the schema checks already failed"
+        explanation: "Correct. The schema checks failed, so the API server skipped the CEL rules."
+    correct_option: d
+    explanation: "When schema validation fails, the API server skips CEL rules. Fix the schema errors first, then run the dry run again to see the CEL result."
+
+  - id: ats019-010-q09
+    type: single_choice
+    difficulty: beginner
+    learning_objective: "Add additionalPrinterColumns so kubectl get shows the important fields"
+    source_readings:
+      - sections/section-010/module-01/course-04-printer-columns-and-names.md
+    prompt: "The CRD lists three entries in `additionalPrinterColumns`, none of them for age. What does `kubectl get` show?"
+    options:
+      - id: a
+        text: "The three columns and an automatic `Age` column"
+        explanation: "Once a CRD lists additionalPrinterColumns, the API server stops adding Age."
+      - id: b
+        text: "The three columns only, with no `Age` column"
+        explanation: "Correct. The API server shows only the listed columns and no Age column."
+      - id: c
+        text: "Only `NAME` and `Age`"
+        explanation: "The listed columns are shown as well as NAME."
+      - id: d
+        text: "The three columns, and `Age` only with `-o wide`"
+        explanation: "The -o wide flag does not add an Age column."
+    correct_option: b
+    explanation: "Once a CRD lists `additionalPrinterColumns`, the API server stops adding `Age`. The CRD must add it back with `type: date` and `jsonPath: .metadata.creationTimestamp`."
+
+  - id: ats019-010-q10
+    type: single_choice
+    difficulty: intermediate
+    learning_objective: "Add a shortName and categories so kubectl get finds the type"
+    source_readings:
+      - sections/section-010/module-01/course-04-printer-columns-and-names.md
+    prompt: "A CRD has `shortNames: [teamenv]` and `categories: [platform]`. Which statement is correct?"
+    options:
+      - id: a
+        text: "`kubectl get teamenv` works, and `kubectl get platform` fails"
+        explanation: "A category works like a short name for listing, so kubectl get platform also works."
+      - id: b
+        text: "`kubectl get all` now lists the custom resources"
+        explanation: "The type is not in all unless the CRD adds it."
+      - id: c
+        text: "`kubectl get teamenv` and `kubectl get platform` both work"
+        explanation: "Correct. The short name is another name for the type and the category lists every type in it."
+      - id: d
+        text: "`kubectl get platform` works only with `-o wide`"
+        explanation: "A category works without -o wide."
+    correct_option: c
+    explanation: "A short name is another name for the type. A category lists every type in that category with one command. The type is not in `all` unless the CRD adds it. Adding custom types to `all` changes what `kubectl get all` returns for everyone, so avoid it."
+
+  - id: ats019-010-q11
+    type: single_choice
+    difficulty: intermediate
+    learning_objective: "Choose which version is served and which is the storage version"
+    source_readings:
+      - sections/section-010/module-02/course-01-served-and-storage-versions.md
+    prompt: "A CRD lists version `v1alpha1` with `served: true, storage: false` and version `v1` with `served: true, storage: true`. A client writes an object through `v1alpha1`. How does the API server store it?"
+    options:
+      - id: a
+        text: "As `v1alpha1`, because the client used that version"
+        explanation: "The API server stores every object in the storage version, whatever version the client used."
+      - id: b
+        text: "As both versions in etcd"
+        explanation: "The API server writes each object in one version only."
+      - id: c
+        text: "The API server refuses the write, because `v1alpha1` is not the storage version"
+        explanation: "A served version accepts writes, so the API server does not refuse it."
+      - id: d
+        text: "As `v1`, because it is the storage version"
+        explanation: "Correct. The API server writes the object as the storage version."
+    correct_option: d
+    explanation: "A served version is a version clients may use. The storage version is the one version the API server writes to etcd. With `strategy: None`, the API server changes only the `apiVersion` field."
+
+  - id: ats019-010-q12
+    type: single_choice
+    difficulty: advanced
+    learning_objective: "Read which version an object is stored in from status.storedVersions"
+    source_readings:
+      - sections/section-010/module-02/course-01-served-and-storage-versions.md
+    prompt: "A CRD stored objects as `v1alpha1`. An administrator makes `v1` the storage version. What does `status.storedVersions` show, and why?"
+    options:
+      - id: a
+        text: "`[\"v1alpha1\",\"v1\"]`, because old objects may still be stored as `v1alpha1`"
+        explanation: "Correct. The API server adds the new storage version at once and never removes the old entry."
+      - id: b
+        text: "`[\"v1\"]`, because the API server rewrites every object at once"
+        explanation: "The API server does not rewrite existing objects on its own."
+      - id: c
+        text: "`[\"v1alpha1\"]`, because the list changes only after a restart"
+        explanation: "The list changes as soon as the storage version changes, with no restart."
+      - id: d
+        text: "`[]`, because the list is empty until an object is read"
+        explanation: "The list is not empty, and reading an object does not change it."
+    correct_option: a
+    explanation: "The API server adds the new storage version to the list at once and never removes an old entry. To remove `v1alpha1`, rewrite every object, then patch the CRD status."
+
+  - id: ats019-010-q13
+    type: single_choice
+    difficulty: intermediate
+    learning_objective: "Mark a version deprecated and read the warning kubectl prints"
+    source_readings:
+      - sections/section-010/module-02/course-02-deprecate-a-served-version.md
+    prompt: "A CRD marks `v1alpha1` with `deprecated: true` and a `deprecationWarning`. A user reads an object through `v1alpha1`, and then the CRD is changed to `served: false` for `v1alpha1`. What does the user get in each case?"
+    options:
+      - id: a
+        text: "First a `NotFound` error, then a warning"
+        explanation: "The order is reversed: the deprecated version works first, and NotFound comes after served is false."
+      - id: b
+        text: "First a warning and a successful read, then a `NotFound` error"
+        explanation: "Correct. A deprecated version still works with a warning, and an unserved version answers NotFound."
+      - id: c
+        text: "A warning in both cases"
+        explanation: "After served: false the API server has no endpoint, so there is only an error."
+      - id: d
+        text: "A successful read in both cases, with no warning"
+        explanation: "kubectl prints a deprecation warning on the first read."
+    correct_option: b
+    explanation: "A deprecated version still works and `kubectl` prints the warning on standard error. After `served: false` the API server has no endpoint for that version, so it answers `NotFound`. The objects still exist."
+
+  - id: ats019-010-q14
+    type: single_choice
+    difficulty: intermediate
+    learning_objective: "Show that a spec update cannot change status"
+    source_readings:
+      - sections/section-010/module-02/course-03-status-subresource.md
+    prompt: "The `status` subresource is enabled. A user runs `kubectl apply` with a manifest that sets `status.phase: Ready`. What happens to `status`?"
+    options:
+      - id: a
+        text: "The API server stores it"
+        explanation: "With the subresource enabled, the normal endpoint does not store status."
+      - id: b
+        text: "The API server rejects the request"
+        explanation: "The API server does not reject the request. It ignores the status part."
+      - id: c
+        text: "The API server stores it only if `spec` is unchanged"
+        explanation: "The condition on spec does not matter, because the normal endpoint always ignores status."
+      - id: d
+        text: "The API server ignores `status` on the normal endpoint"
+        explanation: "Correct. The normal endpoint ignores status, and only requests to /status change it."
+    correct_option: d
+    explanation: "With the subresource enabled, the normal endpoint ignores `status`, and only requests to `/status` change it, for example `kubectl patch --subresource=status`. A request to `/status` also ignores changes to `spec`."
+
+  - id: ats019-010-q15
+    type: single_choice
+    difficulty: advanced
+    learning_objective: "Scale a custom resource with kubectl scale"
+    source_readings:
+      - sections/section-010/module-02/course-04-scale-subresource.md
+    prompt: "A CRD sets `scale` with `specReplicasPath: .spec.replicas` and `statusReplicasPath: .status.readyReplicas`. A user runs `kubectl scale teamenvironment alpha --replicas=9`, and the schema has `maximum: 5` on `spec.replicas`. What happens?"
+    options:
+      - id: a
+        text: "The API server sets `spec.replicas` to 9"
+        explanation: "The value 9 is above maximum 5, so the schema check fails."
+      - id: b
+        text: "The API server sets `spec.replicas` to 5"
+        explanation: "The API server does not cap the value. It refuses the request."
+      - id: c
+        text: "The API server refuses the request with a schema error and `spec.replicas` stays as it was"
+        explanation: "Correct. The result of the scale request is checked against the schema, so the API server refuses it."
+      - id: d
+        text: "The API server sets `status.readyReplicas` to 9"
+        explanation: "kubectl scale never writes status."
+    correct_option: c
+    explanation: "`kubectl scale` writes the desired count through the scale endpoint, and the API server checks the result against the CRD schema. `kubectl scale` never writes `status`, and the scale endpoint creates no pods."

@@ -1,0 +1,339 @@
+# Knowledge check for section 020. Contract:
+# schemas/question-bank.schema.json. Keep question ids stable once published.
+schema_version: 1
+kind: question_bank
+id: ats019-020
+course_id: ATS019
+exam_code: CNPE
+status: draft
+provenance: Original practice material; not official exam questions.
+scope:
+  type: section
+  id: section-020
+  title: "Platform Automation With Operators"
+placement:
+  position: after
+  reading: sections/section-020/capstone/labs/lab-01/question.md
+questions:
+  - id: ats019-020-q01
+    type: single_choice
+    difficulty: beginner
+    learning_objective: "Name the controller, CRDs and RBAC objects an operator installs, from the cluster"
+    source_readings:
+      - sections/section-020/module-01/course-01-what-an-operator-installs.md
+    prompt: "A cluster has the CustomResourceDefinition (CRD) `prometheuses.monitoring.coreos.com`. A user applies a `Prometheus` object, and the API server accepts it. The `prometheus-operator` Deployment has been deleted. What happens?"
+    options:
+      - id: a
+        text: "The API server stores the object, but no Prometheus server starts."
+        explanation: "Correct. A CRD only adds a kind, so the API server stores the object and nothing acts on it without the controller."
+      - id: b
+        text: "The API server rejects the object because no controller is running."
+        explanation: "The API server does not check whether a controller is running when it accepts an object."
+      - id: c
+        text: "The API server starts a Prometheus pod from the CRD schema."
+        explanation: "The API server stores and validates objects. It never starts pods from a CRD schema."
+      - id: d
+        text: "The object is stored and the StatefulSet controller of Kubernetes builds the Prometheus server."
+        explanation: "The StatefulSet controller only acts on StatefulSet objects, and only the operator creates the StatefulSet from a Prometheus object."
+    correct_option: a
+    explanation: "A CRD only adds a kind to the API server, which stores and validates the objects. The controller in the operator's Deployment reads the `Prometheus` object and builds the StatefulSet, Service and Secrets. Without it, nothing acts on the object."
+
+  - id: ats019-020-q02
+    type: single_choice
+    difficulty: beginner
+    learning_objective: "Name the controller, CRDs and RBAC objects an operator installs, from the cluster"
+    source_readings:
+      - sections/section-020/module-01/course-01-what-an-operator-installs.md
+    prompt: "An administrator wants to know which identity the Prometheus Operator controller uses to call the API server. Which command reads the answer?"
+    options:
+      - id: a
+        text: "`kubectl api-resources --api-group=monitoring.coreos.com`"
+        explanation: "This command lists the kinds the operator adds, not the identity of the controller."
+      - id: b
+        text: "`kubectl -n default get deployment prometheus-operator -o jsonpath='{.spec.template.spec.serviceAccountName}'`"
+        explanation: "Correct. The pod template of the Deployment names the ServiceAccount that the controller uses for its requests."
+      - id: c
+        text: "`kubectl -n starfleet get prometheus`"
+        explanation: "This command lists custom resources, not the identity of the controller."
+      - id: d
+        text: "`kubectl get clusterrole prometheus-operator`"
+        explanation: "This command shows permissions, but not which identity holds them."
+    correct_option: b
+    explanation: "The controller sends every request as the ServiceAccount of its pod, and the Deployment's pod template names it. Option A lists the kinds the operator adds. Option C lists custom resources. Option D shows permissions but not which identity holds them."
+
+  - id: ats019-020-q03
+    type: single_choice
+    difficulty: intermediate
+    learning_objective: "Name the controller, CRDs and RBAC objects an operator installs, from the cluster"
+    source_readings:
+      - sections/section-020/module-01/course-01-what-an-operator-installs.md
+    prompt: "You run these two commands on a cluster with the Prometheus Operator installed:\n\n```sh\nkubectl auth can-i create statefulsets -n starfleet --as=system:serviceaccount:default:prometheus-operator\nkubectl auth can-i create deployments -n starfleet --as=system:serviceaccount:default:prometheus-operator\n```\n\nThe first prints `yes` and the second prints `no`. What does this tell you?"
+    options:
+      - id: a
+        text: "The operator is broken because it cannot create Deployments."
+        explanation: "The operator is not broken. Its ClusterRole does not list deployments because it never needs them."
+      - id: b
+        text: "The operator builds StatefulSets for a `Prometheus` resource, not Deployments."
+        explanation: "Correct. The ClusterRole lists statefulsets with create and does not list deployments, which matches how the operator works."
+      - id: c
+        text: "The ClusterRoleBinding for the operator is missing."
+        explanation: "A missing ClusterRoleBinding would make both commands print no."
+      - id: d
+        text: "The operator can create Deployments in other namespaces only."
+        explanation: "The output says nothing about other namespaces, and the operator has no permission to create Deployments."
+    correct_option: b
+    explanation: "The ClusterRole of the operator lists `statefulsets` with `create`, and it does not list `deployments`. That matches how the operator works: one `Prometheus` resource becomes a StatefulSet. A missing binding would make both answers `no`."
+
+  - id: ats019-020-q04
+    type: single_choice
+    difficulty: intermediate
+    learning_objective: "Trace a custom resource to the objects its controller created through ownerReferences"
+    source_readings:
+      - sections/section-020/module-01/course-02-follow-a-custom-resource.md
+    prompt: "A `Prometheus` resource named `starfleet` exists in namespace `starfleet`. You find the pod `prometheus-starfleet-0`. Which statement about its owner is correct?"
+    options:
+      - id: a
+        text: "The pod has an `ownerReference` to the `Prometheus` resource `starfleet`."
+        explanation: "The pod is created by the StatefulSet controller, so its owner is the StatefulSet and not the Prometheus resource."
+      - id: b
+        text: "The pod has no `ownerReference`, because the operator creates it directly."
+        explanation: "The pod does not come from the operator directly, and it does have an ownerReference."
+      - id: c
+        text: "The pod has an `ownerReference` to the StatefulSet `prometheus-starfleet`, and the StatefulSet has one to the `Prometheus` resource."
+        explanation: "Correct. The StatefulSet controller marks the StatefulSet as the pod owner, and the operator marks the Prometheus resource as the StatefulSet owner."
+      - id: d
+        text: "The pod has an `ownerReference` to the `prometheus-operator` Deployment."
+        explanation: "The operator Deployment runs the controller but owns none of the objects the controller creates."
+    correct_option: c
+    explanation: "Two controllers share the work. The Prometheus Operator creates the StatefulSet and marks the `Prometheus` resource as its owner. The built-in StatefulSet controller creates the pod and marks the StatefulSet as its owner."
+
+  - id: ats019-020-q05
+    type: single_choice
+    difficulty: intermediate
+    learning_objective: "Show that the controller restores an owned object that was changed or deleted by hand"
+    source_readings:
+      - sections/section-020/module-01/course-02-follow-a-custom-resource.md
+    prompt: "An engineer runs `kubectl -n starfleet scale statefulset prometheus-starfleet --replicas=0` to stop a Prometheus server. A few seconds later, `spec.replicas` of the StatefulSet is `1` again. Which component changed it, and where should the engineer make the change instead?"
+    options:
+      - id: a
+        text: "The StatefulSet controller changed it; the engineer should edit the pod."
+        explanation: "The StatefulSet controller does not set replicas back, and editing the pod does not change the desired state."
+      - id: b
+        text: "The Prometheus Operator changed it at its next reconcile; the engineer should change `spec.replicas` of the `Prometheus` resource."
+        explanation: "Correct. The operator sees the change as a watch event and reconciles. The desired state lives in the Prometheus resource."
+      - id: c
+        text: "The API server rejected the change; the engineer should use `kubectl patch`."
+        explanation: "The API server accepted the change. The operator reverted it later, and kubectl patch would be reverted too."
+      - id: d
+        text: "The garbage collector changed it; the engineer should remove the `ownerReference`."
+        explanation: "The garbage collector only deletes dependents, and removing the ownerReference does not change the desired state."
+    correct_option: b
+    explanation: "The operator watches the objects it owns. A change to one is a watch event, so it runs a reconcile and sets the StatefulSet back to what the `Prometheus` resource asks for. The desired state lives in the custom resource, so the fix goes there."
+
+  - id: ats019-020-q06
+    type: single_choice
+    difficulty: intermediate
+    learning_objective: "Read status.conditions and compare observedGeneration with metadata.generation to judge whether the controller has acted"
+    source_readings:
+      - sections/section-020/module-01/course-03-conditions-and-observed-generation.md
+    prompt: "A `Prometheus` resource shows `generation=3` in `metadata` and `observedGeneration=2` in its `Reconciled` condition, which has `status: \"True\"`. What is the best conclusion?"
+    options:
+      - id: a
+        text: "The status is current, because `Reconciled` is `True`."
+        explanation: "Reconciled True describes the older generation 2, so the status is not current."
+      - id: b
+        text: "The `spec` was changed after the controller last acted, so the status describes an older `spec`."
+        explanation: "Correct. observedGeneration is lower than generation, so the controller has not acted on the latest spec change."
+      - id: c
+        text: "Someone changed a label, which raises `generation`."
+        explanation: "Labels and annotations do not raise generation. Only spec changes do."
+      - id: d
+        text: "The controller wrote an invalid condition, and the API server will reject it."
+        explanation: "The API server accepts the condition, and the lower number only shows that the status is old."
+    correct_option: b
+    explanation: "The generation counts `spec` changes, and `observedGeneration` is the generation the controller last acted on. When it is lower, the controller has not acted on the latest change, for example because it is not running. Labels and annotations do not raise `generation`."
+
+  - id: ats019-020-q07
+    type: single_choice
+    difficulty: advanced
+    learning_objective: "Read status.conditions and compare observedGeneration with metadata.generation to judge whether the controller has acted"
+    source_readings:
+      - sections/section-020/module-01/course-03-conditions-and-observed-generation.md
+    prompt: "You scale the `prometheus-operator` Deployment to zero replicas and change `spec.logLevel` of a `Prometheus` resource. Later you scale the Deployment back to one replica. What happens to the resource?"
+    options:
+      - id: a
+        text: "The change is lost, because the controller missed the watch event."
+        explanation: "The change is not lost. A reconcile reads the whole desired state, so a missed event does not matter."
+      - id: b
+        text: "The change stays pending until you edit the resource a second time."
+        explanation: "No second edit is needed, because the controller reconciles every resource when it starts."
+      - id: c
+        text: "The StatefulSet is deleted and created again by the garbage collector."
+        explanation: "The garbage collector does not delete the StatefulSet. The controller updates it with the new flag."
+      - id: d
+        text: "The controller reads every `Prometheus` resource at startup, applies the change, and `observedGeneration` catches up to `generation`."
+        explanation: "Correct. The controller reconciles every resource at startup, applies the change and writes new conditions."
+    correct_option: d
+    explanation: "A reconcile reads the whole desired state each time, not only the last change. After it starts, the controller reconciles every resource it finds and writes new conditions. The StatefulSet then carries the new flag."
+
+  - id: ats019-020-q08
+    type: single_choice
+    difficulty: intermediate
+    learning_objective: "Find why a reconcile failed from conditions, events and the controller's logs"
+    source_readings:
+      - sections/section-020/module-01/course-04-find-why-a-reconcile-failed.md
+    prompt: "A `Prometheus` resource reports `Reconciled True` and `Available False` with reason `NoPodReady` and an empty message. The controller runs. Where should you look next for the cause?"
+    options:
+      - id: a
+        text: "The events on the owned StatefulSet, because the operator built its objects and something further down failed."
+        explanation: "Correct. Reconciled True means the operator built its objects, and the StatefulSet controller records the failure as an event on the StatefulSet."
+      - id: b
+        text: "The `Reconciled` message, because it always holds the cause."
+        explanation: "The Reconciled message is empty here, and it does not always hold the cause."
+      - id: c
+        text: "The CRD schema of `Prometheus`."
+        explanation: "The CRD schema is checked when the object is stored, and the object was accepted."
+      - id: d
+        text: "The ClusterRoleBinding of the operator."
+        explanation: "The operator ran and built its objects, so its permissions are not the cause."
+    correct_option: a
+    explanation: "`Reconciled True` means the operator built its objects without an error. Pods are created by the StatefulSet controller, which records an event such as `FailedCreate` on the StatefulSet. In the course example, the event said that the ServiceAccount `prometheus-reader` was not found."
+
+  - id: ats019-020-q09
+    type: single_choice
+    difficulty: intermediate
+    learning_objective: "Find why a reconcile failed from conditions, events and the controller's logs"
+    source_readings:
+      - sections/section-020/module-01/course-04-find-why-a-reconcile-failed.md
+    prompt: "A `Prometheus` resource reports `Reconciled False` with reason `ReconciliationFailed` and the message `creating config failed: loading additional scrape configs from Secret failed: secrets \"extra-scrape\" not found`. What is the correct fix?"
+    options:
+      - id: a
+        text: "Delete the StatefulSet so the operator creates it again."
+        explanation: "Deleting the StatefulSet does not fix the cause, and the next reconcile fails again."
+      - id: b
+        text: "Edit the generated Secret `prometheus-broken` by hand."
+        explanation: "The generated Secret is written by the operator and would be overwritten. The cause is elsewhere."
+      - id: c
+        text: "Create the Secret `extra-scrape` that the resource references, and let the operator reconcile again."
+        explanation: "Correct. The missing Secret is the cause. The operator watches Secrets, so creating it starts a reconcile that succeeds."
+      - id: d
+        text: "Remove the `ownerReference` from the StatefulSet."
+        explanation: "Removing the ownerReference does not create the missing Secret, and the reconcile still fails."
+    correct_option: c
+    explanation: "The operator itself could not finish, because the Secret that the custom resource references is missing. Fix the cause where it lives. The operator watches Secrets, so creating the Secret starts a new reconcile that succeeds."
+
+  - id: ats019-020-q10
+    type: single_choice
+    difficulty: intermediate
+    learning_objective: "Predict which dependent objects the garbage collector deletes when an owner is deleted"
+    source_readings:
+      - sections/section-020/module-02/course-01-owner-references-and-garbage-collection.md
+    prompt: "The `TeamEnvironment` object `scout-env` has two ConfigMaps in its namespace. Both carry the label `team: outpost`. Only `scout-owned` has an `ownerReference` with the `uid` of `scout-env`. You delete `scout-env` with `--cascade=background`. Which ConfigMaps does the garbage collector delete?"
+    options:
+      - id: a
+        text: "Both, because they share a label."
+        explanation: "The garbage collector uses owner references and not labels, so the shared label has no effect."
+      - id: b
+        text: "Neither, because no controller manages `TeamEnvironment`."
+        explanation: "The garbage collector does not need a controller for the kind of the owner."
+      - id: c
+        text: "Only `scout-unowned`."
+        explanation: "scout-unowned has no ownerReference, so the garbage collector keeps it."
+      - id: d
+        text: "Only `scout-owned`."
+        explanation: "Correct. Only scout-owned has an ownerReference with the uid of scout-env."
+    correct_option: d
+    explanation: "The garbage collector uses owner references, not labels. It does not need a controller for the owner's kind. The ConfigMap without an owner reference stays."
+
+  - id: ats019-020-q11
+    type: single_choice
+    difficulty: advanced
+    learning_objective: "Predict which dependent objects the garbage collector deletes when an owner is deleted"
+    source_readings:
+      - sections/section-020/module-02/course-01-owner-references-and-garbage-collection.md
+    prompt: "An owner `probe-env` is deleted and created again with the same name. A dependent ConfigMap still holds the `uid` that `probe-env` had before. What does the garbage collector do with the ConfigMap?"
+    options:
+      - id: a
+        text: "It keeps the ConfigMap, because the name matches."
+        explanation: "An owner reference holds the uid of the owner, not only the name, so a matching name is not enough."
+      - id: b
+        text: "It treats the ConfigMap as a dependent of an owner that no longer exists, because the new object has a new `uid`."
+        explanation: "Correct. The new object has a new uid, so the old reference points to an owner that is gone."
+      - id: c
+        text: "It updates the `uid` in the ConfigMap to the new value."
+        explanation: "The garbage collector never edits the references of a dependent."
+      - id: d
+        text: "It blocks the creation of the new owner."
+        explanation: "The garbage collector does not block the creation of objects."
+    correct_option: b
+    explanation: "An owner reference identifies the owner by its `uid`, not by its name alone. A new object with the same name has a new `uid`, so the old reference points to an owner that is gone. Update the reference when you recreate the owner."
+
+  - id: ats019-020-q12
+    type: single_choice
+    difficulty: intermediate
+    learning_objective: "Choose between foreground, background and orphan cascading deletion with kubectl delete --cascade"
+    source_readings:
+      - sections/section-020/module-02/course-02-cascading-deletion-modes.md
+    prompt: "A platform team must remove a `TeamEnvironment` but keep its ConfigMap for a planned handover to another team. Which command does this, and what is the result?"
+    options:
+      - id: a
+        text: "`kubectl delete teamenvironment probe-env --cascade=foreground`; the ConfigMap is deleted first."
+        explanation: "Foreground deletion removes the blocking dependents before the owner, so the ConfigMap is deleted."
+      - id: b
+        text: "`kubectl delete teamenvironment probe-env --wait=false`; the ConfigMap is kept."
+        explanation: "The --wait=false flag only changes whether the client waits, and the default cascade still deletes the ConfigMap."
+      - id: c
+        text: "`kubectl delete teamenvironment probe-env --cascade=orphan`; the ConfigMap stays and loses its reference to the deleted owner."
+        explanation: "Correct. Orphan deletion keeps the dependents and removes the reference to the deleted owner."
+      - id: d
+        text: "`kubectl delete teamenvironment probe-env --cascade=background`; the ConfigMap stays because deletion is asynchronous."
+        explanation: "Background deletion lets the garbage collector delete the dependents later, so the ConfigMap is not kept."
+    correct_option: c
+    explanation: "Orphan deletion keeps the dependents and removes this owner's reference from them. Option A deletes the blocking dependents before the owner goes. Option B only changes whether the client waits. Option D lets the garbage collector delete the dependents later."
+
+  - id: ats019-020-q13
+    type: single_choice
+    difficulty: intermediate
+    learning_objective: "Explain why an object with a finalizer stays in Terminating and which controller must remove the finalizer"
+    source_readings:
+      - sections/section-020/module-02/course-03-finalizers-and-deletion-timestamp.md
+    prompt: "A ConfigMap has the finalizer `platform.starfleet.io/cleanup`. You run `kubectl delete configmap scout-settings --wait=false`, and the command prints `deleted`. A minute later `kubectl get configmap scout-settings` still returns the object. What does this show?"
+    options:
+      - id: a
+        text: "The delete request failed and must be sent again."
+        explanation: "The request did not fail. The word deleted means the API server accepted it."
+      - id: b
+        text: "The API server accepted the request and set `metadata.deletionTimestamp`. The object stays until the component that owns the finalizer removes its name."
+        explanation: "Correct. The API server sets metadata.deletionTimestamp, and the owner of the finalizer must do its cleanup and remove its name."
+      - id: c
+        text: "The API server runs the cleanup code named in the finalizer and is slow."
+        explanation: "The API server does not know what the finalizer name means and runs no code for it."
+      - id: d
+        text: "The garbage collector is waiting for an owner reference."
+        explanation: "The garbage collector acts on owner references and does not wait for them here."
+    correct_option: b
+    explanation: "The word `deleted` means the request was accepted. The API server does not know what the finalizer name means and runs no code for it. The responsible component must notice the deletion timestamp, do its cleanup, and remove its own finalizer. A ConfigMap table has no `STATUS` column, so read `metadata.deletionTimestamp` and `metadata.finalizers`."
+
+  - id: ats019-020-q14
+    type: single_choice
+    difficulty: advanced
+    learning_objective: "Diagnose an object stuck in Terminating and fix the cause instead of removing the finalizer by hand"
+    source_readings:
+      - sections/section-020/module-02/course-03-finalizers-and-deletion-timestamp.md
+      - sections/section-020/module-02/course-04-restore-a-cleanup-worker.md
+    prompt: "A ConfigMap is stuck with a deletion timestamp and the finalizer `platform.starfleet.io/cleanup`. The cleanup Job that implements this finalizer is suspended. The ServiceAccount of the Job already has the permissions it needs. What is the correct fix?"
+    options:
+      - id: a
+        text: "Patch the ConfigMap and remove the finalizer from your terminal."
+        explanation: "Removing the finalizer by hand skips the cleanup that the finalizer protects."
+      - id: b
+        text: "Restart the `prometheus-operator` Deployment."
+        explanation: "The prometheus-operator Deployment is unrelated to this cleanup Job."
+      - id: c
+        text: "Give the Job's ServiceAccount the `cluster-admin` ClusterRole."
+        explanation: "The Job already has the permissions it needs, so cluster-admin does not help."
+      - id: d
+        text: "Set `suspend: false` on the Job, so the worker deletes the cache and then removes its own finalizer."
+        explanation: "Correct. The cause is that the worker does not run. Starting it deletes the cache and then releases the finalizer."
+    correct_option: d
+    explanation: "The cause is that the responsible worker does not run. Starting it keeps the cleanup order: observe the deletion, delete the cache, then release the finalizer. Option A skips the cleanup the finalizer protects. Option B restarts an unrelated component. Option C is not needed, because the permissions are present."
