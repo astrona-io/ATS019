@@ -420,7 +420,6 @@ organisation `starfleet`.
 
 | What | Where |
 | --- | --- |
-| Course design record (sections, modules, objectives, playground environments) | `.astrona/blueprint.yaml` |
 | Course outline the platform reads: every reading page and lab, in order. Never list `solution.md` here | `astrona.yaml` |
 | Overview, sections and modules tables, how to run things | `README.md` |
 | Introduction (see "Every course starts with an Introduction") | `sections/intro/` |
