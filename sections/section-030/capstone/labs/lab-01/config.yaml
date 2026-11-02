@@ -1,0 +1,105 @@
+# yaml-language-server: $schema=https://cli.astrona.io/schema/lab-config.schema.json
+#
+# Build A Self-Service Team Environment API (CAPSTONE, section 030). Graded against the live
+# cluster. Needs outbound internet: Crossplane pulls providers and functions from xpkg.crossplane.io.
+apiVersion: astrona.io/v1
+metadata:
+  name: ats-019-capstone-030
+  docs:
+    prerequisites: prerequisites.md
+    question: question.md
+    solution: solution.md
+
+runtime:
+  type: kind
+  kind:
+    image: kindest/node:v1.35.8
+    preloadImages:
+      - xpkg.crossplane.io/crossplane/crossplane:v2.4.2
+      - ghcr.io/stefanprodan/podinfo:6.15.0
+
+bootstrap:
+  init:
+    - name: install-crossplane
+      description: "Installs Crossplane 2.4.2 in crossplane-system and waits for its CRDs"
+      type: file
+      source: bootstrap/01-install-crossplane.sh
+    - name: install-function
+      description: "Installs function-patch-and-transform 0.11.0 and waits until it is healthy"
+      type: file
+      source: bootstrap/02-install-function.sh
+    - name: install-crossplane-cli
+      description: "Downloads the crossplane CLI 2.4.1 into the lab work folder"
+      type: file
+      source: bootstrap/03-install-crossplane-cli.sh
+  manifests:
+    - name: shuttle
+      type: file
+      source: manifests/shuttle.yaml
+    - name: provider-access-start
+      description: "The Role that only covers Deployments, and its RoleBinding"
+      type: file
+      source: manifests/provider-access-start.yaml
+  waitFor:
+    - resource: deployment/shuttle
+      namespace: outpost
+      condition: Available
+      timeout: 180s
+
+testing:
+  init:
+    - name: solution
+      description: "Reference solution applied by astrona test"
+      type: file
+      source: solution/apply.sh
+    - name: wait-converged
+      description: "Waits until the request is Ready with two replicas"
+      type: file
+      source: testing/01-wait-converged.sh
+
+validation:
+  passPercent: 100
+  scripts:
+    - name: provider
+      description: "provider-kubernetes 1.4.1 is healthy and ClusterProviderConfig in-cluster uses the injected identity"
+      type: file
+      source: validation/validate-provider.sh
+      points: 15
+    - name: provider-rbac
+      description: "The provider may manage Deployments and Services in outpost and nothing wider"
+      type: file
+      source: validation/validate-provider-rbac.sh
+      points: 15
+    - name: xrd-definition
+      description: "The TeamEnvironment XRD is Established, namespaced and has the status field"
+      type: file
+      source: validation/validate-xrd-definition.sh
+      points: 10
+    - name: xrd-validation
+      description: "The API server refuses bad requests and fills in the defaults"
+      type: file
+      source: validation/validate-xrd-validation.sh
+      points: 10
+    - name: request-ready
+      description: "scout-env is Synced and Ready, reports availableReplicas and owns exactly the composed objects"
+      type: file
+      source: validation/validate-request-ready.sh
+      points: 20
+    - name: answers
+      description: "scout answers 200 to a request from shuttle"
+      type: file
+      source: validation/validate-workload-answers.sh
+      points: 10
+    - name: no-shortcuts
+      description: "One ClusterProviderConfig, no widened RBAC, no hand-made objects"
+      type: file
+      source: validation/validate-no-shortcuts.sh
+      points: 10
+    - name: replicas-follow-request
+      description: "The Deployment follows spec.replicas of the request (2, 3, 2)"
+      type: file
+      source: validation/validate-replicas-follow-request.sh
+      points: 10
+
+teardown:
+  keepCluster: false

@@ -1,40 +1,27 @@
 # Define A Platform API With An XRD And Composition
 
 <!-- astrona:playground -->
-> [!NOTE]
-> This module has a playground — a throwaway environment to run the commands in.
-> ```bash
-> astrona run --git ssh://git@github.com/astrona-io/ATS019.git -c sections/section-030/module-02/playground
-> ```
 
-<!-- TODO(build): opening framing — what this module settles, and the contrast that sharpens its boundary. -->
+A platform team wants tenant teams to ask for a workload with one small object, and not with a Deployment, a Service and a pile of settings. Crossplane makes that possible. A CompositeResourceDefinition (XRD) defines a new API type, and a Composition says which objects Crossplane creates for each request of that type.
+
+This module builds that pair from nothing. The example API is `TeamEnvironment`. A tenant in the `outpost` namespace creates one `TeamEnvironment`, and Crossplane creates the `scout` Deployment and Service for it. Everything runs inside the `kind` cluster, so Crossplane never calls a cloud provider.
+
+The module has four parts. **From A CRD To An XRD** writes the API and its schema. **Compose Resources With A Pipeline** adds a Composition that creates the first workload object. **Patch Values In And Out** copies request values into the workload and writes the result back to status. **Render And Debug A Composition** previews a Composition on your machine and reads the status of a Composition that points at a missing function.
 
 ## Learning objectives
 
-- Write a CompositeResourceDefinition in apiextensions.crossplane.io/v2 with a namespaced scope and a validated schema
-- Install function-patch-and-transform and reference it from a Composition in Pipeline mode
-- Compose several in-cluster resources (Namespace, ResourceQuota, Deployment, Service) from one composite resource
-- Patch values from the composite resource spec into composed resources and write fields back to status
-- Preview what a Composition will produce with crossplane composition render before applying it
+After this module you can:
+
+- Write an XRD in `apiextensions.crossplane.io/v2` with a namespaced scope and a validated schema.
+- Reference `function-patch-and-transform` from a Composition in `Pipeline` mode.
+- Compose a Deployment and a Service from one composite resource.
+- Patch values from the composite resource into composed resources and write fields back to status.
+- Preview a Composition with `crossplane composition render` and read the status of a broken one.
 
 ## Before you start
 
-<!-- TODO(build): assumed knowledge, and what the playground already provides. -->
+You need Kubernetes basics (namespaces, Deployments, Services, `kubectl apply`) and a CustomResourceDefinition (CRD): an object that adds a new resource type to the Kubernetes API. Write each example file in a new, empty folder and run every command from there.
 
-## Outline
+Your playground runs Kubernetes 1.35.8 with Crossplane 2.4.2. Three Crossplane packages are installed. `provider-kubernetes` 1.4.1 is a provider: it installs the CRDs and the controller that create Kubernetes objects on behalf of Crossplane. It has a working `ProviderConfig` named `in-cluster` and the permissions it needs. `function-patch-and-transform` 0.11.0 is a composition function. The `crossplane` command line tool (CLI) 2.4.1 is on your path.
 
-<!-- TODO(build): each beat below becomes a section of this module (or a deep-dive part via /astrona-course-deep-dive). Delete this Outline section once written. -->
-
-- From CRD to XRD - what Crossplane adds on top of a schema
-- Compositions as a pipeline of functions
-- Patch and transform - from the XR spec to composed resources and back to status
-- Rendering locally to check a Composition before it reaches the cluster
-
-## Diagrams planned
-
-<!-- TODO(build): mermaid `flowchart` — XRD defines the TeamEnvironment API, a Composition pipeline runs function-patch-and-transform, which returns Namespace, ResourceQuota, Deployment and Service -->
-<!-- TODO(build): mermaid `er` — Relationships between XRD, Composition, composite resource and composed resources, with cardinality -->
-
-<!-- playground provides: kind cluster (Kubernetes 1.35) with Crossplane 2.4.2, provider-kubernetes 1.4.1 with a working ProviderConfig `in-cluster` and enough RBAC, and function-patch-and-transform 0.11.0 installed and healthy. No XRD or Composition exists yet. The `scout` image is pre-pulled. The `crossplane` CLI and a local container runtime are available for `crossplane composition render`. Needs outbound internet. -->
-
-<!-- module section-030/module-02 (Module 2) — stub written by /astrona-course-domain-scaffold, prose written by /astrona-course-domain-build. -->
+No XRD or Composition exists yet. The tenant namespace is `outpost`, and the platform team's namespace is `starfleet`.

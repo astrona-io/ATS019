@@ -90,11 +90,49 @@ modules:
         title: "Types, Required Fields, Defaults And Pruning"
         path: sections/section-010/module-01/course-02-types-defaults-and-pruning.md
       - type: reading
+        title: Question
+        path: sections/section-010/module-01/labs/lab-01/question.md
+      - type: lab
+        title: "Make A CRD Schema Reject Bad Input"
+        path: sections/section-010/module-01/labs/lab-01
+        difficulty: beginner
+        estimated_duration: 20m
+        topic: crd
+        task_kind: build
+        tags: [crd, openapi-schema, structural-schema, defaulting, pruning]
+        learning_goals:
+          - Write a structural schema that requires fields and limits their values
+          - Set defaults and prune unknown fields without x-kubernetes-preserve-unknown-fields
+          - Prove with server-side dry runs that the API server refuses bad objects
+        resources:
+          - name: "Extend the Kubernetes API with CustomResourceDefinitions"
+            url: https://kubernetes.io/docs/tasks/extend-kubernetes/custom-resources/custom-resource-definitions/
+      - type: reading
         title: "Rules Across Fields With CEL"
         path: sections/section-010/module-01/course-03-cel-rules.md
       - type: reading
         title: "Printer Columns, Short Names And Categories"
         path: sections/section-010/module-01/course-04-printer-columns-and-names.md
+      - type: reading
+        title: Question
+        path: sections/section-010/module-01/labs/lab-02/question.md
+      - type: lab
+        title: "Add CEL Rules And Printer Columns To A CRD"
+        path: sections/section-010/module-01/labs/lab-02
+        difficulty: intermediate
+        estimated_duration: 25m
+        topic: crd
+        task_kind: build
+        tags: [crd, cel-validation, printer-columns, openapi-schema]
+        learning_goals:
+          - Write a CEL rule that compares two fields and a transition rule that uses oldSelf
+          - Add printer columns, a short name and a category so kubectl get shows the key fields
+          - Prove each rule with a server-side dry run the API server must refuse
+        resources:
+          - name: "Extend the Kubernetes API with CustomResourceDefinitions"
+            url: https://kubernetes.io/docs/tasks/extend-kubernetes/custom-resources/custom-resource-definitions/
+          - name: "CEL in Kubernetes"
+            url: https://kubernetes.io/docs/reference/using-api/cel/
       - type: reading
         title: Summary
         path: sections/section-010/module-01/course-05-summary.md
@@ -109,14 +147,76 @@ modules:
         title: "Deprecate A Served Version"
         path: sections/section-010/module-02/course-02-deprecate-a-served-version.md
       - type: reading
+        title: Question
+        path: sections/section-010/module-02/labs/lab-01/question.md
+      - type: lab
+        title: "Add A v1 Version And Deprecate v1alpha1 Lab"
+        path: sections/section-010/module-02/labs/lab-01
+        difficulty: intermediate
+        estimated_duration: 20m
+        topic: crd
+        task_kind: migration
+        tags: [crd, crd-versions, storage-version, openapi-schema]
+        learning_goals:
+          - Add a served v1 version to a CRD and make it the only storage version
+          - Deprecate the old version so kubectl prints a warning, without losing any object
+          - Prove both versions return the same data and still reject bad input
+        resources:
+          - name: "Versions in CustomResourceDefinitions"
+            url: https://kubernetes.io/docs/tasks/extend-kubernetes/custom-resources/custom-resource-definition-versioning/
+          - name: "Extend the Kubernetes API with CustomResourceDefinitions"
+            url: https://kubernetes.io/docs/tasks/extend-kubernetes/custom-resources/custom-resource-definitions/
+      - type: reading
         title: "Write Status Through The Status Subresource"
         path: sections/section-010/module-02/course-03-status-subresource.md
       - type: reading
         title: "Scale A Custom Resource"
         path: sections/section-010/module-02/course-04-scale-subresource.md
       - type: reading
+        title: Question
+        path: sections/section-010/module-02/labs/lab-02/question.md
+      - type: lab
+        title: "Enable The Status And Scale Subresources Lab"
+        path: sections/section-010/module-02/labs/lab-02
+        difficulty: intermediate
+        estimated_duration: 20m
+        topic: crd
+        task_kind: build
+        tags: [crd, status-subresource, scale-subresource, openapi-schema]
+        learning_goals:
+          - Enable the status and scale subresources on a CRD version with the correct field paths
+          - Write status through the status endpoint and scale an object with kubectl scale
+          - Prove a normal write cannot change status and the schema limit still applies to scaling
+        resources:
+          - name: "Extend the Kubernetes API with CustomResourceDefinitions"
+            url: https://kubernetes.io/docs/tasks/extend-kubernetes/custom-resources/custom-resource-definitions/
+          - name: "Custom resources"
+            url: https://kubernetes.io/docs/concepts/extend-kubernetes/api-extension/custom-resources/
+      - type: reading
         title: Summary
         path: sections/section-010/module-02/course-05-summary.md
+      - type: reading
+        title: Question
+        path: sections/section-010/capstone/labs/lab-01/question.md
+      - type: lab
+        title: "Publish A Validated And Versioned Platform API Capstone"
+        path: sections/section-010/capstone/labs/lab-01
+        difficulty: advanced
+        estimated_duration: 40m
+        topic: crd
+        task_kind: build
+        tags: [crd, defaulting, cel-validation, crd-versions, storage-version, status-subresource, scale-subresource, printer-columns]
+        learning_goals:
+          - Replace a weak CRD with a schema that requires, limits, defaults and rejects input, plus CEL transition and cross-field rules
+          - Serve a deprecated v1alpha1 beside a v1 storage version without losing the existing objects
+          - Prove the status and scale subresources and the printer columns with kubectl
+        resources:
+          - name: "Extend the Kubernetes API with CustomResourceDefinitions"
+            url: https://kubernetes.io/docs/tasks/extend-kubernetes/custom-resources/custom-resource-definitions/
+          - name: "Versions in CustomResourceDefinitions"
+            url: https://kubernetes.io/docs/tasks/extend-kubernetes/custom-resources/custom-resource-definition-versioning/
+          - name: "Common Expression Language in Kubernetes"
+            url: https://kubernetes.io/docs/reference/using-api/cel/
 
   - id: module-020
     title: "Platform Automation With Operators"
@@ -149,8 +249,619 @@ modules:
         title: "Read Conditions And observedGeneration"
         path: sections/section-020/module-01/course-03-conditions-and-observed-generation.md
       - type: reading
+        title: Question
+        path: sections/section-020/module-01/labs/lab-01/question.md
+      - type: lab
+        title: "Make A Stale Operator Status Current Lab"
+        path: sections/section-020/module-01/labs/lab-01
+        difficulty: beginner
+        estimated_duration: 15m
+        topic: operators
+        task_kind: troubleshooting
+        tags: [operator, reconcile-loop, conditions, observed-generation, prometheus-operator]
+        learning_goals:
+          - Compare observedGeneration with metadata.generation to show that a status is old
+          - Find that the controller is not running and start it
+          - Prove the controller acted on the spec change through the owned StatefulSet and a current status
+        resources:
+          - name: "Controllers"
+            url: https://kubernetes.io/docs/concepts/architecture/controller/
+          - name: "Operator pattern"
+            url: https://kubernetes.io/docs/concepts/extend-kubernetes/operator/
+          - name: "Prometheus Operator"
+            url: https://prometheus-operator.dev/docs/getting-started/introduction/
+      - type: reading
         title: "Find Why A Reconcile Failed"
         path: sections/section-020/module-01/course-04-find-why-a-reconcile-failed.md
       - type: reading
+        title: Question
+        path: sections/section-020/module-01/labs/lab-02/question.md
+      - type: lab
+        title: "Repair A Prometheus Resource That Cannot Reconcile Lab"
+        path: sections/section-020/module-01/labs/lab-02
+        difficulty: intermediate
+        estimated_duration: 25m
+        topic: operators
+        task_kind: troubleshooting
+        tags: [operator, reconcile-loop, conditions, prometheus-operator, owner-references, service-account, rbac]
+        learning_goals:
+          - Read the Reconciled and Available conditions to tell an operator failure from a failure in an owned object
+          - Find a missing ServiceAccount from the events of the owned StatefulSet
+          - Fix both causes without removing configuration and without widening access
+        resources:
+          - name: "Operator pattern"
+            url: https://kubernetes.io/docs/concepts/extend-kubernetes/operator/
+          - name: "Owners and dependents"
+            url: https://kubernetes.io/docs/concepts/overview/working-with-objects/owners-dependents/
+          - name: "Role-based access control"
+            url: https://kubernetes.io/docs/reference/access-authn-authz/rbac/
+      - type: reading
         title: Summary
         path: sections/section-020/module-01/course-05-summary.md
+
+      - type: reading
+        title: "Manage Deletion With Finalizers And Owner References"
+        path: sections/section-020/module-02/course.md
+      - type: reading
+        title: "Owner References And The Garbage Collector"
+        path: sections/section-020/module-02/course-01-owner-references-and-garbage-collection.md
+      - type: reading
+        title: "Choose A Cascading Deletion Mode"
+        path: sections/section-020/module-02/course-02-cascading-deletion-modes.md
+      - type: reading
+        title: Question
+        path: sections/section-020/module-02/labs/lab-01/question.md
+      - type: lab
+        title: "Hand Over A Dependent Before Deleting Its Owner Lab"
+        path: sections/section-020/module-02/labs/lab-01
+        difficulty: intermediate
+        estimated_duration: 20m
+        topic: operators
+        task_kind: build
+        tags: [operator, owner-references, garbage-collection, crd]
+        learning_goals:
+          - Move a dependent object to a new owner with an ownerReference that holds the real UID
+          - Delete an owner without losing a dependent that must survive
+          - Prove the garbage collector removes only the objects that name the deleted owner, not objects that share a label
+        resources:
+          - name: "Owners and dependents"
+            url: https://kubernetes.io/docs/concepts/overview/working-with-objects/owners-dependents/
+          - name: "Garbage collection"
+            url: https://kubernetes.io/docs/concepts/architecture/garbage-collection/
+      - type: reading
+        title: "Finalizers And deletionTimestamp"
+        path: sections/section-020/module-02/course-03-finalizers-and-deletion-timestamp.md
+      - type: reading
+        title: "Restore A Cleanup Worker"
+        path: sections/section-020/module-02/course-04-restore-a-cleanup-worker.md
+      - type: reading
+        title: Question
+        path: sections/section-020/module-02/labs/lab-02/question.md
+      - type: lab
+        title: "Restore A Cleanup Worker That Cannot Finish Lab"
+        path: sections/section-020/module-02/labs/lab-02
+        difficulty: intermediate
+        estimated_duration: 20m
+        topic: operators
+        task_kind: troubleshooting
+        tags: [operator, finalizers, rbac, service-account]
+        learning_goals:
+          - Find the component responsible for a finalizer that keeps an object in a terminating state
+          - Fix the missing RBAC verb of the cleanup worker without widening access
+          - Prove the worker removed the finalizer after cleanup, not a manual patch
+        resources:
+          - name: "Finalizers"
+            url: https://kubernetes.io/docs/concepts/overview/working-with-objects/finalizers/
+          - name: "Using RBAC authorization"
+            url: https://kubernetes.io/docs/reference/access-authn-authz/rbac/
+      - type: reading
+        title: Summary
+        path: sections/section-020/module-02/course-05-summary.md
+      - type: reading
+        title: Question
+        path: sections/section-020/capstone/labs/lab-01/question.md
+      - type: lab
+        title: "Diagnose And Repair Operator-Managed Resources Capstone"
+        path: sections/section-020/capstone/labs/lab-01
+        difficulty: advanced
+        estimated_duration: 40m
+        topic: operators
+        task_kind: troubleshooting
+        tags: [operator, prometheus-operator, conditions, owner-references, garbage-collection, finalizers, rbac, reconcile-loop]
+        learning_goals:
+          - Find why a Prometheus resource does not reconcile from its conditions, the events of its StatefulSet and the operator log, and repair the cause
+          - Add owner references with the real UID so the garbage collector deletes the dependents of a custom resource
+          - Finish a stuck deletion by fixing the permission of the cleanup worker and running it, without removing the finalizer by hand
+        resources:
+          - name: "Owners and dependents"
+            url: https://kubernetes.io/docs/concepts/overview/working-with-objects/owners-dependents/
+          - name: "Finalizers"
+            url: https://kubernetes.io/docs/concepts/overview/working-with-objects/finalizers/
+          - name: "Prometheus Operator"
+            url: https://prometheus-operator.dev/docs/getting-started/introduction/
+          - name: "Role-based access control"
+            url: https://kubernetes.io/docs/reference/access-authn-authz/rbac/
+
+  - id: module-030
+    title: "Platform APIs With Crossplane"
+    description: >
+      The reader builds a platform API that turns one small request into many objects. A provider and its ProviderConfig come first, then a CompositeResourceDefinition and a function-pipeline Composition, then a composite resource that tenants request and the platform team traces when it fails. The provider acts inside the cluster (provider-kubernetes), so everything runs offline in kind.
+
+    content:
+      - type: reading
+        title: Section Overview
+        path: sections/section-030/README.md
+
+
+      - type: reading
+        title: "Install A Crossplane Provider And ProviderConfig"
+        path: sections/section-030/module-01/course.md
+      - type: reading
+        title: "Crossplane And Provider Packages"
+        path: sections/section-030/module-01/course-01-crossplane-and-provider-packages.md
+      - type: reading
+        title: Question
+        path: sections/section-030/module-01/labs/lab-01/question.md
+      - type: lab
+        title: "Install provider-kubernetes And Reach Healthy Lab"
+        path: sections/section-030/module-01/labs/lab-01
+        difficulty: beginner
+        estimated_duration: 15m
+        topic: crossplane
+        task_kind: build
+        tags: [crossplane, provider, provider-kubernetes, service-account]
+        learning_goals:
+          - Install a Crossplane provider package at a pinned version with a Provider object
+          - Fix the provider's ServiceAccount name with a DeploymentRuntimeConfig
+          - Prove the provider is Installed and Healthy and that its pod uses that ServiceAccount
+        resources:
+          - name: "Crossplane providers"
+            url: https://docs.crossplane.io/v2.4/packages/providers/
+          - name: "provider-kubernetes"
+            url: https://github.com/crossplane-contrib/provider-kubernetes
+      - type: reading
+        title: "ProviderConfig And Injected Identity"
+        path: sections/section-030/module-01/course-02-providerconfig-and-injected-identity.md
+      - type: reading
+        title: "Managed Resources And Failed Syncs"
+        path: sections/section-030/module-01/course-03-managed-resources-and-failed-syncs.md
+      - type: reading
+        title: Question
+        path: sections/section-030/module-01/labs/lab-02/question.md
+      - type: lab
+        title: "Repair A Provider That Cannot Sync An Object Lab"
+        path: sections/section-030/module-01/labs/lab-02
+        difficulty: intermediate
+        estimated_duration: 20m
+        topic: crossplane
+        task_kind: troubleshooting
+        tags: [crossplane, provider-kubernetes, provider-config, managed-resource, rbac, service-account]
+        learning_goals:
+          - Read the Synced condition of a managed resource to find why a sync fails
+          - Fix the missing RBAC of a provider's ServiceAccount without widening access
+          - Prove the managed resource is Synced and Ready and the provider created the object
+        resources:
+          - name: "Role-based access control good practices"
+            url: https://kubernetes.io/docs/reference/access-authn-authz/rbac/
+          - name: "Crossplane providers"
+            url: https://docs.crossplane.io/v2.4/packages/providers/
+          - name: "provider-kubernetes"
+            url: https://github.com/crossplane-contrib/provider-kubernetes
+      - type: reading
+        title: Summary
+        path: sections/section-030/module-01/course-04-summary.md
+
+      - type: reading
+        title: "Define A Platform API With An XRD And Composition"
+        path: sections/section-030/module-02/course.md
+      - type: reading
+        title: "From A CRD To An XRD"
+        path: sections/section-030/module-02/course-01-from-a-crd-to-an-xrd.md
+      - type: reading
+        title: Question
+        path: sections/section-030/module-02/labs/lab-01/question.md
+      - type: lab
+        title: "Define A Platform API With An XRD Lab"
+        path: sections/section-030/module-02/labs/lab-01
+        difficulty: beginner
+        estimated_duration: 20m
+        topic: crossplane
+        task_kind: build
+        tags: [crossplane, xrd, composite-resource, openapi-schema, structural-schema, defaulting]
+        learning_goals:
+          - Write a namespaced XRD whose schema sets defaults and limits
+          - Prove the API server fills in defaults and refuses a missing owner, out-of-range numbers, a bad tier and unknown fields
+          - Create a request that is stored with the default values
+        resources:
+          - name: "Composite resource definitions"
+            url: https://docs.crossplane.io/v2.4/composition/composite-resource-definitions/
+          - name: "Extend the Kubernetes API with CustomResourceDefinitions"
+            url: https://kubernetes.io/docs/tasks/extend-kubernetes/custom-resources/custom-resource-definitions/
+      - type: reading
+        title: "Compose Resources With A Pipeline"
+        path: sections/section-030/module-02/course-02-compose-resources-with-a-pipeline.md
+      - type: reading
+        title: "Patch Values In And Out"
+        path: sections/section-030/module-02/course-03-patch-values-in-and-out.md
+      - type: reading
+        title: Question
+        path: sections/section-030/module-02/labs/lab-02/question.md
+      - type: lab
+        title: "Patch A Composition To Honour Tenant Requests Lab"
+        path: sections/section-030/module-02/labs/lab-02
+        difficulty: intermediate
+        estimated_duration: 25m
+        topic: crossplane
+        task_kind: troubleshooting
+        tags: [crossplane, composition, composition-functions, patch-and-transform, composite-resource, managed-resource, provider-kubernetes]
+        learning_goals:
+          - Add a patch that copies spec.replicas of a request into a composed Deployment
+          - Write the available replicas of the Deployment back into the status of the request
+          - Prove with a request from shuttle that the composed Service answers 200
+        resources:
+          - name: "Compositions"
+            url: https://docs.crossplane.io/v2.4/composition/compositions/
+          - name: "Composite resource definitions"
+            url: https://docs.crossplane.io/v2.4/composition/composite-resource-definitions/
+      - type: reading
+        title: "Render And Debug A Composition"
+        path: sections/section-030/module-02/course-04-render-and-debug-a-composition.md
+      - type: reading
+        title: Question
+        path: sections/section-030/module-02/labs/lab-03/question.md
+      - type: lab
+        title: "Repair A Broken Composition Lab"
+        path: sections/section-030/module-02/labs/lab-03
+        difficulty: intermediate
+        estimated_duration: 30m
+        topic: crossplane
+        task_kind: troubleshooting
+        tags: [crossplane, composition, composition-functions, composite-resource, resource-trace, managed-resource, provider-kubernetes]
+        learning_goals:
+          - Find a missing function from the conditions and events of a composite resource
+          - Find a Service selector that matches no pod and repair it in the Composition
+          - Prove the repair with a Synced and Ready request and a request that returns 200
+        resources:
+          - name: "Compositions"
+            url: https://docs.crossplane.io/v2.4/composition/compositions/
+          - name: "Crossplane CLI command reference"
+            url: https://docs.crossplane.io/v2.4/cli/command-reference/
+      - type: reading
+        title: Summary
+        path: sections/section-030/module-02/course-05-summary.md
+
+      - type: reading
+        title: "Provision And Trace A Composite Resource"
+        path: sections/section-030/module-03/course.md
+      - type: reading
+        title: "Request A Composite Resource"
+        path: sections/section-030/module-03/course-01-request-a-composite-resource.md
+      - type: reading
+        title: Question
+        path: sections/section-030/module-03/labs/lab-01/question.md
+      - type: lab
+        title: "Provision A TeamEnvironment And Prove It Answers"
+        path: sections/section-030/module-03/labs/lab-01
+        difficulty: beginner
+        estimated_duration: 20m
+        topic: crossplane
+        task_kind: build
+        tags: [crossplane, xrd, composite-resource, composition, managed-resource, provider-kubernetes]
+        learning_goals:
+          - Create a composite resource that follows the schema of its platform API
+          - Wait for the Synced and Ready conditions of the composite resource
+          - Prove that the provisioned workload answers a request
+        resources:
+          - name: "Composite resource definitions"
+            url: https://docs.crossplane.io/v2.4/composition/composite-resource-definitions/
+          - name: "Compositions"
+            url: https://docs.crossplane.io/v2.4/composition/compositions/
+      - type: reading
+        title: "Trace A Composite Resource"
+        path: sections/section-030/module-03/course-02-trace-a-composite-resource.md
+      - type: reading
+        title: "Read A Failing Composite Resource"
+        path: sections/section-030/module-03/course-03-read-a-failing-composite-resource.md
+      - type: reading
+        title: Question
+        path: sections/section-030/module-03/labs/lab-02/question.md
+      - type: lab
+        title: "Fix A Failing Composition Found By Tracing"
+        path: sections/section-030/module-03/labs/lab-02
+        difficulty: intermediate
+        estimated_duration: 25m
+        topic: crossplane
+        task_kind: troubleshooting
+        tags: [crossplane, composition, composition-functions, patch-and-transform, provider-config, resource-trace, composite-resource]
+        learning_goals:
+          - Trace a composite resource to the composed resource that is not Ready
+          - Fix a ProviderConfig name and a patch path in a Composition
+          - Prove that the workload follows the request after the fix
+        resources:
+          - name: "Compositions"
+            url: https://docs.crossplane.io/v2.4/composition/compositions/
+          - name: "Crossplane CLI command reference"
+            url: https://docs.crossplane.io/v2.4/cli/command-reference/
+          - name: "Providers"
+            url: https://docs.crossplane.io/v2.4/packages/providers/
+      - type: reading
+        title: "Update And Delete A Composite Resource"
+        path: sections/section-030/module-03/course-04-update-and-delete-a-composite-resource.md
+      - type: reading
+        title: Question
+        path: sections/section-030/module-03/labs/lab-03/question.md
+      - type: lab
+        title: "Delete A Composite Resource Without Losing Its Workload"
+        path: sections/section-030/module-03/labs/lab-03
+        difficulty: intermediate
+        estimated_duration: 15m
+        topic: crossplane
+        task_kind: build
+        tags: [crossplane, composite-resource, managed-resource, owner-references, garbage-collection, resource-trace]
+        learning_goals:
+          - Delete a composite resource with orphaning so its workload stays
+          - Prove that the composed objects lost their owner reference
+          - Show that the workload still answers a request
+        resources:
+          - name: "Owners and dependents"
+            url: https://kubernetes.io/docs/concepts/overview/working-with-objects/owners-dependents/
+          - name: "What's Crossplane"
+            url: https://docs.crossplane.io/v2.4/whats-crossplane/
+      - type: reading
+        title: Summary
+        path: sections/section-030/module-03/course-05-summary.md
+      - type: reading
+        title: Question
+        path: sections/section-030/capstone/labs/lab-01/question.md
+      - type: lab
+        title: "Build A Self-Service Team Environment API Capstone"
+        path: sections/section-030/capstone/labs/lab-01
+        difficulty: advanced
+        estimated_duration: 40m
+        topic: crossplane
+        task_kind: build
+        tags: [crossplane, provider-kubernetes, rbac, xrd, composition, patch-and-transform, composite-resource, resource-trace]
+        learning_goals:
+          - Install provider-kubernetes and grant it only the access its Compositions need
+          - Define a TeamEnvironment XRD and a Pipeline Composition that creates a Deployment and a Service
+          - Prove that a tenant request reaches Ready and the provisioned workload answers a request
+        resources:
+          - name: "Providers"
+            url: https://docs.crossplane.io/v2.4/packages/providers/
+          - name: "Composite resource definitions"
+            url: https://docs.crossplane.io/v2.4/composition/composite-resource-definitions/
+          - name: "Compositions"
+            url: https://docs.crossplane.io/v2.4/composition/compositions/
+          - name: "Using RBAC authorization"
+            url: https://kubernetes.io/docs/reference/access-authn-authz/rbac/
+
+  - id: module-040
+    title: "Self-Service Provisioning Workflows"
+    description: >
+      The reader wraps the platform API in a self-service workflow: Argo Workflows runs provisioning steps, Argo Events starts them from a webhook, and Argo CD delivers a request committed to Git. Scoped RBAC limits what a tenant can create.
+
+    content:
+      - type: reading
+        title: Section Overview
+        path: sections/section-040/README.md
+
+
+      - type: reading
+        title: "Run Provisioning Steps With Argo Workflows"
+        path: sections/section-040/module-01/course.md
+      - type: reading
+        title: "What Argo Workflows Runs"
+        path: sections/section-040/module-01/course-01-what-argo-workflows-runs.md
+      - type: reading
+        title: "Build A Reusable WorkflowTemplate"
+        path: sections/section-040/module-01/course-02-build-a-reusable-workflowtemplate.md
+      - type: reading
+        title: Question
+        path: sections/section-040/module-01/labs/lab-01/question.md
+      - type: lab
+        title: "Submit A Parameterized Provisioning WorkflowTemplate Lab"
+        path: sections/section-040/module-01/labs/lab-01
+        difficulty: beginner
+        estimated_duration: 20m
+        topic: workflows
+        task_kind: build
+        tags: [argo-workflows, workflow-template, workflow-parameters, workflow-dag]
+        learning_goals:
+          - Write a WorkflowTemplate with parameters and a DAG of dependent tasks
+          - Submit a Workflow that overrides the parameters and prove it Succeeded
+        resources:
+          - name: "Argo Workflows documentation"
+            url: https://argo-workflows.readthedocs.io/en/latest/
+          - name: "Argo Workflows: Workflow templates"
+            url: https://argo-workflows.readthedocs.io/en/latest/workflow-templates/
+      - type: reading
+        title: "Give The Workflow A ServiceAccount"
+        path: sections/section-040/module-01/course-03-give-the-workflow-a-serviceaccount.md
+      - type: reading
+        title: Question
+        path: sections/section-040/module-01/labs/lab-02/question.md
+      - type: lab
+        title: "Fix A Provisioning Workflow That Fails On Permissions Lab"
+        path: sections/section-040/module-01/labs/lab-02
+        difficulty: intermediate
+        estimated_duration: 25m
+        topic: rbac
+        task_kind: troubleshooting
+        tags: [argo-workflows, workflow-template, rbac, service-account]
+        learning_goals:
+          - Read a failed Workflow and find the forbidden request
+          - Fix the Role and RoleBinding with least privilege and prove the Workflow Succeeded
+        resources:
+          - name: "Using RBAC Authorization"
+            url: https://kubernetes.io/docs/reference/access-authn-authz/rbac/
+          - name: "Argo Workflows documentation"
+            url: https://argo-workflows.readthedocs.io/en/latest/
+      - type: reading
+        title: "Create A Platform API Object And Wait For Ready"
+        path: sections/section-040/module-01/course-04-create-a-platform-api-object-and-wait.md
+      - type: reading
+        title: Question
+        path: sections/section-040/module-01/labs/lab-03/question.md
+      - type: lab
+        title: "Wait For A TeamEnvironment With A Resource Step Lab"
+        path: sections/section-040/module-01/labs/lab-03
+        difficulty: intermediate
+        estimated_duration: 30m
+        topic: workflows
+        task_kind: build
+        tags: [argo-workflows, workflow-template, workflow-parameters, rbac, resource-template]
+        learning_goals:
+          - Write a resource step that creates a platform API object and waits for status.phase Ready
+          - Grant only the verbs a waiting step needs
+          - Prove the Workflow keeps running until Ready and fails on Failed
+        resources:
+          - name: "Argo Workflows: Workflow templates"
+            url: https://argo-workflows.readthedocs.io/en/latest/workflow-templates/
+          - name: "Extend the Kubernetes API with CustomResourceDefinitions"
+            url: https://kubernetes.io/docs/tasks/extend-kubernetes/custom-resources/custom-resource-definitions/
+          - name: "Using RBAC Authorization"
+            url: https://kubernetes.io/docs/reference/access-authn-authz/rbac/
+      - type: reading
+        title: Summary
+        path: sections/section-040/module-01/course-05-summary.md
+
+      - type: reading
+        title: "Trigger Workflows From Events With Argo Events"
+        path: sections/section-040/module-02/course.md
+      - type: reading
+        title: "EventBus And Webhook EventSource"
+        path: sections/section-040/module-02/course-01-eventbus-and-webhook-eventsource.md
+      - type: reading
+        title: "A Sensor That Submits A Workflow"
+        path: sections/section-040/module-02/course-02-a-sensor-that-submits-a-workflow.md
+      - type: reading
+        title: "Filters And Parameter Mapping"
+        path: sections/section-040/module-02/course-03-filters-and-parameter-mapping.md
+      - type: reading
+        title: Question
+        path: sections/section-040/module-02/labs/lab-01/question.md
+      - type: lab
+        title: "Trigger A Provisioning Workflow From A Webhook"
+        path: sections/section-040/module-02/labs/lab-01
+        difficulty: intermediate
+        estimated_duration: 30m
+        topic: workflows
+        task_kind: build
+        tags: [argo-events, sensor, workflow-template, workflow-parameters, rbac, service-account]
+        learning_goals:
+          - Build an EventBus, a webhook EventSource and a Sensor that submits a Workflow from a WorkflowTemplate
+          - Map a value from the event body into a Workflow parameter and drop events with a data filter
+          - Grant the Sensor ServiceAccount only the permission to create Workflows
+        resources:
+          - name: "Argo Events documentation"
+            url: https://argoproj.github.io/argo-events/
+          - name: "Argo Workflows: Workflow templates"
+            url: https://argo-workflows.readthedocs.io/en/latest/workflow-templates/
+          - name: "Using RBAC authorization"
+            url: https://kubernetes.io/docs/reference/access-authn-authz/rbac/
+      - type: reading
+        title: "Follow An Event That Went Nowhere"
+        path: sections/section-040/module-02/course-04-follow-an-event-that-went-nowhere.md
+      - type: reading
+        title: Question
+        path: sections/section-040/module-02/labs/lab-02/question.md
+      - type: lab
+        title: "Find Why An Event Starts No Workflow"
+        path: sections/section-040/module-02/labs/lab-02
+        difficulty: intermediate
+        estimated_duration: 20m
+        topic: workflows
+        task_kind: troubleshooting
+        tags: [argo-events, sensor, argo-workflows, workflow-parameters]
+        learning_goals:
+          - Follow an event from the request through the EventSource and the Sensor to find the first component that fails
+          - Fix a wrong data filter path in a Sensor without removing the filter
+          - Prove the fix with a request that starts a Workflow with the posted team name
+        resources:
+          - name: "Argo Events documentation"
+            url: https://argoproj.github.io/argo-events/
+          - name: "Argo Workflows documentation"
+            url: https://argo-workflows.readthedocs.io/en/latest/
+      - type: reading
+        title: Summary
+        path: sections/section-040/module-02/course-05-summary.md
+
+      - type: reading
+        title: "Offer Self-Service Through Git And Scoped RBAC"
+        path: sections/section-040/module-03/course.md
+      - type: reading
+        title: "Scope A Tenant With A Role And RoleBinding"
+        path: sections/section-040/module-03/course-01-scope-a-tenant-with-a-role-and-rolebinding.md
+      - type: reading
+        title: "Aggregate Platform API Permissions Into edit And view"
+        path: sections/section-040/module-03/course-02-aggregate-platform-api-permissions.md
+      - type: reading
+        title: Question
+        path: sections/section-040/module-03/labs/lab-01/question.md
+      - type: lab
+        title: "Scope A Tenant To One Platform API With RBAC Lab"
+        path: sections/section-040/module-03/labs/lab-01
+        difficulty: beginner
+        estimated_duration: 15m
+        topic: rbac
+        task_kind: build
+        tags: [rbac, aggregated-clusterrole, crd, composite-resource]
+        learning_goals:
+          - Write a Role and RoleBinding that let one group create and read a single platform API kind in its own namespace
+          - Prove with impersonation that the group cannot change objects, read Secrets or act in another namespace
+        resources:
+          - name: "Using RBAC Authorization"
+            url: https://kubernetes.io/docs/reference/access-authn-authz/rbac/
+      - type: reading
+        title: "Deliver Requests Through Git With Argo CD"
+        path: sections/section-040/module-03/course-03-deliver-requests-through-git-with-argo-cd.md
+      - type: reading
+        title: "Follow A Request From Commit To Ready"
+        path: sections/section-040/module-03/course-04-follow-a-request-from-commit-to-ready.md
+      - type: reading
+        title: Question
+        path: sections/section-040/module-03/labs/lab-02/question.md
+      - type: lab
+        title: "Deliver A Tenant Request Through Argo CD Lab"
+        path: sections/section-040/module-03/labs/lab-02
+        difficulty: intermediate
+        estimated_duration: 30m
+        topic: self-service
+        task_kind: troubleshooting
+        tags: [argo-cd, gitops-request, composite-resource, composition, rbac]
+        learning_goals:
+          - Read the status of an Argo CD Application to find why a committed request does not arrive
+          - Fix an AppProject and an Application without widening the project beyond one kind, one namespace and one repository
+          - Follow a committed TeamEnvironment to a Ready composite resource and a workload that answers
+        resources:
+          - name: "Argo CD documentation"
+            url: https://argo-cd.readthedocs.io/en/stable/
+          - name: "Compositions"
+            url: https://docs.crossplane.io/v2.4/composition/compositions/
+      - type: reading
+        title: Summary
+        path: sections/section-040/module-03/course-05-summary.md
+      - type: reading
+        title: Question
+        path: sections/section-040/capstone/labs/lab-01/question.md
+      - type: lab
+        title: "Deliver Self-Service Environment Provisioning Capstone"
+        path: sections/section-040/capstone/labs/lab-01
+        difficulty: advanced
+        estimated_duration: 40m
+        topic: self-service
+        task_kind: build
+        tags: [rbac, service-account, workflow-template, workflow-parameters, argo-events, sensor, composite-resource]
+        learning_goals:
+          - Scope the RBAC of a tenant group, a Workflow ServiceAccount and a Sensor ServiceAccount to the least rights each one needs
+          - Write a WorkflowTemplate that creates a TeamEnvironment and waits for available replicas before it succeeds
+          - Repair an EventSource and a Sensor so that a webhook order with a valid tier starts the Workflow with the posted team
+        resources:
+          - name: "Using RBAC Authorization"
+            url: https://kubernetes.io/docs/reference/access-authn-authz/rbac/
+          - name: "Argo Events"
+            url: https://argoproj.github.io/argo-events/
+          - name: "Workflow templates"
+            url: https://argo-workflows.readthedocs.io/en/latest/workflow-templates/
+          - name: "Compositions"
+            url: https://docs.crossplane.io/v2.4/composition/compositions/

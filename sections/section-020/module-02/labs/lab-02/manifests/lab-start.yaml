@@ -1,0 +1,112 @@
+# Starting state of the lab. Two faults keep the cleanup from running:
+# the Job is suspended, and the Role does not allow `delete` on probe-cache.
+# The cleanup contract is to delete probe-cache before releasing probe-settings.
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: starfleet
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: probe-cache
+  namespace: starfleet
+data:
+  state: temporary
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: probe-settings
+  namespace: starfleet
+  annotations:
+    platform.starfleet.io/cleanup-job: probe-cleanup
+  finalizers:
+    - platform.starfleet.io/cleanup
+data:
+  PODINFO_UI_MESSAGE: hello from starfleet
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: probe-cleanup
+  namespace: starfleet
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: probe-cleanup
+  namespace: starfleet
+rules:
+  - apiGroups: [""]
+    resources: ["configmaps"]
+    resourceNames: ["probe-settings"]
+    verbs: ["get", "list", "watch", "patch"]
+  - apiGroups: [""]
+    resources: ["configmaps"]
+    resourceNames: ["probe-cache"]
+    verbs: ["get", "list", "watch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: probe-cleanup
+  namespace: starfleet
+subjects:
+  - kind: ServiceAccount
+    name: probe-cleanup
+    namespace: starfleet
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: probe-cleanup
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: probe-cleanup
+  namespace: starfleet
+spec:
+  suspend: true
+  backoffLimit: 6
+  template:
+    spec:
+      serviceAccountName: probe-cleanup
+      restartPolicy: Never
+      initContainers:
+        - name: wait-for-deletion
+          image: registry.k8s.io/kubectl:v1.35.8
+          command: ["kubectl"]
+          args:
+            - "-n"
+            - starfleet
+            - wait
+            - "--for=jsonpath={.metadata.deletionTimestamp}"
+            - configmap/probe-settings
+            - "--timeout=60s"
+          resources:
+            requests: {cpu: 10m, memory: 16Mi}
+            limits: {memory: 64Mi}
+        - name: delete-cache
+          image: registry.k8s.io/kubectl:v1.35.8
+          command: ["kubectl"]
+          args: ["-n", starfleet, delete, configmap, probe-cache, "--ignore-not-found=true", "--wait=true", "--timeout=60s"]
+          resources:
+            requests: {cpu: 10m, memory: 16Mi}
+            limits: {memory: 64Mi}
+      containers:
+        - name: release-finalizer
+          image: registry.k8s.io/kubectl:v1.35.8
+          command: ["kubectl"]
+          args:
+            - "-n"
+            - starfleet
+            - patch
+            - configmap
+            - probe-settings
+            - "--type=json"
+            - "-p"
+            - '[{"op":"test","path":"/metadata/finalizers","value":["platform.starfleet.io/cleanup"]},{"op":"remove","path":"/metadata/finalizers/0"}]'
+          resources:
+            requests: {cpu: 10m, memory: 16Mi}
+            limits: {memory: 64Mi}

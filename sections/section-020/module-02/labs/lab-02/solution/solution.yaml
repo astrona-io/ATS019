@@ -1,0 +1,16 @@
+# Reference fix for the Role: the worker may also delete the cache ConfigMap,
+# and only that one, by name.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: probe-cleanup
+  namespace: starfleet
+rules:
+  - apiGroups: [""]
+    resources: ["configmaps"]
+    resourceNames: ["probe-settings"]
+    verbs: ["get", "list", "watch", "patch"]
+  - apiGroups: [""]
+    resources: ["configmaps"]
+    resourceNames: ["probe-cache"]
+    verbs: ["get", "list", "watch", "delete"]

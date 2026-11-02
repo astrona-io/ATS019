@@ -1,0 +1,8 @@
+apiVersion: platform.starfleet.io/v1alpha1
+kind: TeamEnvironment
+metadata:
+  name: outpost-env
+  namespace: outpost
+spec:
+  team: drifter
+  replicas: 2

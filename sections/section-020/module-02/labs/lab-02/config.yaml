@@ -1,0 +1,47 @@
+# yaml-language-server: $schema=https://cli.astrona.io/schema/lab-config.schema.json
+apiVersion: astrona.io/v1
+metadata:
+  name: ats-019-lab-020-02-02
+  docs:
+    prerequisites: prerequisites.md
+    question: question.md
+    solution: solution.md
+
+runtime:
+  type: kind
+  kind:
+    image: kindest/node:v1.35.8
+    preloadImages:
+      - registry.k8s.io/kubectl:v1.35.8
+
+bootstrap:
+  init:
+    - name: seed-stuck-deletion
+      description: "Creates the ConfigMaps, the suspended cleanup Job and the Role that is too small, then requests deletion"
+      type: file
+      source: bootstrap/01-seed-stuck-deletion.sh
+
+testing:
+  init:
+    - name: solution
+      description: Reference solution applied by `astrona test`
+      type: file
+      source: solution/apply.sh
+    - name: wait-job-complete
+      description: Waits until the cleanup Job is Complete
+      type: file
+      source: testing/wait-job-complete.sh
+
+validation:
+  scripts:
+    - name: cleanup-complete
+      description: The cleanup Job is Complete, and probe-settings and probe-cache are gone
+      type: file
+      source: validation/validate-cleanup-complete.sh
+    - name: cleanup-rbac
+      description: The worker may do the cleanup on the two named ConfigMaps and nothing wider
+      type: file
+      source: validation/validate-cleanup-rbac.sh
+
+teardown:
+  keepCluster: false

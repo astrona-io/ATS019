@@ -1,0 +1,51 @@
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  name: teamenvironments.platform.starfleet.io
+spec:
+  group: platform.starfleet.io
+  scope: Namespaced
+  names:
+    kind: TeamEnvironment
+    plural: teamenvironments
+    singular: teamenvironment
+  versions:
+    - name: v1alpha1
+      served: true
+      storage: true
+      schema:
+        openAPIV3Schema:
+          type: object
+          required:
+            - spec
+          properties:
+            spec:
+              type: object
+              required:
+                - team
+                - size
+                - contact
+              properties:
+                team:
+                  type: string
+                  minLength: 1
+                  maxLength: 30
+                size:
+                  type: string
+                  enum:
+                    - small
+                    - medium
+                    - large
+                replicas:
+                  type: integer
+                  minimum: 1
+                  maximum: 5
+                  default: 1
+                contact:
+                  type: string
+                  pattern: '^[a-z0-9.-]+@[a-z0-9.-]+$'
+                retentionDays:
+                  type: integer
+                  minimum: 1
+                  maximum: 90
+                  default: 7

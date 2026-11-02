@@ -1,0 +1,70 @@
+# yaml-language-server: $schema=https://cli.astrona.io/schema/lab-config.schema.json
+apiVersion: astrona.io/v1
+metadata:
+  name: ats-019-capstone-020
+  docs:
+    prerequisites: prerequisites.md
+    question: question.md
+    solution: solution.md
+
+runtime:
+  type: kind
+  kind:
+    image: kindest/node:v1.35.8
+    preloadImages:
+      - quay.io/prometheus-operator/prometheus-operator:v0.94.1
+      - quay.io/prometheus-operator/prometheus-config-reloader:v0.94.1
+      - quay.io/prometheus/prometheus:v3.15.0-distroless
+      - registry.k8s.io/kubectl:v1.35.8
+
+# Order: init runs first, so one script installs the operator and the next one seeds the faults.
+bootstrap:
+  init:
+    - name: install-operator
+      description: "Installs the Prometheus Operator 0.94.1 from its bundle and waits for it"
+      type: file
+      source: bootstrap/01-install-operator.sh
+    - name: seed
+      description: "Creates the faulty Prometheus resource, the unowned ConfigMaps and the stuck ConfigMap, and records the UIDs to keep"
+      type: file
+      source: bootstrap/02-seed.sh
+  waitFor:
+    - resource: deploy/prometheus-operator
+      namespace: default
+
+testing:
+  init:
+    - name: solution
+      description: Reference solution applied by `astrona test`
+      type: file
+      source: solution/apply.sh
+    - name: wait-repaired
+      description: Waits until the Prometheus resource is Available and the cleanup Job is Complete
+      type: file
+      source: testing/wait-repaired.sh
+
+validation:
+  scripts:
+    - name: prometheus-reconciled
+      description: The original Prometheus resource is Reconciled and Available, keeps its scrape configuration and the operator is untouched
+      type: file
+      source: validation/validate-prometheus-reconciled.sh
+    - name: prometheus-identity
+      description: The Prometheus pods run as the prepared ServiceAccount, which can read targets and nothing more
+      type: file
+      source: validation/validate-prometheus-identity.sh
+    - name: ownership
+      description: Both environment ConfigMaps are owned by the TeamEnvironment with its real UID and the shared ConfigMap is not
+      type: file
+      source: validation/validate-ownership.sh
+    - name: cleanup-done
+      description: The cleanup Job completed and both scout-settings and scout-cache are gone
+      type: file
+      source: validation/validate-cleanup-done.sh
+    - name: cleanup-access
+      description: The cleanup ServiceAccount may delete scout-cache and patch scout-settings and nothing wider
+      type: file
+      source: validation/validate-cleanup-access.sh
+
+teardown:
+  keepCluster: false

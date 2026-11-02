@@ -1,0 +1,42 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Sensor
+metadata:
+  name: provision
+  namespace: starfleet
+spec:
+  template:
+    serviceAccountName: operate-workflow-sa
+  dependencies:
+    - name: request-dep
+      eventSourceName: provision
+      eventName: request
+      filters:
+        data:
+          - path: body.tier
+            type: string
+            value:
+              - standard
+              - premium
+  triggers:
+    - template:
+        name: submit-provision
+        argoWorkflow:
+          operation: submit
+          source:
+            resource:
+              apiVersion: argoproj.io/v1alpha1
+              kind: Workflow
+              metadata:
+                generateName: provision-environment-
+              spec:
+                arguments:
+                  parameters:
+                    - name: team
+                      value: unset
+                workflowTemplateRef:
+                  name: provision-environment
+          parameters:
+            - src:
+                dependencyName: request-dep
+                dataKey: body.team
+              dest: spec.arguments.parameters.0.value

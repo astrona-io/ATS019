@@ -1,0 +1,94 @@
+# The cleanup contract is to delete scout-cache before releasing scout-settings.
+# The Job is suspended, so nothing removes the finalizer at the start.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: scout-cache
+  namespace: starfleet
+data:
+  state: temporary
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: scout-cleanup
+  namespace: starfleet
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: scout-cleanup
+  namespace: starfleet
+rules:
+  - apiGroups: [""]
+    resources: ["configmaps"]
+    resourceNames: ["scout-settings"]
+    verbs: ["get", "list", "watch", "patch"]
+  - apiGroups: [""]
+    resources: ["configmaps"]
+    resourceNames: ["scout-cache"]
+    verbs: ["get", "list", "watch", "delete"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: scout-cleanup
+  namespace: starfleet
+subjects:
+  - kind: ServiceAccount
+    name: scout-cleanup
+    namespace: starfleet
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: scout-cleanup
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: scout-cleanup
+  namespace: starfleet
+spec:
+  suspend: true
+  backoffLimit: 1
+  template:
+    spec:
+      serviceAccountName: scout-cleanup
+      restartPolicy: Never
+      initContainers:
+        - name: wait-for-deletion
+          image: registry.k8s.io/kubectl:v1.35.8
+          command: ["kubectl"]
+          args:
+            - "-n"
+            - starfleet
+            - wait
+            - "--for=jsonpath={.metadata.deletionTimestamp}"
+            - configmap/scout-settings
+            - "--timeout=60s"
+          resources:
+            requests: {cpu: 10m, memory: 16Mi}
+            limits: {memory: 64Mi}
+        - name: delete-cache
+          image: registry.k8s.io/kubectl:v1.35.8
+          command: ["kubectl"]
+          args: ["-n", starfleet, delete, configmap, scout-cache, "--ignore-not-found=true", "--wait=true", "--timeout=60s"]
+          resources:
+            requests: {cpu: 10m, memory: 16Mi}
+            limits: {memory: 64Mi}
+      containers:
+        - name: release-finalizer
+          image: registry.k8s.io/kubectl:v1.35.8
+          command: ["kubectl"]
+          args:
+            - "-n"
+            - starfleet
+            - patch
+            - configmap
+            - scout-settings
+            - "--type=json"
+            - "-p"
+            - '[{"op":"test","path":"/metadata/finalizers","value":["platform.starfleet.io/cleanup"]},{"op":"remove","path":"/metadata/finalizers/0"}]'
+          resources:
+            requests: {cpu: 10m, memory: 16Mi}
+            limits: {memory: 64Mi}

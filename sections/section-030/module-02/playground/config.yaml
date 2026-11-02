@@ -1,0 +1,43 @@
+# yaml-language-server: $schema=https://cli.astrona.io/schema/lab-config.schema.json
+#
+# Define A Platform API With An XRD And Composition (PLAYGROUND) — playground
+# environment. A clean sandbox: Crossplane 2.4.2, provider-kubernetes 1.4.1,
+# function-patch-and-transform 0.11.0, a ClusterProviderConfig named
+# in-cluster and the RBAC the provider needs in `outpost`. No XRD and no
+# Composition exist: the reader writes them. No task, no grading, no
+# `astrona submit`. Needs outbound internet: Crossplane pulls packages from
+# xpkg.crossplane.io.
+apiVersion: astrona.io/v1
+metadata:
+  name: ats-019-playground-030-02
+  docs:
+    guide: docs/overview.md
+
+runtime:
+  type: kind
+  kind:
+    image: kindest/node:v1.35.8
+    preloadImages:
+      - xpkg.crossplane.io/crossplane/crossplane:v2.4.2
+      - ghcr.io/stefanprodan/podinfo:6.15.0
+
+bootstrap:
+  init:
+    - name: install-crossplane
+      description: "Installs Crossplane 2.4.2 in crossplane-system and waits for its CRDs"
+      type: file
+      source: bootstrap/01-install-crossplane.sh
+    - name: install-packages
+      description: "Installs provider-kubernetes 1.4.1 and function-patch-and-transform 0.11.0, then the ClusterProviderConfig and RBAC"
+      type: file
+      source: bootstrap/02-install-packages.sh
+  waitFor:
+    - resource: provider.pkg.crossplane.io/provider-kubernetes
+      condition: Healthy
+      timeout: 300s
+    - resource: function.pkg.crossplane.io/function-patch-and-transform
+      condition: Healthy
+      timeout: 300s
+
+teardown:
+  keepCluster: false

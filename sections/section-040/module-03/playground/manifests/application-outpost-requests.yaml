@@ -1,0 +1,16 @@
+# The starting Application. It reads the requests folder, but it is still in
+# the `default` project and has no automated sync.
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: outpost-requests
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: http://gitea-http.gitea.svc:3000/starfleet/outpost-requests.git
+    targetRevision: HEAD
+    path: requests
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: outpost

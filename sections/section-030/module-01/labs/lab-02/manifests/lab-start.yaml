@@ -1,0 +1,56 @@
+# Starting state of the lab. The fault: the Role only allows reading Services,
+# so the provider cannot create the Service scout and the Object stays Synced False.
+apiVersion: kubernetes.m.crossplane.io/v1alpha1
+kind: ProviderConfig
+metadata:
+  name: in-cluster
+  namespace: outpost
+spec:
+  credentials:
+    source: InjectedIdentity
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: provider-kubernetes-services
+  namespace: outpost
+rules:
+  - apiGroups: [""]
+    resources: ["services"]
+    verbs: ["get", "list", "watch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: provider-kubernetes-services
+  namespace: outpost
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: provider-kubernetes-services
+subjects:
+  - kind: ServiceAccount
+    name: provider-kubernetes
+    namespace: crossplane-system
+---
+apiVersion: kubernetes.m.crossplane.io/v1alpha1
+kind: Object
+metadata:
+  name: scout
+  namespace: outpost
+spec:
+  forProvider:
+    manifest:
+      apiVersion: v1
+      kind: Service
+      metadata:
+        namespace: outpost
+      spec:
+        selector:
+          app: scout
+        ports:
+          - port: 9898
+            targetPort: 9898
+  providerConfigRef:
+    kind: ProviderConfig
+    name: in-cluster

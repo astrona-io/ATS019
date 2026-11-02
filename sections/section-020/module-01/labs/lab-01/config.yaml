@@ -1,0 +1,57 @@
+# yaml-language-server: $schema=https://cli.astrona.io/schema/lab-config.schema.json
+apiVersion: astrona.io/v1
+metadata:
+  name: ats-019-lab-020-01
+  docs:
+    prerequisites: prerequisites.md
+    question: question.md
+    solution: solution.md
+
+runtime:
+  type: kind
+  kind:
+    image: kindest/node:v1.35.8
+    preloadImages:
+      - quay.io/prometheus-operator/prometheus-operator:v0.94.1
+      - quay.io/prometheus-operator/prometheus-config-reloader:v0.94.1
+      - quay.io/prometheus/prometheus:v3.15.0-distroless
+
+bootstrap:
+  init:
+    - name: install-operator
+      description: "Installs the Prometheus Operator 0.94.1 from its bundle and waits for it"
+      type: file
+      source: bootstrap/01-install-operator.sh
+    - name: start-state
+      description: "Creates a working Prometheus resource, stops the operator and changes the spec"
+      type: file
+      source: bootstrap/02-start-state.sh
+
+testing:
+  init:
+    - name: solution
+      description: Reference solution applied by `astrona test`
+      type: file
+      source: solution/apply.sh
+    - name: wait-reconciled
+      description: Waits until the operator has reconciled the new spec
+      type: file
+      source: testing/wait-reconciled.sh
+
+validation:
+  scripts:
+    - name: controller-running
+      description: The Prometheus Operator Deployment is scaled up and has a ready pod
+      type: file
+      source: validation/validate-controller-running.sh
+    - name: status-current
+      description: Reconciled and Available are True and observedGeneration equals generation, with the spec change kept
+      type: file
+      source: validation/validate-status-current.sh
+    - name: statefulset-by-controller
+      description: The StatefulSet carries --log.level=debug, is ready and was written by the controller
+      type: file
+      source: validation/validate-statefulset-by-controller.sh
+
+teardown:
+  keepCluster: false

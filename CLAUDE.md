@@ -380,6 +380,24 @@ organisation `starfleet`.
   the Prometheus Operator (a `Prometheus` resource and the StatefulSet,
   Service and Secrets it creates and owns), installed from its plain
   `bundle.yaml`, and with Crossplane itself.
+- **Deletion facts checked on Kubernetes 1.35.8 (2026-10-12):**
+  - Prometheus Operator 0.94.1 does not add a finalizer to the minimal
+    `Prometheus` resource used in section-020/module-02. That resource owns
+    one StatefulSet, one Service and four Secrets. The built-in garbage
+    collector handles their owner references.
+  - A ConfigMap pending deletion remains readable, but its ordinary table
+    has no `STATUS` column showing `Terminating`. Read
+    `metadata.deletionTimestamp` and `metadata.finalizers` instead.
+  - `kubectl wait` needs `list` and `watch`, not just `get`. Its named-object
+    requests work with RBAC rules limited by `resourceNames`. The example
+    cleanup Job needs those verbs on both named ConfigMaps, plus `delete`
+    on the cache and `patch` on the object carrying the finalizer.
+  - Astrona runs `bootstrap.init` before `bootstrap.manifests`, and runs
+    `bootstrap.waitFor` after them. Install the operator's CRDs during
+    initialization, then apply custom resources, then check readiness.
+  - The custom cleanup example uses a suspended, one-time Kubernetes Job.
+    It waits for deletion, removes the cache, then releases its own
+    finalizer. It is not a full operator; no cleanup worker runs initially.
 - **Install only what the module needs.** The maintainer's Podman machine
   has 10 GiB of memory. A CRD playground needs no add-ons at all; a Crossplane
   playground installs Crossplane and one or two providers; only the
@@ -492,7 +510,8 @@ this order:
   `composition`, `composition-functions`, `patch-and-transform`,
   `managed-resource`, `resource-trace`
 - Automation: `argo-workflows`, `workflow-template`, `workflow-parameters`,
-  `argo-events`, `sensor`, `argo-cd`, `gitops-request`
+  `workflow-dag`, `resource-template`, `argo-events`, `sensor`, `argo-cd`,
+  `gitops-request`
 - Access: `rbac`, `service-account`, `aggregated-clusterrole`
 
 ### Running things

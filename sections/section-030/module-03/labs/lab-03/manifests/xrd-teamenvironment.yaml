@@ -1,0 +1,44 @@
+apiVersion: apiextensions.crossplane.io/v2
+kind: CompositeResourceDefinition
+metadata:
+  name: teamenvironments.platform.starfleet.io
+spec:
+  scope: Namespaced
+  # Two Compositions serve this type in the playground, so name the default.
+  defaultCompositionRef:
+    name: teamenvironment
+  group: platform.starfleet.io
+  names:
+    kind: TeamEnvironment
+    plural: teamenvironments
+  versions:
+    - name: v1alpha1
+      served: true
+      referenceable: true
+      schema:
+        openAPIV3Schema:
+          type: object
+          properties:
+            spec:
+              type: object
+              properties:
+                team:
+                  type: string
+                size:
+                  type: string
+                  enum: [small, medium, large]
+                  default: small
+                replicas:
+                  type: integer
+                  minimum: 1
+                  maximum: 3
+                  default: 1
+                contact:
+                  type: string
+              required:
+                - team
+            status:
+              type: object
+              properties:
+                availableReplicas:
+                  type: integer

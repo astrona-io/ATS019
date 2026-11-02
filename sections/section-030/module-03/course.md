@@ -1,40 +1,40 @@
 # Provision And Trace A Composite Resource
 
-<!-- astrona:playground -->
-> [!NOTE]
-> This module has a playground — a throwaway environment to run the commands in.
-> ```bash
-> astrona run --git ssh://git@github.com/astrona-io/ATS019.git -c sections/section-030/module-03/playground
-> ```
+A platform API is only useful if a tenant can use it and the platform team can see what it did. In Crossplane, a tenant applies one small object, and Crossplane creates many objects from it. When something goes wrong, you need a way to follow that one object to everything it created.
 
-<!-- TODO(build): opening framing — what this module settles, and the contrast that sharpens its boundary. -->
+A composite resource (XR) is one object of the type that a CompositeResourceDefinition (XRD) defines. In this module the type is `TeamEnvironment`, and a team in the `outpost` namespace requests one. A Composition is the Crossplane object that says which resources to create for each composite resource. A managed resource is an object that a provider controls. Here the provider is `provider-kubernetes`, and its managed resource is an `Object`, which wraps any Kubernetes manifest and applies it to the cluster.
+
+The module has four parts. **Request A Composite Resource** applies a `TeamEnvironment` from `outpost`, waits for it to be ready and proves that the `scout` workload answers. **Trace A Composite Resource** follows the request to every object it created, with `kubectl` and with `crossplane resource trace`. **Read A Failing Composite Resource** uses conditions and events to find out why a composite resource never becomes ready. **Update And Delete A Composite Resource** changes a request, deletes it, and compares deleting the composed resources with orphaning them.
 
 ## Learning objectives
 
-- Request a composite resource in a tenant namespace and follow it to Ready
-- Trace a composite resource to every composed and managed resource with crossplane resource trace
-- Read Synced and Ready conditions on the composite resource and its composed resources to find the failing one
-- Diagnose a Composition that references a missing function or patches a field that does not exist
-- Choose between deleting a composite resource and orphaning its composed resources
+After this module you can:
+
+- Request a composite resource in a tenant namespace and follow it to `Ready`.
+- Trace a composite resource to every composed resource and managed resource with `crossplane resource trace`.
+- Read the `Synced` and `Ready` conditions on a composite resource and on its composed resources to find the one that fails.
+- Diagnose a Composition that references a missing function or patches a field that does not exist.
+- Choose between deleting a composite resource and orphaning its composed resources.
 
 ## Before you start
 
-<!-- TODO(build): assumed knowledge, and what the playground already provides. -->
+You need Kubernetes basics: namespaces, Deployments, Services and the commands `kubectl get`, `kubectl apply`, `kubectl describe` and `kubectl delete`. You also need to know what a CustomResourceDefinition is: an object that adds a new resource type to the Kubernetes application programming interface (API). A Crossplane XRD does the same job for a platform API, and Crossplane turns it into a CRD for you.
 
-## Outline
+Write each example file in a new, empty folder on your machine. Run every command from that folder. Your playground runs Kubernetes 1.35 in a single-node `kind` cluster with Crossplane 2.4.2. It needs outbound internet access, because Crossplane pulls its providers and functions from a package registry.
 
-<!-- TODO(build): each beat below becomes a section of this module (or a deep-dive part via /astrona-course-deep-dive). Delete this Outline section once written. -->
+The playground has these parts ready:
 
-- Requesting through the API - a tenant applies one small object
-- Tracing the tree - from composite resource to managed resources to real objects
-- Reading failure - which condition on which object says what went wrong
-- Lifecycle - updates flowing down, deletion and what happens to composed resources
+| Item | What it is |
+| --- | --- |
+| `provider-kubernetes` 1.4.1 | The provider, with a working `ProviderConfig` |
+| `function-patch-and-transform` 0.11.0 | The composition function that the Compositions call |
+| XRD `TeamEnvironment` | The platform API; the composite resource is namespaced |
+| A working Composition | Creates the `scout` Deployment and Service for a request |
+| Composition `teamenvironment-with-cache` | Broken on purpose; a composite resource that selects it never becomes ready |
+| Namespace `outpost` | One ready `TeamEnvironment` and a `shuttle` client pod |
 
-## Diagrams planned
+The `crossplane` command-line tool is installed too. It is released separately from Crossplane, and the playground uses version 2.4.1 with Crossplane 2.4.2. Its trace command is still marked `[BETA]` in `--help`.
 
-<!-- TODO(build): mermaid `sequence` — Tenant applies a TeamEnvironment, Crossplane runs the function pipeline, provider-kubernetes creates objects, conditions flow back up to Ready -->
-<!-- TODO(build): mermaid `state` — Composite resource conditions over time - created, Synced True, waiting for composed resources, Ready True, or ReconcileError -->
+Launch your playground now, and keep it running while you read:
 
-<!-- playground provides: kind cluster (Kubernetes 1.35) with Crossplane 2.4.2, provider-kubernetes 1.4.1 with a working ProviderConfig, and function-patch-and-transform 0.11.0. A working TeamEnvironment XRD and Composition are installed. A second Composition `teamenvironment-with-cache` deliberately references a function that is not installed and patches a misspelled field, so a composite resource that selects it stays not Ready. Namespace `outpost` has one Ready TeamEnvironment. Needs outbound internet. -->
-
-<!-- module section-030/module-03 (Module 3) — stub written by /astrona-course-domain-scaffold, prose written by /astrona-course-domain-build. -->
+<!-- astrona:playground -->

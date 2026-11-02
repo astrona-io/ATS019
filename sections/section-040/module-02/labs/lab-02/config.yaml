@@ -1,0 +1,81 @@
+# yaml-language-server: $schema=https://cli.astrona.io/schema/lab-config.schema.json
+#
+# Find Why An Event Starts No Workflow (LAB). Starts broken on purpose: the EventSource and the Sensor run, but the Sensor data filter reads the path tier instead of body.tier, so no event starts a Workflow. Do not fix it in the bootstrap.
+# Needs outbound internet access: the bootstrap downloads the Argo Workflows
+# and Argo Events release manifests from GitHub.
+apiVersion: astrona.io/v1
+metadata:
+  name: ats-019-lab-040-02-02
+  docs:
+    prerequisites: prerequisites.md
+    question: question.md
+    solution: solution.md
+
+runtime:
+  type: kind
+  kind:
+    image: kindest/node:v1.35.8
+    preloadImages:
+      - quay.io/argoproj/workflow-controller:v4.1.5
+      - quay.io/argoproj/argoexec:v4.1.5
+      - quay.io/argoproj/argo-events:v1.9.11
+
+bootstrap:
+  init:
+    - name: install-argo
+      description: "Installs Argo Workflows 4.1.5 and Argo Events 1.9.11 and waits for both controllers"
+      type: file
+      source: bootstrap/01-install-argo.sh
+  manifests:
+    - name: starfleet-base
+      type: file
+      source: manifests/starfleet-base.yaml
+    - name: events-start
+      type: file
+      source: manifests/events-start.yaml
+  waitFor:
+    - resource: deploy/workflow-controller
+      namespace: argo
+      timeout: 240s
+    - resource: deploy/controller-manager
+      namespace: argo-events
+      timeout: 240s
+    - resource: deploy/shuttle
+      namespace: starfleet
+      timeout: 180s
+
+testing:
+  init:
+    - name: apply-reference-solution
+      type: file
+      source: solution/apply.sh
+    - name: wait-for-pods
+      type: file
+      source: testing/wait-ready.sh
+
+validation:
+  passPercent: 100
+  script:
+    name: fault-fixed-in-sensor
+    type: file
+    source: validation/validate-01-fault-fixed-in-sensor.sh
+    points: 20
+  scripts:
+    - name: event-starts-workflow
+      type: file
+      source: validation/validate-02-event-starts-workflow.sh
+      points: 20
+    - name: filter-still-drops
+      type: file
+      source: validation/validate-03-filter-still-drops.sh
+      points: 20
+    - name: rbac-not-widened
+      type: file
+      source: validation/validate-04-rbac-not-widened.sh
+      points: 20
+    - name: workflow-succeeds
+      type: file
+      source: validation/validate-05-workflow-succeeds.sh
+      points: 20
+teardown:
+  keepCluster: false

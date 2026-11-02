@@ -1,0 +1,49 @@
+# yaml-language-server: $schema=https://cli.astrona.io/schema/lab-config.schema.json
+apiVersion: astrona.io/v1
+metadata:
+  name: ats-019-lab-010-02
+  docs:
+    prerequisites: prerequisites.md
+    question: question.md
+    solution: solution.md
+
+runtime:
+  type: kind
+  kind:
+    image: kindest/node:v1.35.8
+
+bootstrap:
+  init:
+    - name: seed
+      description: "Creates the namespaces, the TeamEnvironment CRD served only as v1alpha1, two objects (alpha, beta) and a record of their uids"
+      type: file
+      source: bootstrap/01-seed.sh
+
+testing:
+  init:
+    - name: solution
+      description: Reference solution applied by `astrona test`
+      type: file
+      source: solution/apply.sh
+    - name: wait-crd-ready
+      description: Waits until the CRD is Established and serves v1
+      type: file
+      source: testing/wait-crd-ready.sh
+
+validation:
+  scripts:
+    - name: versions
+      description: The CRD serves v1alpha1 and v1, v1 is the only storage version, conversion is None
+      type: file
+      source: validation/validate-versions.sh
+    - name: deprecation
+      description: v1alpha1 is deprecated with a warning that names v1, and kubectl prints it
+      type: file
+      source: validation/validate-deprecation.sh
+    - name: objects-and-schema
+      description: alpha and beta are the original objects, gamma exists through v1, both versions reject bad input
+      type: file
+      source: validation/validate-objects.sh
+
+teardown:
+  keepCluster: false

@@ -157,3 +157,27 @@ You can now make a custom resource readable from the command line: printer colum
 > - **Pointing a column at a field that is missing.** The column is simply empty, with no error. Check every `jsonPath` with `kubectl get -o jsonpath`.
 > - **Picking a short name that is already taken.** Two types with the same short name make `kubectl` pick one of them. Check `kubectl api-resources` first.
 > - **Adding a custom type to the `all` category.** It changes what `kubectl get all` returns for everyone.
+
+## Your mission: Add CEL Rules And Printer Columns To A CRD
+
+You can now write a CEL rule across fields, a transition rule with `oldSelf`, printer columns, a short name and a category. The mission gives you a CRD with a typed schema and asks you to add a rule for the replica limit of a small environment, make the team immutable, and make `kubectl get` show the key fields.
+
+Pause the playground first:
+
+```sh
+astrona stop ats-019-playground-010-01
+```
+
+Start the lab, then submit your answer:
+
+```sh
+astrona run --git ssh://git@github.com/astrona-io/ATS019.git -c sections/section-010/module-01/labs/lab-02
+astrona submit -c sections/section-010/module-01/labs/lab-02
+```
+
+When you finish, remove the lab and resume the playground:
+
+```sh
+astrona destroy ats-019-lab-010-01-02
+astrona start ats-019-playground-010-01
+```

@@ -1,0 +1,47 @@
+# yaml-language-server: $schema=https://cli.astrona.io/schema/lab-config.schema.json
+apiVersion: astrona.io/v1
+metadata:
+  name: ats-019-lab-010-01
+  docs:
+    prerequisites: prerequisites.md
+    question: question.md
+    solution: solution.md
+
+runtime:
+  type: kind
+  kind:
+    image: kindest/node:v1.35.8
+
+# Starting state: the namespaces, the TeamEnvironment CRD with a weak schema (spec keeps
+# any field) and one valid TeamEnvironment named alpha. No add-ons are needed.
+bootstrap:
+  init:
+    - name: seed
+      description: "Creates the namespaces, the TeamEnvironment CRD with a weak schema and the object alpha"
+      type: file
+      source: bootstrap/01-seed.sh
+
+testing:
+  init:
+    - name: solution
+      description: Reference solution applied by `astrona test`
+      type: file
+      source: solution/apply.sh
+
+validation:
+  scripts:
+    - name: rejects-bad-values
+      description: The API server refuses a bad size, replicas, retentionDays, contact, team and missing required fields
+      type: file
+      source: validation/validate-rejects-bad-values.sh
+    - name: defaults-and-pruning
+      description: The API server defaults replicas and retentionDays, accepts the edges of the range and prunes unknown fields
+      type: file
+      source: validation/validate-defaults-and-pruning.sh
+    - name: crd-kept
+      description: The CRD keeps its kind and version and the object alpha still exists
+      type: file
+      source: validation/validate-crd-kept.sh
+
+teardown:
+  keepCluster: false

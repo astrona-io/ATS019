@@ -1,0 +1,17 @@
+# Starting state with faults: the project allows only ConfigMap, so a
+# TeamEnvironment is refused at sync time.
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: outpost
+  namespace: argocd
+spec:
+  description: Requests from the outpost team
+  sourceRepos:
+    - http://gitea-http.gitea.svc:3000/starfleet/outpost-requests.git
+  destinations:
+    - server: https://kubernetes.default.svc
+      namespace: outpost
+  namespaceResourceWhitelist:
+    - group: ""
+      kind: ConfigMap

@@ -1,0 +1,46 @@
+# yaml-language-server: $schema=https://cli.astrona.io/schema/lab-config.schema.json
+#
+# Run Provisioning Steps With Argo Workflows (PLAYGROUND) — playground
+# environment. A clean sandbox: Argo Workflows 4.1.5 is running, the
+# ServiceAccount `provisioner` has no permission in `outpost`, and the
+# TeamEnvironment CRD has no controller. No task, no grading, no
+# `astrona submit`. Needs outbound internet: the install manifest and the
+# argo command-line tool come from GitHub.
+apiVersion: astrona.io/v1
+metadata:
+  name: ats-019-playground-040-01
+  docs:
+    guide: docs/overview.md
+
+runtime:
+  type: kind
+  kind:
+    image: kindest/node:v1.35.8
+    preloadImages:
+      - quay.io/argoproj/workflow-controller:v4.1.5
+      - quay.io/argoproj/argoexec:v4.1.5
+      - quay.io/argoproj/argocli:v4.1.5
+      - curlimages/curl:8.22.0
+      - ghcr.io/stefanprodan/podinfo:6.15.0
+
+bootstrap:
+  init:
+    - name: install-argo-workflows
+      description: "Installs Argo Workflows 4.1.5 in the namespace argo and the argo command-line tool"
+      type: file
+      source: bootstrap/01-install-argo-workflows.sh
+  manifests:
+    - name: lab-start
+      description: "Namespaces, the provisioner ServiceAccount and the TeamEnvironment CRD"
+      type: file
+      source: manifests/lab-start.yaml
+  waitFor:
+    - resource: deploy/workflow-controller
+      namespace: argo
+    - resource: deploy/argo-server
+      namespace: argo
+    - resource: crd/teamenvironments.platform.starfleet.io
+      condition: Established
+
+teardown:
+  keepCluster: false

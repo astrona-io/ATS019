@@ -1,0 +1,128 @@
+# yaml-language-server: $schema=https://cli.astrona.io/schema/lab-config.schema.json
+#
+# Section 040 capstone (graded). Crossplane 2.4.2 runs with the TeamEnvironment
+# platform API (XRD and a working Composition). Argo Workflows 4.1.5 and Argo
+# Events 1.9.11 run. The order path (EventBus, EventSource, Sensor) exists but
+# is broken in four places, and the RBAC and the WorkflowTemplate do not exist.
+# The reader builds the whole self-service path from a webhook order to a Ready
+# TeamEnvironment.
+# Needs outbound internet access: the bootstrap downloads the Argo release
+# manifests from GitHub, and Crossplane pulls its packages from xpkg.crossplane.io.
+apiVersion: astrona.io/v1
+metadata:
+  name: ats-019-capstone-040
+  docs:
+    prerequisites: prerequisites.md
+    question: question.md
+    solution: solution.md
+
+runtime:
+  type: kind
+  kind:
+    image: kindest/node:v1.35.8
+    preloadImages:
+      - quay.io/argoproj/workflow-controller:v4.1.5
+      - quay.io/argoproj/argoexec:v4.1.5
+      - quay.io/argoproj/argo-events:v1.9.11
+      - ghcr.io/stefanprodan/podinfo:6.15.0
+
+bootstrap:
+  init:
+    - name: install-crossplane
+      description: "Installs Crossplane 2.4.2 and waits for it"
+      type: file
+      source: bootstrap/01-install-crossplane.sh
+    - name: install-platform-api
+      description: "Installs the provider, the function, the XRD and the Composition"
+      type: file
+      source: bootstrap/02-install-platform-api.sh
+    - name: install-argo
+      description: "Installs Argo Workflows 4.1.5 and Argo Events 1.9.11 and waits for both controllers"
+      type: file
+      source: bootstrap/03-install-argo.sh
+  manifests:
+    - name: starfleet-base
+      type: file
+      source: manifests/starfleet-base.yaml
+    - name: outpost-base
+      type: file
+      source: manifests/outpost-base.yaml
+    - name: events-start
+      type: file
+      source: manifests/events-start.yaml
+  waitFor:
+    - resource: deploy/crossplane
+      namespace: crossplane-system
+      timeout: 300s
+    - resource: deploy/workflow-controller
+      namespace: argo
+      timeout: 240s
+    - resource: deploy/controller-manager
+      namespace: argo-events
+      timeout: 240s
+    - resource: deploy/shuttle
+      namespace: starfleet
+      timeout: 180s
+    - resource: deploy/shuttle
+      namespace: outpost
+      timeout: 180s
+
+testing:
+  init:
+    - name: apply-reference-solution
+      description: "Applies the reference RBAC, WorkflowTemplate and fixed EventSource and Sensor"
+      type: file
+      source: solution/apply.sh
+    - name: wait-for-pods
+      description: "Waits for the EventSource pod and the Sensor pod to run again"
+      type: file
+      source: testing/wait-ready.sh
+
+validation:
+  passPercent: 100
+  script:
+    name: tenant-rbac
+    description: "The group outpost-team can create and read TeamEnvironments in outpost and nothing more"
+    type: file
+    source: validation/validate-01-tenant-rbac.sh
+    points: 15
+    hint: "Bind the group, not the user. Use a Role in outpost with the verbs create, get, list and watch."
+  scripts:
+    - name: provisioner-rbac
+      description: "The ServiceAccount provisioner can create and read TeamEnvironments in outpost and nothing more"
+      type: file
+      source: validation/validate-02-provisioner-rbac.sh
+      points: 10
+      hint: "A Role in outpost with four verbs on one resource. Do not use a wildcard or cluster-admin."
+    - name: template-shape
+      description: "The WorkflowTemplate request-environment has the required shape"
+      type: file
+      source: validation/validate-03-template-shape.sh
+      points: 10
+      hint: "A resource template with action create and a successCondition. Use the parameter team in the manifest."
+    - name: webhook
+      description: "The EventSource accepts POST on /provision and nothing else"
+      type: file
+      source: validation/validate-04-webhook.sh
+      points: 10
+      hint: "Read the endpoint field of the webhook in the EventSource."
+    - name: sensor-rbac
+      description: "The Sensor ServiceAccount can create Workflows in starfleet and nothing more"
+      type: file
+      source: validation/validate-05-sensor-rbac.sh
+      points: 10
+      hint: "A Role in starfleet with the verb create on workflows, and a RoleBinding to operate-workflow-sa."
+    - name: filter-and-mapping
+      description: "The Sensor drops tier trial and copies body.team into the team parameter"
+      type: file
+      source: validation/validate-06-filter-and-mapping.sh
+      points: 15
+      hint: "Add a data filter on body.tier and a trigger parameter with dataKey body.team."
+    - name: order-ready
+      description: "An order ends with a Ready TeamEnvironment and a scout that answers 200"
+      type: file
+      source: validation/validate-07-order-ready.sh
+      points: 30
+      hint: "The Workflow must wait for the environment. Add a successCondition on status.availableReplicas."
+teardown:
+  keepCluster: false

@@ -1,0 +1,23 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: teamenvironment-requester
+  namespace: outpost
+rules:
+  - apiGroups: ["platform.starfleet.io"]
+    resources: ["teamenvironments"]
+    verbs: ["create", "get", "list", "watch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: outpost-team-teamenvironment-requester
+  namespace: outpost
+subjects:
+  - kind: Group
+    name: outpost-team
+    apiGroup: rbac.authorization.k8s.io
+roleRef:
+  kind: Role
+  name: teamenvironment-requester
+  apiGroup: rbac.authorization.k8s.io

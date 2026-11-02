@@ -1,0 +1,65 @@
+# yaml-language-server: $schema=https://cli.astrona.io/schema/lab-config.schema.json
+#
+# Submit A Parameterized Provisioning WorkflowTemplate (ats-019-lab-040-01)
+# Astrona hands-on lab. kind runtime: a single-node Kubernetes 1.35 cluster
+# with Argo Workflows 4.1.5. Needs outbound internet for the install manifest.
+apiVersion: astrona.io/v1
+metadata:
+  name: ats-019-lab-040-01
+  docs:
+    prerequisites: prerequisites.md
+    question: question.md
+    solution: solution.md
+
+runtime:
+  type: kind
+  kind:
+    image: kindest/node:v1.35.8
+    preloadImages:
+      - quay.io/argoproj/workflow-controller:v4.1.5
+      - quay.io/argoproj/argoexec:v4.1.5
+      - curlimages/curl:8.22.0
+
+bootstrap:
+  init:
+    - name: install-argo-workflows
+      description: "Installs Argo Workflows 4.1.5 in the namespace argo"
+      type: file
+      source: bootstrap/01-install-argo-workflows.sh
+  manifests:
+    - name: lab-start
+      description: "The namespace starfleet and the permission that lets step pods report results"
+      type: file
+      source: manifests/lab-start.yaml
+  waitFor:
+    - resource: deploy/workflow-controller
+      namespace: argo
+
+testing:
+  init:
+    - name: apply-solution
+      description: "Applies the reference WorkflowTemplate"
+      type: file
+      source: solution/apply.sh
+    - name: submit-solution-workflow
+      description: "Submits onboard-drifter from the reference WorkflowTemplate and waits for it"
+      type: file
+      source: testing/submit-onboard-drifter.sh
+
+validation:
+  scripts:
+    - name: verify-template
+      description: "Checks the WorkflowTemplate onboard-team: parameters, DAG shape and dependencies"
+      type: file
+      source: validation/validate-template.sh
+    - name: verify-parameters
+      description: "Runs the template twice (defaults and overrides) and reads the announce line"
+      type: file
+      source: validation/validate-parameters.sh
+    - name: verify-submitted-workflow
+      description: "Checks the Workflow onboard-drifter: template reference, parameters, phase, output and task order"
+      type: file
+      source: validation/validate-submitted-workflow.sh
+
+teardown:
+  keepCluster: false

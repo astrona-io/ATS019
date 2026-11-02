@@ -1,0 +1,61 @@
+# yaml-language-server: $schema=https://cli.astrona.io/schema/lab-config.schema.json
+apiVersion: astrona.io/v1
+metadata:
+  name: ats-019-capstone-010
+  docs:
+    prerequisites: prerequisites.md
+    question: question.md
+    solution: solution.md
+
+runtime:
+  type: kind
+  kind:
+    image: kindest/node:v1.35.8
+
+bootstrap:
+  init:
+    - name: seed-legacy-database-api
+      description: "Creates the namespaces, a weak single-version Database CRD, two Database objects stored as v1alpha1, and a ConfigMap with their UIDs"
+      type: file
+      source: bootstrap/01-seed-legacy-api.sh
+
+testing:
+  init:
+    - name: solution
+      description: Reference solution applied by `astrona test`
+      type: file
+      source: solution/apply.sh
+
+validation:
+  scripts:
+    - name: crd-published
+      description: The Database CRD has the right names, two served versions, v1 as storage version and no preserve-unknown-fields
+      type: file
+      source: validation/validate-crd-published.sh
+    - name: input-validation
+      description: Both versions accept a valid Database, apply the defaults, and refuse bad input
+      type: file
+      source: validation/validate-input-validation.sh
+    - name: cel-rules
+      description: Storage can grow but not shrink, team is immutable, and more than one replica needs 20 GB
+      type: file
+      source: validation/validate-cel-rules.sh
+    - name: status-subresource
+      description: Spec writes cannot change status and the status endpoint can
+      type: file
+      source: validation/validate-status-subresource.sh
+    - name: scale-subresource
+      description: kubectl scale changes spec.replicas, and the scale endpoint reads status.readyReplicas
+      type: file
+      source: validation/validate-scale-subresource.sh
+    - name: versions-and-existing-objects
+      description: The two original objects survive, read the same through both versions, and v1alpha1 warns that it is deprecated
+      type: file
+      source: validation/validate-versions-and-existing-objects.sh
+    - name: printer-columns
+      description: kubectl get shows the Engine, Storage, Replicas and Ready columns, and the short name db works
+      type: file
+      source: validation/validate-printer-columns.sh
+
+teardown:
+  keepCluster: false

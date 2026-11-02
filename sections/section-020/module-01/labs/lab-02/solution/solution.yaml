@@ -1,0 +1,11 @@
+# Reference end state, applied only by `astrona test`.
+apiVersion: v1
+kind: Secret
+metadata:
+  name: tenant-scrape
+  namespace: outpost
+stringData:
+  jobs.yaml: |
+    - job_name: scout-extra
+      static_configs:
+        - targets: ["scout.outpost.svc:9898"]

@@ -1,0 +1,44 @@
+apiVersion: apiextensions.crossplane.io/v2
+kind: CompositeResourceDefinition
+metadata:
+  name: probeenvironments.platform.starfleet.io
+spec:
+  scope: Namespaced
+  group: platform.starfleet.io
+  names:
+    kind: ProbeEnvironment
+    plural: probeenvironments
+  versions:
+    - name: v1alpha1
+      served: true
+      referenceable: true
+      schema:
+        openAPIV3Schema:
+          type: object
+          properties:
+            spec:
+              type: object
+              properties:
+                owner:
+                  type: string
+                tier:
+                  type: string
+                  enum: [dev, staging, prod]
+                  default: dev
+                instances:
+                  type: integer
+                  minimum: 1
+                  maximum: 5
+                  default: 2
+                contactEmail:
+                  type: string
+              required:
+                - owner
+---
+apiVersion: platform.starfleet.io/v1alpha1
+kind: ProbeEnvironment
+metadata:
+  name: first-probe
+  namespace: outpost
+spec:
+  owner: drifter

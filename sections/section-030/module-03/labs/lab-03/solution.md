@@ -1,0 +1,89 @@
+# Solution Walkthrough
+
+A normal delete of a composite resource removes everything it owns. To keep the
+workload, you delete the request with `--cascade=orphan`. The Kubernetes API
+server then removes the owner references from the dependents instead of
+deleting them.
+
+| Goal | Where it lives | Command |
+| --- | --- | --- |
+| See what the request owns | `spec.crossplane.resourceRefs` | `kubectl -n outpost get teamenvironment scout-env -o yaml` |
+| Delete without deleting dependents | The `--cascade` option | `kubectl delete --cascade=orphan` |
+| Prove the workload stayed | Deployment, Service and `Object` resources | `kubectl -n outpost get ...` |
+| Prove it answers | A request from `shuttle` | `kubectl -n outpost exec deploy/shuttle -- curl ...` |
+
+## The feedback loop
+
+Run this from the terminal where you typed `astrona run`:
+
+```sh
+astrona submit -c sections/section-030/module-03/labs/lab-03
+```
+
+The checks are `request-gone`, `workload-kept`, `objects-orphaned` and
+`answers`. At the start only `workload-kept`, `objects-orphaned` and `answers`
+can pass, because nothing was deleted yet.
+
+---
+
+## Step 1: Look at what the request owns
+
+```sh
+kubectl -n outpost get teamenvironment scout-env
+kubectl -n outpost get objects.kubernetes.m.crossplane.io
+kubectl -n outpost get deployment,service scout
+```
+
+The request is `Ready`. Two `Object` resources exist, and so do the Deployment
+and the Service named `scout`. Do not delete anything yet.
+
+---
+
+## Step 2: Delete the request with orphaning
+
+```sh
+kubectl -n outpost delete teamenvironment scout-env --cascade=orphan
+```
+
+With `--cascade=orphan` the API server deletes only `scout-env`. It removes the
+owner reference from the dependents, so the garbage collector keeps them.
+
+**Run the check.** The checks `request-gone`, `workload-kept` and
+`objects-orphaned` pass.
+
+---
+
+## Step 3: Prove the workload still answers
+
+```sh
+kubectl -n outpost get objects.kubernetes.m.crossplane.io
+kubectl -n outpost exec deploy/shuttle -- curl -s -o /dev/null -w '%{http_code}\n' http://scout:9898
+```
+
+The `Object` resources remain, and the request returns `200`. The `Object`
+resources are now managed by nothing. Leave them in place.
+
+**Run the check.** All four checks pass.
+
+---
+
+## Step 4: Submit
+
+```sh
+astrona submit -c sections/section-030/module-03/labs/lab-03
+```
+
+---
+
+## If a check stays red
+
+- **`request-gone` fails.** The delete is not finished, or the command did not
+  run. Check with `kubectl -n outpost get teamenvironment`.
+- **`workload-kept` fails.** You deleted without `--cascade=orphan`, so
+  Crossplane removed the Deployment and the Service. This lab cannot be
+  repaired in place. Run `astrona destroy ats-019-lab-030-03-03` and start
+  again. A Deployment recreated by hand fails this check on purpose, because it
+  has a new UID.
+- **`objects-orphaned` fails.** An `Object` was deleted, or it still has an
+  owner reference. Start again and use `--cascade=orphan`.
+- **`answers` fails.** Wait a few seconds and send the request again.

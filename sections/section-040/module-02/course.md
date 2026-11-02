@@ -1,38 +1,30 @@
 # Trigger Workflows From Events With Argo Events
 
-<!-- astrona:playground -->
-> [!NOTE]
-> This module has a playground — a throwaway environment to run the commands in.
-> ```bash
-> astrona run --git ssh://git@github.com/astrona-io/ATS019.git -c sections/section-040/module-02/playground
-> ```
+A platform often must start work when something happens, not when a person runs a command. A request arrives from a tenant team, and the platform must provision an environment for it. Argo Events turns an incoming event, such as an HTTP request, into an action in the cluster, such as a new Workflow.
 
-<!-- TODO(build): opening framing — what this module settles, and the contrast that sharpens its boundary. -->
+Argo Events has three objects that work together. An EventSource receives events from the outside. An EventBus carries events inside the cluster. A Sensor watches the EventBus, checks each event against its rules, and runs a trigger when the rules match. Together they connect a request from a tenant to a Workflow that does the work.
+
+The module has four parts. **EventBus And Webhook EventSource** installs the transport and the receiver and sends the first event. **A Sensor That Submits A Workflow** connects an event to a WorkflowTemplate and fixes the permission that blocks the first trigger. **Filters And Parameter Mapping** keeps unwanted events out and passes a value from the event body into the Workflow. **Follow An Event That Went Nowhere** gives a fixed order of checks for an event that starts nothing.
+
+<!-- astrona:playground -->
 
 ## Learning objectives
 
-- Install an EventBus and a webhook EventSource and send it an event with curl from shuttle
-- Write a Sensor with a dependency and a trigger that submits a Workflow from a WorkflowTemplate
-- Pass a value from the event payload into a workflow parameter
-- Diagnose an event that does not start a workflow by reading EventSource and Sensor logs and status
+After this module you can:
+
+- Install an EventBus and a webhook EventSource, and send the EventSource an event with `curl` from the `shuttle` pod.
+- Write a Sensor with a dependency and a trigger that submits a Workflow from a WorkflowTemplate.
+- Pass a value from the event body into a Workflow parameter.
+- Diagnose an event that does not start a Workflow by reading the status and logs of the EventSource and the Sensor.
 
 ## Before you start
 
-<!-- TODO(build): assumed knowledge, and what the playground already provides. -->
+You need Kubernetes basics: namespaces, Services, ServiceAccounts, and the commands `kubectl get`, `kubectl apply`, `kubectl logs` and `kubectl exec`. You should know that a Workflow is an Argo Workflows object that runs steps in pods, and that a WorkflowTemplate is a stored Workflow definition with input parameters.
 
-## Outline
+Write each example file in a new, empty folder on your machine and run every command from that folder. Your playground runs Kubernetes 1.35.8 in a single-node `kind` cluster, with Argo Workflows 4.1.5 and Argo Events 1.9.11 already installed.
 
-<!-- TODO(build): each beat below becomes a section of this module (or a deep-dive part via /astrona-course-deep-dive). Delete this Outline section once written. -->
+| Namespace | What is in it |
+| --- | --- |
+| `starfleet` | The WorkflowTemplate `provision-environment`, which has one input parameter named `team`. The client pod `shuttle`. A ServiceAccount for the Sensor that cannot create Workflows yet. |
 
-- Event-driven provisioning - EventBus, EventSource, Sensor and trigger
-- A webhook EventSource and a test event
-- Sensor dependencies, filters and parameter mapping into a Workflow
-- Following an event that went nowhere
-
-## Diagrams planned
-
-<!-- TODO(build): mermaid `sequence` — shuttle posts JSON to the webhook EventSource, the event goes through the EventBus, the Sensor matches it and submits a Workflow with a parameter from the payload -->
-
-<!-- playground provides: kind cluster (Kubernetes 1.35) with Argo Workflows 4.1.5 and Argo Events 1.9.11 installed, and a working `provision-environment` WorkflowTemplate in `starfleet`. No EventBus, EventSource or Sensor exists yet. The `shuttle` pod runs in `starfleet`. The Sensor's ServiceAccount is created without permission to create Workflows, so the first trigger fails on purpose. -->
-
-<!-- module section-040/module-02 (Module 2) — stub written by /astrona-course-domain-scaffold, prose written by /astrona-course-domain-build. -->
+No EventBus, EventSource or Sensor exists at the start. You create them in the first parts.

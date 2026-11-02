@@ -1,0 +1,94 @@
+apiVersion: argoproj.io/v1alpha1
+kind: EventBus
+metadata:
+  name: default
+  namespace: starfleet
+spec:
+  jetstream:
+    version: latest
+---
+apiVersion: argoproj.io/v1alpha1
+kind: EventSource
+metadata:
+  name: provision
+  namespace: starfleet
+spec:
+  service:
+    ports:
+      - port: 12000
+        targetPort: 12000
+  webhook:
+    request:
+      port: "12000"
+      endpoint: /provision
+      method: POST
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: sensor-workflows
+  namespace: starfleet
+rules:
+  - apiGroups: ["argoproj.io"]
+    resources: ["workflows"]
+    verbs: ["create", "get", "list", "watch"]
+  - apiGroups: ["argoproj.io"]
+    resources: ["workflowtemplates"]
+    verbs: ["get"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: sensor-workflows
+  namespace: starfleet
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: sensor-workflows
+subjects:
+  - kind: ServiceAccount
+    name: operate-workflow-sa
+    namespace: starfleet
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Sensor
+metadata:
+  name: provision
+  namespace: starfleet
+spec:
+  template:
+    serviceAccountName: operate-workflow-sa
+  dependencies:
+    - name: request-dep
+      eventSourceName: provision
+      eventName: request
+      filters:
+        data:
+          - path: body.tier
+            type: string
+            value:
+              - standard
+              - premium
+  triggers:
+    - template:
+        name: submit-provision
+        argoWorkflow:
+          operation: submit
+          source:
+            resource:
+              apiVersion: argoproj.io/v1alpha1
+              kind: Workflow
+              metadata:
+                generateName: provision-environment-
+              spec:
+                arguments:
+                  parameters:
+                    - name: team
+                      value: unset
+                workflowTemplateRef:
+                  name: provision-environment
+          parameters:
+            - src:
+                dependencyName: request-dep
+                dataKey: body.team
+              dest: spec.arguments.parameters.0.value

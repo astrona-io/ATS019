@@ -1,0 +1,34 @@
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: outpost
+  namespace: argocd
+spec:
+  description: Requests from the outpost team
+  sourceRepos:
+    - http://gitea-http.gitea.svc:3000/starfleet/outpost-requests.git
+  destinations:
+    - server: https://kubernetes.default.svc
+      namespace: outpost
+  namespaceResourceWhitelist:
+    - group: platform.starfleet.io
+      kind: TeamEnvironment
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: outpost-requests
+  namespace: argocd
+spec:
+  project: outpost
+  source:
+    repoURL: http://gitea-http.gitea.svc:3000/starfleet/outpost-requests.git
+    targetRevision: HEAD
+    path: requests
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: outpost
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true

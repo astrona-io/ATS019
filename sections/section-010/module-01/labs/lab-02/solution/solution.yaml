@@ -1,0 +1,74 @@
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  name: teamenvironments.platform.starfleet.io
+spec:
+  group: platform.starfleet.io
+  scope: Namespaced
+  names:
+    kind: TeamEnvironment
+    plural: teamenvironments
+    singular: teamenvironment
+    shortNames:
+      - teamenv
+    categories:
+      - platform
+  versions:
+    - name: v1alpha1
+      served: true
+      storage: true
+      additionalPrinterColumns:
+        - name: Team
+          type: string
+          jsonPath: .spec.team
+        - name: Size
+          type: string
+          jsonPath: .spec.size
+        - name: Replicas
+          type: integer
+          jsonPath: .spec.replicas
+        - name: Age
+          type: date
+          jsonPath: .metadata.creationTimestamp
+      schema:
+        openAPIV3Schema:
+          type: object
+          required:
+            - spec
+          properties:
+            spec:
+              type: object
+              required:
+                - team
+                - size
+                - contact
+              x-kubernetes-validations:
+                - rule: "self.size != 'small' || self.replicas <= 2"
+                  message: "a small environment runs at most 2 replicas"
+              properties:
+                team:
+                  type: string
+                  minLength: 1
+                  maxLength: 30
+                  x-kubernetes-validations:
+                    - rule: "self == oldSelf"
+                      message: "team cannot be changed after creation"
+                size:
+                  type: string
+                  enum:
+                    - small
+                    - medium
+                    - large
+                replicas:
+                  type: integer
+                  minimum: 1
+                  maximum: 5
+                  default: 1
+                contact:
+                  type: string
+                  pattern: '^[a-z0-9.-]+@[a-z0-9.-]+$'
+                retentionDays:
+                  type: integer
+                  minimum: 1
+                  maximum: 90
+                  default: 7

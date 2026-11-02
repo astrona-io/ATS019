@@ -1,0 +1,44 @@
+apiVersion: argoproj.io/v1alpha1
+kind: WorkflowTemplate
+metadata:
+  name: onboard-team
+  namespace: starfleet
+spec:
+  entrypoint: graph
+  arguments:
+    parameters:
+      - name: team
+        value: outpost
+      - name: size
+        value: small
+  templates:
+    - name: graph
+      dag:
+        tasks:
+          - name: check-team
+            template: say
+            arguments:
+              parameters:
+                - name: message
+                  value: "team {{workflow.parameters.team}} is known"
+          - name: check-size
+            template: say
+            arguments:
+              parameters:
+                - name: message
+                  value: "size {{workflow.parameters.size}} is allowed"
+          - name: announce
+            dependencies: [check-team, check-size]
+            template: say
+            arguments:
+              parameters:
+                - name: message
+                  value: "onboarding {{workflow.parameters.team}} with size {{workflow.parameters.size}}"
+    - name: say
+      inputs:
+        parameters:
+          - name: message
+      container:
+        image: curlimages/curl:8.22.0
+        command: ["sh", "-c"]
+        args: ["echo \"{{inputs.parameters.message}}\""]

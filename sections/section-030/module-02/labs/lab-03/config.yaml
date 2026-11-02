@@ -1,0 +1,73 @@
+# yaml-language-server: $schema=https://cli.astrona.io/schema/lab-config.schema.json
+#
+# Repair A Broken Composition Lab — Crossplane 2.4.2, provider-kubernetes 1.4.1 and
+# function-patch-and-transform 0.11.0 are installed. The TeamEnvironment XRD,
+# a faulty Composition, the request outpost-env and the shuttle client are
+# applied as the starting state. The Composition teamenvironment names a missing function and selects the wrong pods. The learner repairs it.
+# Needs outbound internet.
+apiVersion: astrona.io/v1
+metadata:
+  name: ats-019-lab-030-02-03
+  docs:
+    prerequisites: prerequisites.md
+    question: question.md
+    solution: solution.md
+
+runtime:
+  type: kind
+  kind:
+    image: kindest/node:v1.35.8
+    preloadImages:
+      - xpkg.crossplane.io/crossplane/crossplane:v2.4.2
+      - ghcr.io/stefanprodan/podinfo:6.15.0
+
+bootstrap:
+  init:
+    - name: install-crossplane
+      description: "Installs Crossplane 2.4.2 in crossplane-system and waits for its CRDs"
+      type: file
+      source: bootstrap/01-install-crossplane.sh
+    - name: install-packages
+      description: "Installs the provider and the function, then the ClusterProviderConfig and RBAC"
+      type: file
+      source: bootstrap/02-install-packages.sh
+    - name: seed-start-state
+      description: "Applies the XRD, the faulty Composition, the request and the shuttle client"
+      type: file
+      source: bootstrap/03-seed.sh
+  waitFor:
+    - resource: provider.pkg.crossplane.io/provider-kubernetes
+      condition: Healthy
+      timeout: 300s
+    - resource: function.pkg.crossplane.io/function-patch-and-transform
+      condition: Healthy
+      timeout: 300s
+
+testing:
+  init:
+    - name: reference-solution
+      description: "Applies the reference Composition (astrona test only)"
+      type: file
+      source: solution/apply.sh
+    - name: wait-converged
+      description: "Waits until the request is Synced and Ready"
+      type: file
+      source: testing/01-wait-converged.sh
+
+validation:
+  scripts:
+    - name: composition-repaired
+      type: file
+      source: validation/validate-composition-repaired.sh
+    - name: request-synced-ready
+      type: file
+      source: validation/validate-request-synced-ready.sh
+    - name: service-selects-pods
+      type: file
+      source: validation/validate-service-selects-pods.sh
+    - name: request-answers-200
+      type: file
+      source: validation/validate-request-answers-200.sh
+
+teardown:
+  keepCluster: false

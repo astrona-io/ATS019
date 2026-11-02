@@ -1,39 +1,36 @@
 # Install A Crossplane Provider And ProviderConfig
 
-<!-- astrona:playground -->
-> [!NOTE]
-> This module has a playground — a throwaway environment to run the commands in.
-> ```bash
-> astrona run --git ssh://git@github.com/astrona-io/ATS019.git -c sections/section-030/module-01/playground
-> ```
+Crossplane turns a Kubernetes cluster into a control plane for other systems. On its own, Crossplane manages only packages. To manage anything else, you install a provider, tell it how to connect, and give it the permissions it needs. This module walks through those three steps with the one provider that works offline, `provider-kubernetes`.
 
-<!-- TODO(build): opening framing — what this module settles, and the contrast that sharpens its boundary. -->
+<!-- astrona:playground -->
+
+A provider is a Crossplane package that installs custom resource definitions (CRDs) and a controller for one external system. A managed resource is one object that a provider controls. A ProviderConfig is the object that tells a provider how to connect and which credentials to use. Here the "external system" is the same cluster, so the whole module runs without a cloud account. The same steps apply to a cloud provider; only the ProviderConfig credentials change.
+
+The module has three parts. **Crossplane And Provider Packages** checks that Crossplane is healthy and installs `provider-kubernetes`. **ProviderConfig And Injected Identity** connects the provider to the cluster and shows which permissions it still lacks. **Managed Resources And Failed Syncs** creates an `Object`, reads its `Synced` and `Ready` conditions, and repairs a sync that fails because of missing permissions.
 
 ## Learning objectives
 
-- Confirm Crossplane's pods, CRDs and package manager are healthy before installing anything on top
-- Install a provider package and read INSTALLED and HEALTHY from kubectl get providers
-- Configure a ProviderConfig for provider-kubernetes that uses an injected identity, and grant it the RBAC it needs
-- Create a managed resource directly and read its Synced and Ready conditions
-- Diagnose a managed resource that is not Synced because of missing provider permissions
+After this module you can:
+
+- Confirm that Crossplane's pods, CRDs and package manager are healthy before you install a package.
+- Install a provider package and read `INSTALLED` and `HEALTHY` from `kubectl get providers`.
+- Configure a ProviderConfig for `provider-kubernetes` that uses an injected identity, and grant its service account the RBAC (role-based access control) it needs.
+- Create a managed resource directly and read its `Synced` and `Ready` conditions.
+- Diagnose a managed resource that is not `Synced` because the provider lacks permissions.
 
 ## Before you start
 
-<!-- TODO(build): assumed knowledge, and what the playground already provides. -->
+You need Kubernetes basics: namespaces, Services, ServiceAccounts, Roles and RoleBindings, and the commands `kubectl get`, `kubectl apply`, `kubectl describe` and `kubectl auth can-i`. You do not need to know Crossplane yet.
 
-## Outline
+Write each example file in a new, empty folder on your machine and run every command from that folder. Your playground runs Kubernetes 1.35.8 and Crossplane 2.4.2 in a single-node `kind` cluster. Crossplane runs in the namespace `crossplane-system`. The namespaces `starfleet` and `outpost` exist and are empty. No provider is installed. Installing one pulls a package from `xpkg.crossplane.io`, so the playground needs outbound internet access.
 
-<!-- TODO(build): each beat below becomes a section of this module (or a deep-dive part via /astrona-course-deep-dive). Delete this Outline section once written. -->
+```mermaid
+flowchart TB
+    P["Provider: provider-kubernetes"] -->|"runs"| C["provider pod"]
+    CFG["ProviderConfig: in-cluster"] -->|"credentials: InjectedIdentity"| C
+    O["Object: scout"] -->|"providerConfigRef"| CFG
+    C -->|"reconciles"| O
+    C -->|"creates with RBAC"| M["Service: scout"]
+```
 
-- What Crossplane adds - packages, providers, managed resources and the control loop
-- A running Crossplane and a provider package, and what HEALTHY means
-- ProviderConfig and credentials - injected identity versus a Secret
-- Managed resources - Synced versus Ready, and reading a failed sync
-
-## Diagrams planned
-
-<!-- TODO(build): mermaid `flowchart` — Crossplane core, the provider-kubernetes package and controller, its ProviderConfig, and the managed Object it reconciles into a real ConfigMap -->
-
-<!-- playground provides: kind cluster (Kubernetes 1.35) with Crossplane 2.4.2 pre-installed in `crossplane-system` and the `crossplane` CLI on the path. No provider is installed yet; a provider manifest for provider-kubernetes 1.4.1 is ready to apply. The provider's service account deliberately has no extra RBAC, so the first managed Object fails to sync until the reader grants permissions. Needs outbound internet to pull from xpkg.crossplane.io. -->
-
-<!-- module section-030/module-01 (Module 1) — stub written by /astrona-course-domain-scaffold, prose written by /astrona-course-domain-build. -->
+The diagram shows the chain the module builds: the provider pod reads the ProviderConfig, reconciles the `Object`, and creates the Service only if its service account has permission.
