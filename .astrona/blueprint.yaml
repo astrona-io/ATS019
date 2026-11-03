@@ -1,0 +1,317 @@
+# Curriculum blueprint for ATS019, reconstructed from the built course (astrona.yaml and sections/).
+# The course was authored before this file existed; edit by hand if the plan changes.
+
+version: 1
+mode: new
+course:
+  id: ATS019
+  title: 'CNPE: Platform APIs and Self-Service Capabilities'
+  git_url: ssh://git@github.com/astrona-io/ATS019.git
+  certification:
+    name: Certified Cloud Native Platform Engineer
+    code: CNPE
+    provider: CNCF / Linux Foundation
+    domain: Platform APIs and Self-Service Capabilities
+    weight: 25
+  environment:
+    runtime: kind
+    kind: v0.33.0
+    kind_node_image: kindest/node:v1.35.8
+    crossplane: 2.4.2
+    provider_kubernetes: 1.4.1
+    function_patch_and_transform: 0.11.0
+    prometheus_operator: 0.94.1
+    prometheus: 3.15.0
+    argo_workflows: 4.1.5
+    argo_events: 1.9.11
+    argo_cd: 3.5.4
+    gitea: 28.1.0 (plumbing only)
+    helm: 4.3.0 (plumbing only)
+    podinfo: 6.15.0
+    go_httpbin: 2.25.0
+defaults:
+  playground: true
+  module_lab: true
+  capstone: true
+  section_quiz: true
+  final_quiz: true
+sections:
+- id: section-010
+  title: Extending The Kubernetes API With CRDs
+  curriculum_item: Designing and Creating Custom Resource Definitions (CRDs) for Platform
+    Services
+  description: The reader designs a platform service as a new Kubernetes resource
+    type. First the schema that makes the API server type, default, prune and reject
+    input, then versions and subresources so the API can evolve and a controller can
+    report status. It comes first because every later section (operators, Crossplane,
+    self-service) is built on custom resources and reads their schema and status.
+  modules:
+  - id: module-01
+    title: Design A CRD Schema That Validates Input
+    objectives:
+    - Write a structural schema that requires fields and limits their values
+    - Set defaults and prune unknown fields without x-kubernetes-preserve-unknown-fields
+    - Prove with server-side dry runs that the API server refuses bad objects
+    - Write a CEL rule that compares two fields and a transition rule that uses oldSelf
+    - Add printer columns, a short name and a category so kubectl get shows the key
+      fields
+    - Prove each rule with a server-side dry run the API server must refuse
+    outline:
+    - What A CRD Adds To The API Server
+    - Types, Required Fields, Defaults And Pruning
+    - Rules Across Fields With CEL
+    - Printer Columns, Short Names And Categories
+    playground: true
+    module_labs:
+    - Make A CRD Schema Reject Bad Input
+    - Add CEL Rules And Printer Columns To A CRD
+  - id: module-02
+    title: Version A CRD And Enable Subresources
+    objectives:
+    - Add a served v1 version to a CRD and make it the only storage version
+    - Deprecate the old version so kubectl prints a warning, without losing any object
+    - Prove both versions return the same data and still reject bad input
+    - Enable the status and scale subresources on a CRD version with the correct field
+      paths
+    - Write status through the status endpoint and scale an object with kubectl scale
+    - Prove a normal write cannot change status and the schema limit still applies
+      to scaling
+    outline:
+    - Served Versions And Storage Versions
+    - Deprecate A Served Version
+    - Write Status Through The Status Subresource
+    - Scale A Custom Resource
+    playground: true
+    module_labs:
+    - Add A v1 Version And Deprecate v1alpha1 Lab
+    - Enable The Status And Scale Subresources Lab
+  capstone:
+    title: Publish A Validated And Versioned Platform API Capstone
+    objective: Replace a weak CRD with a schema that requires, limits, defaults and
+      rejects input, plus CEL transition and cross-field rules; Serve a deprecated
+      v1alpha1 beside a v1 storage version without losing the existing objects; Prove
+      the status and scale subresources and the printer columns with kubectl
+  quiz: true
+- id: section-020
+  title: Platform Automation With Operators
+  curriculum_item: Using Kubernetes Operators for Platform Automation and Integration
+  description: 'The reader learns what makes a custom resource do something: a controller
+    running a reconcile loop. Using the Prometheus Operator, an operator from the
+    CNPE tool list, the reader follows a `Prometheus` custom resource to the StatefulSet,
+    Service and Secrets it creates, reads status conditions and observedGeneration,
+    and sees how finalizers and owner references control deletion. It sits after CRDs
+    because it reads the status and subresources defined there, and before Crossplane
+    because Crossplane is itself a set of operators.'
+  modules:
+  - id: module-01
+    title: Read An Operator's Reconcile Loop
+    objectives:
+    - Compare observedGeneration with metadata.generation to show that a status is
+      old
+    - Find that the controller is not running and start it
+    - Prove the controller acted on the spec change through the owned StatefulSet
+      and a current status
+    - Read the Reconciled and Available conditions to tell an operator failure from
+      a failure in an owned object
+    - Find a missing ServiceAccount from the events of the owned StatefulSet
+    - Fix both causes without removing configuration and without widening access
+    outline:
+    - What An Operator Installs
+    - Follow A Custom Resource To Its Objects
+    - Read Conditions And observedGeneration
+    - Find Why A Reconcile Failed
+    playground: true
+    module_labs:
+    - Make A Stale Operator Status Current Lab
+    - Repair A Prometheus Resource That Cannot Reconcile Lab
+  - id: module-02
+    title: Manage Deletion With Finalizers And Owner References
+    objectives:
+    - Move a dependent object to a new owner with an ownerReference that holds the
+      real UID
+    - Delete an owner without losing a dependent that must survive
+    - Prove the garbage collector removes only the objects that name the deleted owner,
+      not objects that share a label
+    - Find the component responsible for a finalizer that keeps an object in a terminating
+      state
+    - Fix the missing RBAC verb of the cleanup worker without widening access
+    - Prove the worker removed the finalizer after cleanup, not a manual patch
+    outline:
+    - Owner References And The Garbage Collector
+    - Choose A Cascading Deletion Mode
+    - Finalizers And deletionTimestamp
+    - Restore A Cleanup Worker
+    playground: true
+    module_labs:
+    - Hand Over A Dependent Before Deleting Its Owner Lab
+    - Restore A Cleanup Worker That Cannot Finish Lab
+  capstone:
+    title: Diagnose And Repair Operator-Managed Resources Capstone
+    objective: Find why a Prometheus resource does not reconcile from its conditions,
+      the events of its StatefulSet and the operator log, and repair the cause; Add
+      owner references with the real UID so the garbage collector deletes the dependents
+      of a custom resource; Finish a stuck deletion by fixing the permission of the
+      cleanup worker and running it, without removing the finalizer by hand
+  quiz: true
+- id: section-030
+  title: Platform APIs With Crossplane
+  curriculum_item: Implementing Workflows for Self-Service Provisioning Using Platform
+    APIs
+  description: The reader builds a platform API that turns one small request into
+    many objects. A provider and its ProviderConfig come first, then a CompositeResourceDefinition
+    and a function-pipeline Composition, then a composite resource that tenants request
+    and the platform team traces when it fails. The provider acts inside the cluster
+    (provider-kubernetes), so everything runs offline in kind.
+  modules:
+  - id: module-01
+    title: Install A Crossplane Provider And ProviderConfig
+    objectives:
+    - Install a Crossplane provider package at a pinned version with a Provider object
+    - Fix the provider's ServiceAccount name with a DeploymentRuntimeConfig
+    - Prove the provider is Installed and Healthy and that its pod uses that ServiceAccount
+    - Read the Synced condition of a managed resource to find why a sync fails
+    - Fix the missing RBAC of a provider's ServiceAccount without widening access
+    - Prove the managed resource is Synced and Ready and the provider created the
+      object
+    outline:
+    - Crossplane And Provider Packages
+    - ProviderConfig And Injected Identity
+    - Managed Resources And Failed Syncs
+    playground: true
+    module_labs:
+    - Install provider-kubernetes And Reach Healthy Lab
+    - Repair A Provider That Cannot Sync An Object Lab
+  - id: module-02
+    title: Define A Platform API With An XRD And Composition
+    objectives:
+    - Write a namespaced XRD whose schema sets defaults and limits
+    - Prove the API server fills in defaults and refuses a missing owner, out-of-range
+      numbers, a bad tier and unknown fields
+    - Create a request that is stored with the default values
+    - Add a patch that copies spec.replicas of a request into a composed Deployment
+    - Write the available replicas of the Deployment back into the status of the request
+    - Prove with a request from shuttle that the composed Service answers 200
+    - Find a missing function from the conditions and events of a composite resource
+    - Find a Service selector that matches no pod and repair it in the Composition
+    - Prove the repair with a Synced and Ready request and a request that returns
+      200
+    outline:
+    - From A CRD To An XRD
+    - Compose Resources With A Pipeline
+    - Patch Values In And Out
+    - Render And Debug A Composition
+    playground: true
+    module_labs:
+    - Define A Platform API With An XRD Lab
+    - Patch A Composition To Honour Tenant Requests Lab
+    - Repair A Broken Composition Lab
+  - id: module-03
+    title: Provision And Trace A Composite Resource
+    objectives:
+    - Create a composite resource that follows the schema of its platform API
+    - Wait for the Synced and Ready conditions of the composite resource
+    - Prove that the provisioned workload answers a request
+    - Trace a composite resource to the composed resource that is not Ready
+    - Fix a ProviderConfig name and a patch path in a Composition
+    - Prove that the workload follows the request after the fix
+    - Delete a composite resource with orphaning so its workload stays
+    - Prove that the composed objects lost their owner reference
+    - Show that the workload still answers a request
+    outline:
+    - Request A Composite Resource
+    - Trace A Composite Resource
+    - Read A Failing Composite Resource
+    - Update And Delete A Composite Resource
+    playground: true
+    module_labs:
+    - Provision A TeamEnvironment And Prove It Answers
+    - Fix A Failing Composition Found By Tracing
+    - Delete A Composite Resource Without Losing Its Workload
+  capstone:
+    title: Build A Self-Service Team Environment API Capstone
+    objective: Install provider-kubernetes and grant it only the access its Compositions
+      need; Define a TeamEnvironment XRD and a Pipeline Composition that creates a
+      Deployment and a Service; Prove that a tenant request reaches Ready and the
+      provisioned workload answers a request
+  quiz: true
+- id: section-040
+  title: Self-Service Provisioning Workflows
+  curriculum_item: Using Automation Frameworks for Self-Service Provisioning / Implementing
+    Workflows for Self-Service Provisioning Using Platform APIs
+  description: 'The reader wraps the platform API in a self-service workflow: Argo
+    Workflows runs provisioning steps, Argo Events starts them from a webhook, and
+    Argo CD delivers a request committed to Git. Scoped RBAC limits what a tenant
+    can create.'
+  modules:
+  - id: module-01
+    title: Run Provisioning Steps With Argo Workflows
+    objectives:
+    - Write a WorkflowTemplate with parameters and a DAG of dependent tasks
+    - Submit a Workflow that overrides the parameters and prove it Succeeded
+    - Read a failed Workflow and find the forbidden request
+    - Fix the Role and RoleBinding with least privilege and prove the Workflow Succeeded
+    - Write a resource step that creates a platform API object and waits for status.phase
+      Ready
+    - Grant only the verbs a waiting step needs
+    - Prove the Workflow keeps running until Ready and fails on Failed
+    outline:
+    - What Argo Workflows Runs
+    - Build A Reusable WorkflowTemplate
+    - Give The Workflow A ServiceAccount
+    - Create A Platform API Object And Wait For Ready
+    playground: true
+    module_labs:
+    - Submit A Parameterized Provisioning WorkflowTemplate Lab
+    - Fix A Provisioning Workflow That Fails On Permissions Lab
+    - Wait For A TeamEnvironment With A Resource Step Lab
+  - id: module-02
+    title: Trigger Workflows From Events With Argo Events
+    objectives:
+    - Build an EventBus, a webhook EventSource and a Sensor that submits a Workflow
+      from a WorkflowTemplate
+    - Map a value from the event body into a Workflow parameter and drop events with
+      a data filter
+    - Grant the Sensor ServiceAccount only the permission to create Workflows
+    - Follow an event from the request through the EventSource and the Sensor to find
+      the first component that fails
+    - Fix a wrong data filter path in a Sensor without removing the filter
+    - Prove the fix with a request that starts a Workflow with the posted team name
+    outline:
+    - EventBus And Webhook EventSource
+    - A Sensor That Submits A Workflow
+    - Filters And Parameter Mapping
+    - Follow An Event That Went Nowhere
+    playground: true
+    module_labs:
+    - Trigger A Provisioning Workflow From A Webhook
+    - Find Why An Event Starts No Workflow
+  - id: module-03
+    title: Offer Self-Service Through Git And Scoped RBAC
+    objectives:
+    - Write a Role and RoleBinding that let one group create and read a single platform
+      API kind in its own namespace
+    - Prove with impersonation that the group cannot change objects, read Secrets
+      or act in another namespace
+    - Read the status of an Argo CD Application to find why a committed request does
+      not arrive
+    - Fix an AppProject and an Application without widening the project beyond one
+      kind, one namespace and one repository
+    - Follow a committed TeamEnvironment to a Ready composite resource and a workload
+      that answers
+    outline:
+    - Scope A Tenant With A Role And RoleBinding
+    - Aggregate Platform API Permissions Into edit And view
+    - Deliver Requests Through Git With Argo CD
+    - Follow A Request From Commit To Ready
+    playground: true
+    module_labs:
+    - Scope A Tenant To One Platform API With RBAC Lab
+    - Deliver A Tenant Request Through Argo CD Lab
+  capstone:
+    title: Deliver Self-Service Environment Provisioning Capstone
+    objective: Scope the RBAC of a tenant group, a Workflow ServiceAccount and a Sensor
+      ServiceAccount to the least rights each one needs; Write a WorkflowTemplate
+      that creates a TeamEnvironment and waits for available replicas before it succeeds;
+      Repair an EventSource and a Sensor so that a webhook order with a valid tier
+      starts the Workflow with the posted team
+  quiz: true

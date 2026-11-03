@@ -1,0 +1,283 @@
+# Phase-3 build progress. Labs and playgrounds are UNTESTED (static validate only).
+
+version: 1
+items:
+- key: section-010/module-01/playground
+  kind: playground
+  what: 'playground for section-010 module-01: Design A CRD Schema That Validates
+    Input'
+  status: done
+  note: astrona validate -c ok; UNTESTED (not booted)
+- key: section-010/module-01/course
+  kind: course
+  what: 'chapter for section-010 module-01: Design A CRD Schema That Validates Input'
+  status: done
+  note: landing + 4 parts + summary; built in an earlier session; some parts exceed
+    160 lines
+- key: section-010/module-01/lab-01
+  kind: lab
+  what: 'graded lab: Make A CRD Schema Reject Bad Input'
+  status: done
+  note: astrona validate -c ok; UNTESTED (not run)
+- key: section-010/module-01/lab-02
+  kind: lab
+  what: 'graded lab: Add CEL Rules And Printer Columns To A CRD'
+  status: done
+  note: astrona validate -c ok; UNTESTED (not run)
+- key: section-010/module-02/playground
+  kind: playground
+  what: 'playground for section-010 module-02: Version A CRD And Enable Subresources'
+  status: done
+  note: astrona validate -c ok; UNTESTED (not booted)
+- key: section-010/module-02/course
+  kind: course
+  what: 'chapter for section-010 module-02: Version A CRD And Enable Subresources'
+  status: done
+  note: landing + 4 parts + summary; built in an earlier session; some parts exceed
+    160 lines
+- key: section-010/module-02/lab-01
+  kind: lab
+  what: 'graded lab: Add A v1 Version And Deprecate v1alpha1 Lab'
+  status: done
+  note: astrona validate -c ok; UNTESTED (not run)
+- key: section-010/module-02/lab-02
+  kind: lab
+  what: 'graded lab: Enable The Status And Scale Subresources Lab'
+  status: done
+  note: astrona validate -c ok; UNTESTED (not run)
+- key: section-010/quiz
+  kind: quiz
+  what: 'knowledge check for section-010: Extending The Kubernetes API With CRDs'
+  status: done
+  note: ''
+- key: section-010/capstone
+  kind: capstone
+  what: 'capstone lab: Publish A Validated And Versioned Platform API Capstone'
+  status: done
+  note: astrona validate -c ok; UNTESTED (not run)
+- key: section-020/module-01/playground
+  kind: playground
+  what: 'playground for section-020 module-01: Read An Operator''s Reconcile Loop'
+  status: done
+  note: astrona validate -c ok; UNTESTED (not booted)
+- key: section-020/module-01/course
+  kind: course
+  what: 'chapter for section-020 module-01: Read An Operator''s Reconcile Loop'
+  status: done
+  note: landing + 4 parts + summary; built in an earlier session; some parts exceed
+    160 lines
+- key: section-020/module-01/lab-01
+  kind: lab
+  what: 'graded lab: Make A Stale Operator Status Current Lab'
+  status: done
+  note: astrona validate -c ok; UNTESTED (not run)
+- key: section-020/module-01/lab-02
+  kind: lab
+  what: 'graded lab: Repair A Prometheus Resource That Cannot Reconcile Lab'
+  status: done
+  note: astrona validate -c ok; UNTESTED (not run)
+- key: section-020/module-02/playground
+  kind: playground
+  what: 'playground for section-020 module-02: Manage Deletion With Finalizers And
+    Owner References'
+  status: done
+  note: astrona validate -c ok; UNTESTED (not booted)
+- key: section-020/module-02/course
+  kind: course
+  what: 'chapter for section-020 module-02: Manage Deletion With Finalizers And Owner
+    References'
+  status: done
+  note: landing + 4 parts + summary; built in an earlier session; some parts exceed
+    160 lines
+- key: section-020/module-02/lab-01
+  kind: lab
+  what: 'graded lab: Hand Over A Dependent Before Deleting Its Owner Lab'
+  status: done
+  note: astrona validate -c ok; UNTESTED (not run)
+- key: section-020/module-02/lab-02
+  kind: lab
+  what: 'graded lab: Restore A Cleanup Worker That Cannot Finish Lab'
+  status: done
+  note: astrona validate -c ok; UNTESTED (not run)
+- key: section-020/quiz
+  kind: quiz
+  what: 'knowledge check for section-020: Platform Automation With Operators'
+  status: done
+  note: ''
+- key: section-020/capstone
+  kind: capstone
+  what: 'capstone lab: Diagnose And Repair Operator-Managed Resources Capstone'
+  status: done
+  note: astrona validate -c ok; UNTESTED (not run)
+- key: section-030/module-01/playground
+  kind: playground
+  what: 'playground for section-030 module-01: Install A Crossplane Provider And ProviderConfig'
+  status: done
+  note: astrona validate -c ok; UNTESTED (not booted)
+- key: section-030/module-01/course
+  kind: course
+  what: 'chapter for section-030 module-01: Install A Crossplane Provider And ProviderConfig'
+  status: done
+  note: landing + 3 parts + summary; built in an earlier session; some parts exceed
+    160 lines
+- key: section-030/module-01/lab-01
+  kind: lab
+  what: 'graded lab: Install provider-kubernetes And Reach Healthy Lab'
+  status: done
+  note: astrona validate -c ok; UNTESTED (not run)
+- key: section-030/module-01/lab-02
+  kind: lab
+  what: 'graded lab: Repair A Provider That Cannot Sync An Object Lab'
+  status: done
+  note: astrona validate -c ok; UNTESTED (not run)
+- key: section-030/module-02/playground
+  kind: playground
+  what: 'playground for section-030 module-02: Define A Platform API With An XRD And
+    Composition'
+  status: done
+  note: astrona validate -c ok; UNTESTED (not booted)
+- key: section-030/module-02/course
+  kind: course
+  what: 'chapter for section-030 module-02: Define A Platform API With An XRD And
+    Composition'
+  status: done
+  note: landing + 4 parts + summary; built in an earlier session; some parts exceed
+    160 lines
+- key: section-030/module-02/lab-01
+  kind: lab
+  what: 'graded lab: Define A Platform API With An XRD Lab'
+  status: done
+  note: astrona validate -c ok; UNTESTED (not run)
+- key: section-030/module-02/lab-02
+  kind: lab
+  what: 'graded lab: Patch A Composition To Honour Tenant Requests Lab'
+  status: done
+  note: astrona validate -c ok; UNTESTED (not run)
+- key: section-030/module-02/lab-03
+  kind: lab
+  what: 'graded lab: Repair A Broken Composition Lab'
+  status: done
+  note: astrona validate -c ok; UNTESTED (not run)
+- key: section-030/module-03/playground
+  kind: playground
+  what: 'playground for section-030 module-03: Provision And Trace A Composite Resource'
+  status: done
+  note: astrona validate -c ok; UNTESTED (not booted)
+- key: section-030/module-03/course
+  kind: course
+  what: 'chapter for section-030 module-03: Provision And Trace A Composite Resource'
+  status: done
+  note: landing + 4 parts + summary; built in an earlier session; some parts exceed
+    160 lines
+- key: section-030/module-03/lab-01
+  kind: lab
+  what: 'graded lab: Provision A TeamEnvironment And Prove It Answers'
+  status: done
+  note: astrona validate -c ok; UNTESTED (not run)
+- key: section-030/module-03/lab-02
+  kind: lab
+  what: 'graded lab: Fix A Failing Composition Found By Tracing'
+  status: done
+  note: astrona validate -c ok; UNTESTED (not run)
+- key: section-030/module-03/lab-03
+  kind: lab
+  what: 'graded lab: Delete A Composite Resource Without Losing Its Workload'
+  status: done
+  note: astrona validate -c ok; UNTESTED (not run)
+- key: section-030/quiz
+  kind: quiz
+  what: 'knowledge check for section-030: Platform APIs With Crossplane'
+  status: done
+  note: ''
+- key: section-030/capstone
+  kind: capstone
+  what: 'capstone lab: Build A Self-Service Team Environment API Capstone'
+  status: done
+  note: astrona validate -c ok; UNTESTED (not run)
+- key: section-040/module-01/playground
+  kind: playground
+  what: 'playground for section-040 module-01: Run Provisioning Steps With Argo Workflows'
+  status: done
+  note: astrona validate -c ok; UNTESTED (not booted)
+- key: section-040/module-01/course
+  kind: course
+  what: 'chapter for section-040 module-01: Run Provisioning Steps With Argo Workflows'
+  status: done
+  note: landing + 4 parts + summary; built in an earlier session; some parts exceed
+    160 lines
+- key: section-040/module-01/lab-01
+  kind: lab
+  what: 'graded lab: Submit A Parameterized Provisioning WorkflowTemplate Lab'
+  status: done
+  note: astrona validate -c ok; UNTESTED (not run)
+- key: section-040/module-01/lab-02
+  kind: lab
+  what: 'graded lab: Fix A Provisioning Workflow That Fails On Permissions Lab'
+  status: done
+  note: astrona validate -c ok; UNTESTED (not run)
+- key: section-040/module-01/lab-03
+  kind: lab
+  what: 'graded lab: Wait For A TeamEnvironment With A Resource Step Lab'
+  status: done
+  note: astrona validate -c ok; UNTESTED (not run)
+- key: section-040/module-02/playground
+  kind: playground
+  what: 'playground for section-040 module-02: Trigger Workflows From Events With
+    Argo Events'
+  status: done
+  note: astrona validate -c ok; UNTESTED (not booted)
+- key: section-040/module-02/course
+  kind: course
+  what: 'chapter for section-040 module-02: Trigger Workflows From Events With Argo
+    Events'
+  status: done
+  note: landing + 4 parts + summary; built in an earlier session; some parts exceed
+    160 lines
+- key: section-040/module-02/lab-01
+  kind: lab
+  what: 'graded lab: Trigger A Provisioning Workflow From A Webhook'
+  status: done
+  note: astrona validate -c ok; UNTESTED (not run)
+- key: section-040/module-02/lab-02
+  kind: lab
+  what: 'graded lab: Find Why An Event Starts No Workflow'
+  status: done
+  note: astrona validate -c ok; UNTESTED (not run)
+- key: section-040/module-03/playground
+  kind: playground
+  what: 'playground for section-040 module-03: Offer Self-Service Through Git And
+    Scoped RBAC'
+  status: done
+  note: astrona validate -c ok; UNTESTED (not booted)
+- key: section-040/module-03/course
+  kind: course
+  what: 'chapter for section-040 module-03: Offer Self-Service Through Git And Scoped
+    RBAC'
+  status: done
+  note: landing + 4 parts + summary; built in an earlier session; some parts exceed
+    160 lines
+- key: section-040/module-03/lab-01
+  kind: lab
+  what: 'graded lab: Scope A Tenant To One Platform API With RBAC Lab'
+  status: done
+  note: astrona validate -c ok; UNTESTED (not run)
+- key: section-040/module-03/lab-02
+  kind: lab
+  what: 'graded lab: Deliver A Tenant Request Through Argo CD Lab'
+  status: done
+  note: astrona validate -c ok; UNTESTED (not run)
+- key: section-040/quiz
+  kind: quiz
+  what: 'knowledge check for section-040: Self-Service Provisioning Workflows'
+  status: done
+  note: ''
+- key: section-040/capstone
+  kind: capstone
+  what: 'capstone lab: Deliver Self-Service Environment Provisioning Capstone'
+  status: done
+  note: astrona validate -c ok; UNTESTED (not run)
+- key: final-domain-quiz
+  kind: quiz
+  what: final domain quiz
+  status: done
+  note: ''
