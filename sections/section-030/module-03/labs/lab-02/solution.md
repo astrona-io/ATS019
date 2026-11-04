@@ -12,11 +12,13 @@ composed objects. Crossplane re-reads the Composition and repairs them.
 
 ## The feedback loop
 
-Run this from the terminal where you typed `astrona run`, after every step:
+Keep this command running in a second host terminal. It grades the lab every few seconds and records nothing:
 
 ```sh
-astrona submit -c sections/section-030/module-03/labs/lab-02
+astrona submit --watch -c sections/section-030/module-03/labs/lab-02
 ```
+
+Use `--watch` until the end, because a plain `astrona submit` finishes the attempt and deletes the lab. Run the plain command once, in the last step.
 
 The checks are `composition`, `request-ready`, `workload-follows-request`,
 `answers` and `no-shortcuts`. At the start, `no-shortcuts` can pass and the
@@ -59,7 +61,7 @@ kubectl edit composition teamenvironment
 In the resource named `service`, change `providerConfigRef.name` from
 `in-clustr` to `in-cluster`. Save and close the editor.
 
-**Run the check.** The check `composition` is still red, because the second
+**Check the watch terminal.** The check `composition` is still red, because the second
 fault is open.
 
 ---
@@ -84,7 +86,7 @@ In the resource named `deployment`, set the patch to `fromFieldPath:
 spec.replicas` and `toFieldPath: spec.forProvider.manifest.spec.replicas`. Save
 and close the editor.
 
-**Run the check.** The check `composition` passes.
+**Check the watch terminal.** The check `composition` passes.
 
 ---
 
@@ -101,13 +103,15 @@ kubectl -n outpost exec deploy/shuttle -- curl -s -o /dev/null -w '%{http_code}\
 The Deployment shows 2 ready replicas and the request returns `200`. If the
 status is `000`, the pods are still starting. Run the command again.
 
-**Run the check.** The checks `request-ready`, `workload-follows-request` and
+**Check the watch terminal.** The checks `request-ready`, `workload-follows-request` and
 `answers` pass. The check `no-shortcuts` passes too, if you did not create
 objects by hand.
 
 ---
 
 ## Step 5: Submit
+
+Press Ctrl-C to stop the watch, then run the submit command once:
 
 ```sh
 astrona submit -c sections/section-030/module-03/labs/lab-02

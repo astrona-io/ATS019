@@ -14,11 +14,13 @@ deleting them.
 
 ## The feedback loop
 
-Run this from the terminal where you typed `astrona run`:
+Keep this command running in a second host terminal. It grades the lab every few seconds and records nothing:
 
 ```sh
-astrona submit -c sections/section-030/module-03/labs/lab-03
+astrona submit --watch -c sections/section-030/module-03/labs/lab-03
 ```
+
+Use `--watch` until the end, because a plain `astrona submit` finishes the attempt and deletes the lab. Run the plain command once, in the last step.
 
 The checks are `request-gone`, `workload-kept`, `objects-orphaned` and
 `answers`. At the start only `workload-kept`, `objects-orphaned` and `answers`
@@ -48,7 +50,7 @@ kubectl -n outpost delete teamenvironment scout-env --cascade=orphan
 With `--cascade=orphan` the API server deletes only `scout-env`. It removes the
 owner reference from the dependents, so the garbage collector keeps them.
 
-**Run the check.** The checks `request-gone`, `workload-kept` and
+**Check the watch terminal.** The checks `request-gone`, `workload-kept` and
 `objects-orphaned` pass.
 
 ---
@@ -63,11 +65,13 @@ kubectl -n outpost exec deploy/shuttle -- curl -s -o /dev/null -w '%{http_code}\
 The `Object` resources remain, and the request returns `200`. The `Object`
 resources are now managed by nothing. Leave them in place.
 
-**Run the check.** All four checks pass.
+**Check the watch terminal.** All four checks pass.
 
 ---
 
 ## Step 4: Submit
+
+Press Ctrl-C to stop the watch, then run the submit command once:
 
 ```sh
 astrona submit -c sections/section-030/module-03/labs/lab-03

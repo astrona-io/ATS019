@@ -12,13 +12,15 @@ You repair one object, the cluster-wide Composition `teamenvironment`, on the te
 
 ## The feedback loop
 
-Grading runs from the terminal on your machine, the same terminal where you typed `astrona run`:
+Keep this command running in a second host terminal. It grades the lab every few seconds and records nothing:
 
 ```sh
-astrona submit --git ssh://git@github.com/astrona-io/ATS019.git -c sections/section-030/module-02/labs/lab-03
+astrona submit --watch --git ssh://git@github.com/astrona-io/ATS019.git -c sections/section-030/module-02/labs/lab-03
 ```
 
-Run it now and after every step. It runs four checks. All four fail at the start.
+Use `--watch` until the end, because a plain `astrona submit` finishes the attempt and deletes the lab. Run the plain command once, in the last step.
+
+It runs four checks. All four fail at the start.
 
 | Check | Turns green when |
 | --- | --- |
@@ -141,7 +143,7 @@ Two lines differ from the broken Composition: `name: function-patch-and-transfor
 kubectl apply -f composition-teamenvironment.yaml
 ```
 
-Run the check. `composition-repaired` turns green. The other checks may turn green a little later, after Crossplane has run the pipeline and the provider has created the objects.
+Check the watch terminal. `composition-repaired` turns green. The other checks may turn green a little later, after Crossplane has run the pipeline and the provider has created the objects.
 
 ## Step 3: Follow what Crossplane created
 
@@ -152,7 +154,7 @@ kubectl -n outpost wait teamenvironment outpost-env --for=condition=Ready --time
 crossplane resource trace teamenvironment outpost-env -n outpost
 ```
 
-The trace shows the `TeamEnvironment` and two `Object` resources below it. Run the check. `request-synced-ready` turns green.
+The trace shows the `TeamEnvironment` and two `Object` resources below it. Check the watch terminal. `request-synced-ready` turns green.
 
 If you had fixed only the function name in step 2, the request would be `Ready` but the Service would not work. Look at why:
 
@@ -172,11 +174,11 @@ Send a request from `shuttle` to the Service:
 kubectl -n outpost exec deploy/shuttle -- curl -s -o /dev/null -w '%{http_code}\n' http://scout:9898
 ```
 
-The output is `200`. Run the check. `service-selects-pods` and `request-answers-200` are green.
+The output is `200`. Check the watch terminal. `service-selects-pods` and `request-answers-200` are green.
 
 ## Step 5: Submit
 
-When all four checks are green, submit:
+When all four checks are green, press Ctrl-C to stop the watch and run the submit command once:
 
 ```sh
 astrona submit --git ssh://git@github.com/astrona-io/ATS019.git -c sections/section-030/module-02/labs/lab-03
@@ -189,4 +191,4 @@ astrona submit --git ssh://git@github.com/astrona-io/ATS019.git -c sections/sect
 - **`composition-repaired` fails with another Composition.** You created a new Composition and moved the request to it. Repair `teamenvironment` itself.
 - **`request-synced-ready` stays red.** Read the conditions again. Crossplane needs a short time to run the pipeline after each change. Run `kubectl -n outpost describe teamenvironment outpost-env` and read the events.
 - **`service-selects-pods` fails with `app='scouts'`.** The Service selector in the Composition does not match the pod label. Change the selector in the Composition. An edit of the Service by hand does not change the `Object` or the Composition, and the grader compares all three.
-- **`request-answers-200` fails after the other checks pass.** The provider updates the Service at its next reconcile. Wait half a minute and run the check again.
+- **`request-answers-200` fails after the other checks pass.** The provider updates the Service at its next reconcile. Wait half a minute and check the watch terminal again.

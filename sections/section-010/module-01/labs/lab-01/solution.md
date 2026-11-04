@@ -12,13 +12,15 @@ You work on the `terminal` of the lab cluster. You read the weak schema, replace
 
 ## The feedback loop
 
-Grading runs from the host terminal, the shell where you typed `astrona run`, not inside the cluster:
+Keep this command running in a second host terminal. It grades the lab every few seconds and records nothing:
 
 ```sh
-astrona submit -c sections/section-010/module-01/labs/lab-01
+astrona submit --watch -c sections/section-010/module-01/labs/lab-01
 ```
 
-The grader has three checks: `rejects-bad-values`, `defaults-and-pruning` and `crd-kept`. At the start, `crd-kept` passes because the CRD and `alpha` exist. The other two fail because the weak schema accepts everything. Run the command after each step and read the results.
+Use `--watch` until the end, because a plain `astrona submit` finishes the attempt and deletes the lab. Run the plain command once, in the last step.
+
+The grader has three checks: `rejects-bad-values`, `defaults-and-pruning` and `crd-kept`. At the start, `crd-kept` passes because the CRD and `alpha` exist. The other two fail because the weak schema accepts everything. The watch terminal shows each check as it turns green.
 
 ---
 
@@ -103,7 +105,7 @@ Apply it:
 kubectl apply -f crd-teamenvironment.yaml
 ```
 
-The API server needs a few seconds to serve the new schema. Run the check. `crd-kept` still passes, and `rejects-bad-values` and `defaults-and-pruning` now pass too.
+The API server needs a few seconds to serve the new schema. Check the watch terminal. `crd-kept` still passes, and `rejects-bad-values` and `defaults-and-pruning` now pass too.
 
 ---
 
@@ -156,7 +158,7 @@ The output shows `replicas: 1` and `retentionDays: 7`, which the API server fill
 
 ## Step 4: Submit
 
-When all three checks are green, run the submit command once more:
+When all three checks are green, press Ctrl-C to stop the watch and run the submit command once:
 
 ```sh
 astrona submit -c sections/section-010/module-01/labs/lab-01
@@ -166,7 +168,7 @@ astrona submit -c sections/section-010/module-01/labs/lab-01
 
 ## If a check stays red
 
-- **`rejects-bad-values` fails with "the API server accepted ...".** The new schema is not served yet, or a field has no limit. Wait a few seconds and run the check again. Then compare the field named in the message with the schema.
+- **`rejects-bad-values` fails with "the API server accepted ...".** The new schema is not served yet, or a field has no limit. Wait a few seconds and check the watch terminal again. Then compare the field named in the message with the schema.
 - **`rejects-bad-values` fails with "the error does not name spec.<field>".** The API server refused the object for another reason. Check that the limit sits on the right field and that `required` is a list on `spec`, not on the top level.
 - **`defaults-and-pruning` fails with "does not get replicas 1".** The `default` is missing or sits on the wrong field. A `default` belongs inside `replicas` and `retentionDays`.
 - **`defaults-and-pruning` fails with "still uses x-kubernetes-preserve-unknown-fields".** Remove the field from every level of the schema. It turns off pruning, so typos are stored and never reported.

@@ -15,16 +15,17 @@ Composition defines that function pipeline and its resource templates.
 
 ## The feedback loop
 
-Run grading from the host terminal where you started the lab:
+Keep this command running in a second host terminal. It grades the lab every few seconds and records nothing:
 
 ```sh
-astrona submit --git ssh://git@github.com/astrona-io/ATS019.git -c sections/section-030/module-02/labs/lab-04
+astrona submit --watch --git ssh://git@github.com/astrona-io/ATS019.git -c sections/section-030/module-02/labs/lab-04
 ```
+
+Use `--watch` until the end, because a plain `astrona submit` finishes the attempt and deletes the lab. Run the plain command once, in the last step.
 
 Initially, expect all four checks to fail: `tenant-request`,
 `composition-extended`, `existing-request-updated` and `services-reach-pods`.
 The setup supplies a working original workload but no client Service.
-Re-run this command after each change.
 
 ## Step 1: Read the existing API and record identity
 
@@ -80,7 +81,7 @@ Wait for the request to become ready:
 kubectl -n outpost wait teamenvironment/outpost-probe --for=condition=Ready --timeout=300s
 ```
 
-**Run the check:** re-run `astrona submit`. Expect `tenant-request` to pass
+**Check the watch terminal:** it shows `tenant-request` passing
 once the new StatefulSet is ready. Both requests still lack a client Service.
 
 ## Step 3: Append the Service template
@@ -137,8 +138,8 @@ Apply it:
 kubectl apply -f composition-scout-stateful.yaml
 ```
 
-**Run the check:** re-run `astrona submit`. Expect `composition-extended`
-to pass. Crossplane creates a new Composition revision; allow time for both
+**Check the watch terminal:** it shows `composition-extended`
+passing. Crossplane creates a new Composition revision; allow time for both
 requests to adopt it and for their new Services to appear.
 
 ## Step 4: Prove the existing request gained its Service
@@ -164,8 +165,16 @@ the matching XR UID, and ready EndpointSlice targets naming the matching
 StatefulSet Pods. Each HTTP request should return status `200`.
 The pinned workload image includes `curl`, so no extra client is needed.
 
-**Run the check:** re-run `astrona submit`. Expect `existing-request-updated`
-and `services-reach-pods` to pass once reconciliation completes.
+**Check the watch terminal:** it shows `existing-request-updated`
+and `services-reach-pods` passing once reconciliation completes.
+
+## Step 5: Submit
+
+When all four checks are green, press Ctrl-C to stop the watch and run the submit command once:
+
+```sh
+astrona submit --git ssh://git@github.com/astrona-io/ATS019.git -c sections/section-030/module-02/labs/lab-04
+```
 
 ## If a check stays red
 

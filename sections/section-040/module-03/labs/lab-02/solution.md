@@ -12,13 +12,15 @@ You will read why the Application cannot deliver, fix the Application and the Ap
 
 ## The feedback loop
 
-Grading runs from the host terminal, the shell where you typed `astrona run`:
+Keep this command running in a second host terminal. It grades the lab every few seconds and records nothing:
 
 ```sh
-astrona submit --git ssh://git@github.com/astrona-io/ATS019.git -c sections/section-040/module-03/labs/lab-02
+astrona submit --watch --git ssh://git@github.com/astrona-io/ATS019.git -c sections/section-040/module-03/labs/lab-02
 ```
 
-The grader prints `PASS` or `FAIL` for each check. Run it now and again after each step. At the start, almost every check fails.
+Use `--watch` until the end, because a plain `astrona submit` finishes the attempt and deletes the lab. Run the plain command once, in the last step.
+
+The watch terminal prints `PASS` or `FAIL` for each check. At the start, almost every check fails.
 
 ---
 
@@ -66,7 +68,7 @@ The `path` is now `requests`. The `syncPolicy.automated` block makes Argo CD syn
 kubectl apply -f application-outpost-requests.yaml
 ```
 
-Run `astrona submit`. The Application checks pass.
+The watch terminal shows the Application checks passing.
 
 ---
 
@@ -98,13 +100,13 @@ The field `namespaceResourceWhitelist` was allowing only `ConfigMap`. It now all
 kubectl apply -f appproject-outpost.yaml
 ```
 
-Run `astrona submit`. The project check passes.
+The watch terminal shows the project check passing.
 
 ---
 
 ## Step 4: Commit the request
 
-Start the port-forward and leave it running in a second terminal:
+Start the port-forward and leave it running in another terminal:
 
 ```sh
 kubectl -n gitea port-forward svc/gitea-http 3000:3000
@@ -140,7 +142,7 @@ git commit -m "Request environment for drifter"
 git push
 ```
 
-Run `astrona submit`. The check that the file is committed passes.
+The watch terminal shows the check that the file is committed passing.
 
 ---
 
@@ -161,13 +163,13 @@ kubectl -n outpost get deployment,service
 kubectl -n outpost exec deploy/shuttle -- curl -s -o /dev/null -w '%{http_code}\n' http://scout:9898
 ```
 
-The `TeamEnvironment` shows `True` under `SYNCED` and `READY` after a short wait. The request prints `200`. Run `astrona submit`. The Argo CD, composite resource and workload checks pass.
+The `TeamEnvironment` shows `True` under `SYNCED` and `READY` after a short wait. The request prints `200`. The watch terminal shows the Argo CD, composite resource and workload checks passing.
 
 ---
 
 ## Step 6: Submit
 
-When every check shows `PASS`:
+When every check shows `PASS`, press Ctrl-C to stop the watch and run the submit command once:
 
 ```sh
 astrona submit --git ssh://git@github.com/astrona-io/ATS019.git -c sections/section-040/module-03/labs/lab-02
@@ -183,4 +185,4 @@ astrona submit --git ssh://git@github.com/astrona-io/ATS019.git -c sections/sect
 - **The delivered check fails but the object exists.** You applied the file with `kubectl`. Delete the object, then let Argo CD create it from Git. A `selfHeal` Application restores objects it owns.
 - **The file is not committed.** The path must be `requests/drifter.yaml` on the default branch. Run `git push` again and read its output.
 - **`Ready` stays `False`.** Run `kubectl -n outpost describe teamenvironment drifter` and read the conditions. The packages can take a minute to settle after a new request.
-- **The 200 check fails.** Wait until `kubectl -n outpost get deployment scout` shows `1/1`, then run the check again.
+- **The 200 check fails.** Wait until `kubectl -n outpost get deployment scout` shows `1/1`, then check the watch terminal again.

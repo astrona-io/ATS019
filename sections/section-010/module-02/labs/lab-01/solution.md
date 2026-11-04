@@ -12,13 +12,15 @@ You change one CustomResourceDefinition (CRD) and create one object on the `term
 
 ## The feedback loop
 
-Grading runs from the host terminal, the shell where you typed `astrona run`, not inside the cluster:
+Keep this command running in a second host terminal. It grades the lab every few seconds and records nothing:
 
 ```sh
-astrona submit -c sections/section-010/module-02/labs/lab-01
+astrona submit --watch -c sections/section-010/module-02/labs/lab-01
 ```
 
-The grader has three checks: `versions`, `deprecation` and `objects-and-schema`. All three fail at the start, because the CRD has no `v1` version. Run the command after every step and read which check turns green.
+Use `--watch` until the end, because a plain `astrona submit` finishes the attempt and deletes the lab. Run the plain command once, in the last step.
+
+The grader has three checks: `versions`, `deprecation` and `objects-and-schema`. All three fail at the start, because the CRD has no `v1` version. The watch terminal shows each check as it turns green.
 
 ---
 
@@ -171,7 +173,7 @@ kubectl get crd teamenvironments.platform.starfleet.io -o jsonpath='{.status.sto
 
 `v1alpha1` shows `storage=false` and `v1` shows `storage=true`. `status.storedVersions` lists both versions, because `alpha` and `beta` are still stored as `v1alpha1`. Kubernetes does not rewrite old objects when the storage version changes.
 
-**Run the check.** `versions` and `deprecation` now pass. If `deprecation` still fails, wait a few seconds and run it again: `kubectl` needs a moment to see the new version.
+**Check the watch terminal.** `versions` and `deprecation` now pass. If `deprecation` still fails, wait a few seconds for the next watch result: `kubectl` needs a moment to see the new version.
 
 ---
 
@@ -213,13 +215,13 @@ kubectl -n outpost get teamenvironments.v1.platform.starfleet.io gamma
 
 The API server stores `gamma` as `v1`, because `v1` is the storage version. The `outpost` objects `alpha` and `beta` stay stored as `v1alpha1`.
 
-**Run the check.** `objects-and-schema` now passes.
+**Check the watch terminal.** `objects-and-schema` now passes.
 
 ---
 
 ## Step 5: Submit
 
-When all three checks are green, submit:
+When all three checks are green, press Ctrl-C to stop the watch and run the submit command once:
 
 ```sh
 astrona submit -c sections/section-010/module-02/labs/lab-01

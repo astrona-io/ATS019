@@ -11,13 +11,15 @@ You edit one object, the cluster-wide Composition `teamenvironment`, on the term
 
 ## The feedback loop
 
-Grading runs from the terminal on your machine, the same terminal where you typed `astrona run`:
+Keep this command running in a second host terminal. It grades the lab every few seconds and records nothing:
 
 ```sh
-astrona submit --git ssh://git@github.com/astrona-io/ATS019.git -c sections/section-030/module-02/labs/lab-02
+astrona submit --watch --git ssh://git@github.com/astrona-io/ATS019.git -c sections/section-030/module-02/labs/lab-02
 ```
 
-Run it now and after every step. It runs four checks.
+Use `--watch` until the end, because a plain `astrona submit` finishes the attempt and deletes the lab. Run the plain command once, in the last step.
+
+It runs four checks.
 
 | Check | Turns green when |
 | --- | --- |
@@ -147,7 +149,7 @@ Crossplane runs the pipeline again for `outpost-env`. Read the Deployment after 
 kubectl -n outpost get deployment scout -o jsonpath='{.spec.replicas}{"\n"}'
 ```
 
-The value is now `2`. Run the check. `replicas-follow-request` turns green.
+The value is now `2`. Check the watch terminal. `replicas-follow-request` turns green.
 
 ## Step 3: Check the status field
 
@@ -157,7 +159,7 @@ The provider reads the Deployment again at a fixed interval, so the status needs
 kubectl -n outpost get teamenvironment outpost-env -o jsonpath='{.status.availableReplicas}{"\n"}'
 ```
 
-When both pods are available, the value is `2`. If the field is empty, wait half a minute and run the command again. Run the check. `status-written-back` turns green.
+When both pods are available, the value is `2`. If the field is empty, wait half a minute and run the command again. Check the watch terminal. `status-written-back` turns green.
 
 ## Step 4: Prove the workload
 
@@ -167,11 +169,11 @@ Send a request from `shuttle` to the Service:
 kubectl -n outpost exec deploy/shuttle -- curl -s -o /dev/null -w '%{http_code}\n' http://scout:9898
 ```
 
-The output is `200`. Run the check. `service-answers` is green.
+The output is `200`. Check the watch terminal. `service-answers` is green.
 
 ## Step 5: Submit
 
-When all four checks are green, submit:
+When all four checks are green, press Ctrl-C to stop the watch and run the submit command once:
 
 ```sh
 astrona submit --git ssh://git@github.com/astrona-io/ATS019.git -c sections/section-030/module-02/labs/lab-02

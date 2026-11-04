@@ -15,11 +15,13 @@ or the Service yourself. Crossplane creates them from the Composition.
 
 ## The feedback loop
 
-Run this from the terminal where you typed `astrona run`, after every step:
+Keep this command running in a second host terminal. It grades the lab every few seconds and records nothing:
 
 ```sh
-astrona submit -c sections/section-030/capstone/labs/lab-01
+astrona submit --watch -c sections/section-030/capstone/labs/lab-01
 ```
+
+Use `--watch` until the end, because a plain `astrona submit` finishes the attempt and deletes the lab. Run the plain command once, in the last step.
 
 The checks are `provider`, `provider-rbac`, `xrd-definition`, `xrd-validation`,
 `request-ready`, `answers`, `no-shortcuts` and `replicas-follow-request`. At the start,
@@ -107,7 +109,7 @@ kubectl apply -f clusterproviderconfig-in-cluster.yaml
 ```
 
 `InjectedIdentity` means the provider uses the ServiceAccount of its own pod to call the
-Kubernetes API server. **Run the check.** The check `provider` passes.
+Kubernetes API server. **Check the watch terminal.** The check `provider` passes.
 
 ---
 
@@ -150,7 +152,7 @@ kubectl apply -f role-provider-kubernetes-workloads.yaml
 
 A `Role` limits the permission to its own namespace. Do not use a `ClusterRole` with a
 `ClusterRoleBinding` and do not use `cluster-admin`: the graders reject both.
-**Run the check.** The check `provider-rbac` passes.
+**Check the watch terminal.** The check `provider-rbac` passes.
 
 ---
 
@@ -213,7 +215,7 @@ Crossplane turns the XRD into a CRD. The schema declares every field, so the API
 refuses a request with no `team`, a `replicas` outside 1 to 3, a `size` that is not in the
 enum, or an unknown field. The schema also declares `status.availableReplicas`, because the
 API server drops a status field that the schema does not declare. Do not add
-`x-kubernetes-preserve-unknown-fields`. **Run the check.** The checks `xrd-definition`
+`x-kubernetes-preserve-unknown-fields`. **Check the watch terminal.** The checks `xrd-definition`
 and `xrd-validation` pass.
 
 ---
@@ -379,13 +381,15 @@ kubectl -n outpost exec deploy/shuttle -- curl -s -o /dev/null -w '%{http_code}\
 ```
 
 The command prints `200`. If it prints `000`, the pods are still starting. Run it again.
-**Run the check.** The checks `request-ready`, `answers` and `no-shortcuts` pass, and so does
+**Check the watch terminal.** The checks `request-ready`, `answers` and `no-shortcuts` pass, and so does
 `replicas-follow-request`. That check changes `replicas` to 3 and back to 2 for a short time,
 so wait for it to finish.
 
 ---
 
 ## Step 8: Submit
+
+Press Ctrl-C to stop the watch, then run the submit command once:
 
 ```sh
 astrona submit -c sections/section-030/capstone/labs/lab-01

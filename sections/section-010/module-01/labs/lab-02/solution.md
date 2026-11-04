@@ -12,13 +12,15 @@ You work on the `terminal` of the lab cluster. You change the CRD in one file: t
 
 ## The feedback loop
 
-Grading runs from the host terminal, the shell where you typed `astrona run`, not inside the cluster:
+Keep this command running in a second host terminal. It grades the lab every few seconds and records nothing:
 
 ```sh
-astrona submit -c sections/section-010/module-01/labs/lab-02
+astrona submit --watch -c sections/section-010/module-01/labs/lab-02
 ```
 
-The grader has three checks: `cel-rules`, `printer-columns` and `schema-kept`. At the start, `schema-kept` passes because the typed schema is in place. `cel-rules` and `printer-columns` fail. Run the command after each step and read the results.
+Use `--watch` until the end, because a plain `astrona submit` finishes the attempt and deletes the lab. Run the plain command once, in the last step.
+
+The grader has three checks: `cel-rules`, `printer-columns` and `schema-kept`. At the start, `schema-kept` passes because the typed schema is in place. `cel-rules` and `printer-columns` fail. The watch terminal shows each check as it turns green.
 
 ---
 
@@ -108,7 +110,7 @@ Apply it:
 kubectl apply -f crd-teamenvironment.yaml
 ```
 
-The API server needs a few seconds to serve the new rules. Run the check. `cel-rules` now passes.
+The API server needs a few seconds to serve the new rules. Check the watch terminal. `cel-rules` now passes.
 
 ---
 
@@ -185,13 +187,13 @@ kubectl -n outpost get teamenv
 kubectl -n outpost get platform
 ```
 
-Both `get` commands list `alpha` with its team, size and replicas. Run the check. `printer-columns` now passes.
+Both `get` commands list `alpha` with its team, size and replicas. Check the watch terminal. `printer-columns` now passes.
 
 ---
 
 ## Step 5: Submit
 
-When all three checks are green, run the submit command once more:
+When all three checks are green, press Ctrl-C to stop the watch and run the submit command once:
 
 ```sh
 astrona submit -c sections/section-010/module-01/labs/lab-02
@@ -201,7 +203,7 @@ astrona submit -c sections/section-010/module-01/labs/lab-02
 
 ## If a check stays red
 
-- **`cel-rules` fails with "accepted a small environment with 3 replicas".** The rule is not served yet, or it sits on the wrong field. Wait a few seconds and run the check again. The rule must be on `spec`, because only `spec` sees both `size` and `replicas`.
+- **`cel-rules` fails with "accepted a small environment with 3 replicas".** The rule is not served yet, or it sits on the wrong field. Wait a few seconds and check the watch terminal again. The rule must be on `spec`, because only `spec` sees both `size` and `replicas`.
 - **`cel-rules` fails with "refused by a schema limit, not by a CEL rule".** You lowered `maximum` on `replicas`. That also refuses `medium` with 4 replicas. Put the limit in a CEL rule and keep `maximum: 5`.
 - **`cel-rules` fails with "refused a valid object".** The rule is too strict, for example `self.replicas < 2`. A small environment may have exactly 2 replicas.
 - **`cel-rules` fails on `spec.team`.** The rule `self == oldSelf` must be on the field `team`, not on `spec`. A rule on `spec` that compares the whole object would also refuse changes to other fields.

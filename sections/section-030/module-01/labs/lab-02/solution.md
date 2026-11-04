@@ -11,13 +11,15 @@ You work on the `terminal` of the lab cluster. You read the `Synced` condition o
 
 ## The feedback loop
 
-Grading runs from the host terminal, the shell where you typed `astrona run`, not inside the cluster:
+Keep this command running in a second host terminal. It grades the lab every few seconds and records nothing:
 
 ```sh
-astrona submit -c sections/section-030/module-01/labs/lab-02
+astrona submit --watch -c sections/section-030/module-01/labs/lab-02
 ```
 
-The grader has two checks: `object-synced` and `provider-rbac`. At the start, `object-synced` fails because the `Object` is not `Synced`. `provider-rbac` fails because the provider cannot create Services. Run the command after the repair and read both results.
+Use `--watch` until the end, because a plain `astrona submit` finishes the attempt and deletes the lab. Run the plain command once, in the last step.
+
+The grader has two checks: `object-synced` and `provider-rbac`. At the start, `object-synced` fails because the `Object` is not `Synced`. `provider-rbac` fails because the provider cannot create Services. The watch terminal shows each check as it turns green.
 
 ---
 
@@ -106,7 +108,7 @@ Check the permission again:
 kubectl auth can-i create services -n outpost --as=system:serviceaccount:crossplane-system:provider-kubernetes
 ```
 
-The command prints `yes`. Run the check. `provider-rbac` now passes.
+The command prints `yes`. Check the watch terminal. `provider-rbac` now passes.
 
 ---
 
@@ -120,13 +122,13 @@ kubectl -n outpost get service scout \
   -o jsonpath='{.spec.selector}{" "}{.spec.ports[0].port}{"\n"}'
 ```
 
-The `Object` becomes `Ready`, and the Service has the selector `app: scout` and the port `9898`. Run the check. `object-synced` now passes.
+The `Object` becomes `Ready`, and the Service has the selector `app: scout` and the port `9898`. Check the watch terminal. `object-synced` now passes.
 
 ---
 
 ## Step 7: Submit
 
-When both checks are green, run the submit command once more:
+When both checks are green, press Ctrl-C to stop the watch and run the submit command once:
 
 ```sh
 astrona submit -c sections/section-030/module-01/labs/lab-02
@@ -136,7 +138,7 @@ astrona submit -c sections/section-030/module-01/labs/lab-02
 
 ## If a check stays red
 
-- **`object-synced` fails with "the Object is not Synced".** The provider has not retried yet, or the Role is still too small. Run `kubectl auth can-i create services -n outpost --as=system:serviceaccount:crossplane-system:provider-kubernetes`. If it prints `yes`, wait one or two minutes and run the check again.
+- **`object-synced` fails with "the Object is not Synced".** The provider has not retried yet, or the Role is still too small. Run `kubectl auth can-i create services -n outpost --as=system:serviceaccount:crossplane-system:provider-kubernetes`. If it prints `yes`, wait one or two minutes and check the watch terminal again.
 - **`provider-rbac` fails with "cannot create services in outpost".** The Role is not changed, or you changed a Role in another namespace. The Role must be in `outpost`, not in `crossplane-system`.
 - **`provider-rbac` fails with "can list Services in all namespaces" or "can do everything".** You used a ClusterRoleBinding or `cluster-admin`. Remove that binding and keep the namespaced Role.
 - **`object-synced` fails with "was changed".** You edited the `Object` or the ProviderConfig. The manifest was correct. Restore the original values: the Service selector `app: scout`, the Service port `9898` and `providerConfigRef` `in-cluster`.

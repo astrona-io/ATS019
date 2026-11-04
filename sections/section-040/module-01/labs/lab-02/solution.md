@@ -13,6 +13,14 @@ The workflow fails because the step pods run as `provisioner`, and `provisioner`
 | Who receives the Role | `subjects` of the RoleBinding | the ServiceAccount with its own namespace, `starfleet` |
 | Proof of the fix | the API server | `kubectl auth can-i --as=system:serviceaccount:starfleet:provisioner` |
 
+Keep this command running in a second host terminal. It grades the lab every few seconds and records nothing:
+
+```sh
+astrona submit --watch -c sections/section-040/module-01/labs/lab-02
+```
+
+Use `--watch` until the end, because a plain `astrona submit` finishes the attempt and deletes the lab. Run the plain command once, in the last step.
+
 ## Step 1: Submit a Workflow and read the failure
 
 Submit a Workflow from the template. Save this as `workflow-deploy-scout.yaml`:
@@ -130,6 +138,8 @@ kubectl -n outpost get deployment,service scout
 The newest Workflow ends as `Succeeded`, and the Deployment and the Service `scout` exist in `outpost`. The check `verify-workflow-succeeds` passes now.
 
 ## Step 5: Submit
+
+Press Ctrl-C to stop the watch, then run the submit command once:
 
 ```bash
 astrona submit -c sections/section-040/module-01/labs/lab-02

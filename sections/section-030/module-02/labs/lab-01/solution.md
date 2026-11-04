@@ -11,13 +11,15 @@ You write one XRD and one request on the terminal where you started the lab. You
 
 ## The feedback loop
 
-Grading runs from the terminal on your machine, the same terminal where you typed `astrona run`:
+Keep this command running in a second host terminal. It grades the lab every few seconds and records nothing:
 
 ```sh
-astrona submit --git ssh://git@github.com/astrona-io/ATS019.git -c sections/section-030/module-02/labs/lab-01
+astrona submit --watch --git ssh://git@github.com/astrona-io/ATS019.git -c sections/section-030/module-02/labs/lab-01
 ```
 
-Run it now and after every step. It runs four checks. All four fail at the start.
+Use `--watch` until the end, because a plain `astrona submit` finishes the attempt and deletes the lab. Run the plain command once, in the last step.
+
+It runs four checks. All four fail at the start.
 
 | Check | Turns green when |
 | --- | --- |
@@ -94,7 +96,7 @@ kubectl apply -f xrd-probeenvironment.yaml
 kubectl wait xrd probeenvironments.platform.starfleet.io --for=condition=Established --timeout=60s
 ```
 
-Run the check. `xrd-definition` turns green. `valid-request-defaults` and `invalid-requests-refused` turn green too, because the schema is now in place.
+Check the watch terminal. `xrd-definition` turns green. `valid-request-defaults` and `invalid-requests-refused` turn green too, because the schema is now in place.
 
 ## Step 3: Create the request
 
@@ -119,7 +121,7 @@ kubectl -n outpost get probeenvironment first-probe -o jsonpath='{.spec}{"\n"}'
 
 The stored `spec` shows `owner`, and also `tier` with the value `dev` and `instances` with the value `2`. You did not write those two values. The API server added them from the schema defaults.
 
-Run the check. `stored-request` turns green.
+Check the watch terminal. `stored-request` turns green.
 
 ## Step 4: Try the refusals yourself
 
@@ -146,7 +148,7 @@ The server refuses the request and the message names `spec.instances`. Nothing i
 
 ## Step 5: Submit
 
-When all four checks are green, submit:
+When all four checks are green, press Ctrl-C to stop the watch and run the submit command once:
 
 ```sh
 astrona submit --git ssh://git@github.com/astrona-io/ATS019.git -c sections/section-030/module-02/labs/lab-01

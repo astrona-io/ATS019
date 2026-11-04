@@ -13,6 +13,14 @@ A normal create step ends when the object exists. A step with a `successConditio
 | Identity of the step pod | `serviceAccountName` | ServiceAccount `provisioner` in `starfleet` |
 | Permissions in `outpost` | Role and RoleBinding | `get`, `list`, `watch`, `create` on `teamenvironments` |
 
+Keep this command running in a second host terminal. It grades the lab every few seconds and records nothing:
+
+```sh
+astrona submit --watch --git ssh://git@github.com/astrona-io/ATS019.git -c sections/section-040/module-01/labs/lab-03
+```
+
+Use `--watch` until the end, because a plain `astrona submit` finishes the attempt and deletes the lab. Run the plain command once, in the last step.
+
 ## Step 1: Give provisioner the permissions
 
 Save this as `role-provisioner-teamenvironment.yaml`:
@@ -142,6 +150,14 @@ kubectl -n starfleet get workflows
 ```
 
 After a few seconds the Workflow changes to `Succeeded`. The wait check of the grader does the same with `Ready` and with `Failed`, and it also checks that the Workflow was still `Running` before the status was written.
+
+## Step 4: Submit
+
+When the checks are green, press Ctrl-C to stop the watch and run the submit command once:
+
+```bash
+astrona submit --git ssh://git@github.com/astrona-io/ATS019.git -c sections/section-040/module-01/labs/lab-03
+```
 
 ## If the Workflow does not behave
 

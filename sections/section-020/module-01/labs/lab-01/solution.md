@@ -11,13 +11,15 @@ You work on the `terminal` of the lab cluster. You compare `observedGeneration` 
 
 ## The feedback loop
 
-Grading runs from the host terminal, the shell where you typed `astrona run`, not inside the cluster:
+Keep this command running in a second host terminal. It grades the lab every few seconds and records nothing:
 
 ```sh
-astrona submit -c sections/section-020/module-01/labs/lab-01
+astrona submit --watch -c sections/section-020/module-01/labs/lab-01
 ```
 
-The grader has three checks: `controller-running`, `status-current` and `statefulset-by-controller`. At the start, all three fail. Run the command after the repair and read the results.
+Use `--watch` until the end, because a plain `astrona submit` finishes the attempt and deletes the lab. Run the plain command once, in the last step.
+
+The grader has three checks: `controller-running`, `status-current` and `statefulset-by-controller`. At the start, all three fail. The watch terminal shows each check as it turns green.
 
 ---
 
@@ -77,6 +79,8 @@ The two numbers are equal and the container args contain `--log.level=debug`. Th
 
 ## Step 5: Submit
 
+Press Ctrl-C to stop the watch, then run the submit command once:
+
 ```sh
 astrona submit -c sections/section-020/module-01/labs/lab-01
 ```
@@ -84,6 +88,6 @@ astrona submit -c sections/section-020/module-01/labs/lab-01
 ## If a check stays red
 
 - **`status-current` fails with a generation message.** The `Prometheus` resource was deleted and created again, or the `logLevel` change was removed. Keep the original resource and the change.
-- **`status-current` fails with `Available=False`.** The pod is still restarting after the StatefulSet changed. Wait a minute and submit again.
+- **`status-current` fails with `Available=False`.** The pod is still restarting after the StatefulSet changed. Wait a minute and read the watch terminal again.
 - **`statefulset-by-controller` fails with a `kubectl` message.** The StatefulSet was edited by hand. Scale the controller up and let it write the StatefulSet again; if the message stays, delete the StatefulSet and the controller creates it again.
 - **`controller-running` fails.** The Deployment is still at zero replicas or its pod is not ready. Run `kubectl -n default get pods`.

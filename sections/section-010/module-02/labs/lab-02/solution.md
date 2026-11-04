@@ -11,13 +11,15 @@ You change one CustomResourceDefinition (CRD) and then write to two objects on t
 
 ## The feedback loop
 
-Grading runs from the host terminal, the shell where you typed `astrona run`, not inside the cluster:
+Keep this command running in a second host terminal. It grades the lab every few seconds and records nothing:
 
 ```sh
-astrona submit -c sections/section-010/module-02/labs/lab-02
+astrona submit --watch -c sections/section-010/module-02/labs/lab-02
 ```
 
-The grader has three checks: `status-subresource`, `scale-subresource` and `objects-kept`. The check `objects-kept` passes at the start, because nothing is deleted yet and the schema is intact. The other two fail. Run the command after every step and read which check turns green.
+Use `--watch` until the end, because a plain `astrona submit` finishes the attempt and deletes the lab. Run the plain command once, in the last step.
+
+The grader has three checks: `status-subresource`, `scale-subresource` and `objects-kept`. The check `objects-kept` passes at the start, because nothing is deleted yet and the schema is intact. The other two fail. The watch terminal shows each check as it turns green.
 
 ---
 
@@ -126,7 +128,7 @@ kubectl -n outpost get --raw /apis/platform.starfleet.io/v1/namespaces/outpost/t
 
 The JSON has `"spec":{"replicas":2}`. The observed count is `0` because `alpha` has no status yet. If the command says the resource is not found, wait a few seconds and run it again.
 
-**Run the check.** `status-subresource` and `scale-subresource` still fail, because no status is written and `beta` is not scaled. `objects-kept` stays green.
+**Check the watch terminal.** `status-subresource` and `scale-subresource` still fail, because no status is written and `beta` is not scaled. `objects-kept` stays green.
 
 ---
 
@@ -162,13 +164,13 @@ kubectl -n outpost get teamenvironments
 
 Both objects now show their replica count and their ready count.
 
-**Run the check.** `status-subresource` and `scale-subresource` now pass.
+**Check the watch terminal.** `status-subresource` and `scale-subresource` now pass.
 
 ---
 
 ## Step 5: Submit
 
-When all three checks are green, submit:
+When all three checks are green, press Ctrl-C to stop the watch and run the submit command once:
 
 ```sh
 astrona submit -c sections/section-010/module-02/labs/lab-02

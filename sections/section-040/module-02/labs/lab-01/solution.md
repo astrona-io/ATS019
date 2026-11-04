@@ -1,6 +1,14 @@
 # Solution
 
-This walkthrough builds the path in the order of the event: the EventBus and the EventSource first, then the permission, then the Sensor. After each step, run `astrona submit` to see which checks turn green.
+This walkthrough builds the path in the order of the event: the EventBus and the EventSource first, then the permission, then the Sensor.
+
+Keep this command running in a second host terminal. It grades the lab every few seconds and records nothing:
+
+```sh
+astrona submit --watch --git ssh://git@github.com/astrona-io/ATS019.git -c sections/section-040/module-02/labs/lab-01
+```
+
+Use `--watch` until the end, because a plain `astrona submit` finishes the attempt and deletes the lab. Run the plain command once, in the last step.
 
 Write each file in a new, empty folder and run every command from that folder.
 
@@ -68,11 +76,7 @@ kubectl -n starfleet exec deploy/shuttle -- curl -s -o /dev/null -w '%{http_code
   http://provision-eventsource-svc.starfleet.svc:12000/provision
 ```
 
-Submit your work. Check 1 (the EventSource) should pass now.
-
-```sh
-astrona submit --git ssh://git@github.com/astrona-io/ATS019.git -c sections/section-040/module-02/labs/lab-01
-```
+The watch terminal now shows Check 1 (the EventSource) passing.
 
 ## Step 2: Grant the Sensor ServiceAccount the permission to create Workflows
 
@@ -121,11 +125,7 @@ Then check the permission. It should print `yes`:
 kubectl -n starfleet auth can-i create workflows.argoproj.io --as=system:serviceaccount:starfleet:operate-workflow-sa
 ```
 
-Submit your work. Check 2 (the Sensor permissions) should pass now.
-
-```sh
-astrona submit --git ssh://git@github.com/astrona-io/ATS019.git -c sections/section-040/module-02/labs/lab-01
-```
+The watch terminal now shows Check 2 (the Sensor permissions) passing.
 
 ## Step 3: Create the Sensor with the filter and the parameter mapping
 
@@ -206,7 +206,7 @@ kubectl -n starfleet get workflows -o jsonpath='{.items[*].spec.arguments.parame
 
 Both requests return `200`, because the EventSource accepts any valid request. Only the team `drifter` should appear in the Workflow list. The Sensor dropped the `trial` event at the filter.
 
-Submit your work. Checks 3, 4 and 5 should pass now.
+The watch terminal now shows Checks 3, 4 and 5 passing. Press Ctrl-C to stop the watch, then run the submit command once:
 
 ```sh
 astrona submit --git ssh://git@github.com/astrona-io/ATS019.git -c sections/section-040/module-02/labs/lab-01

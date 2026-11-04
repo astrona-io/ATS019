@@ -10,15 +10,16 @@ You will create one Role and one RoleBinding in the namespace `outpost`, then pr
 
 ## The feedback loop
 
-Grading runs from the host terminal, the shell where you typed `astrona run`:
+Keep this command running in a second host terminal. It grades the lab every few seconds and records nothing:
 
 ```sh
-astrona submit --git ssh://git@github.com/astrona-io/ATS019.git -c sections/section-040/module-03/labs/lab-01
+astrona submit --watch --git ssh://git@github.com/astrona-io/ATS019.git -c sections/section-040/module-03/labs/lab-01
 ```
 
-The grader prints `PASS` or `FAIL` for each check. Run it now and every
-check about the allowed actions fails, because the group has no rights. Run it
-again after each step.
+Use `--watch` until the end, because a plain `astrona submit` finishes the attempt and deletes the lab. Run the plain command once, in the last step.
+
+The watch terminal prints `PASS` or `FAIL` for each check. At the start every
+check about the allowed actions fails, because the group has no rights.
 
 ---
 
@@ -90,7 +91,7 @@ The `subjects` list names the group `outpost-team`. The `roleRef` points to the 
 kubectl apply -f rolebinding-outpost-team.yaml
 ```
 
-Run `astrona submit` now. The checks for the allowed actions, the four verbs, the other resources, the other namespaces and the group all pass.
+The watch terminal now shows the checks for the allowed actions, the four verbs, the other resources, the other namespaces and the group all passing.
 
 ---
 
@@ -109,7 +110,7 @@ The answers are `yes`, `no`, `no` and `no`.
 
 ## Step 5: Submit
 
-When every check shows `PASS`:
+When every check shows `PASS`, press Ctrl-C to stop the watch and run the submit command once:
 
 ```sh
 astrona submit --git ssh://git@github.com/astrona-io/ATS019.git -c sections/section-040/module-03/labs/lab-01

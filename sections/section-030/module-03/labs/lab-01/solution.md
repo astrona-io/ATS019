@@ -13,12 +13,13 @@ create the Deployment or the Service yourself, and you change no other object.
 
 ## The feedback loop
 
-Grading runs from the terminal on your own machine, where you typed
-`astrona run`. Run it after every step:
+Keep this command running in a second host terminal. It grades the lab every few seconds and records nothing:
 
 ```sh
-astrona submit -c sections/section-030/module-03/labs/lab-01
+astrona submit --watch -c sections/section-030/module-03/labs/lab-01
 ```
+
+Use `--watch` until the end, because a plain `astrona submit` finishes the attempt and deletes the lab. Run the plain command once, in the last step.
 
 The checks are `request`, `ready`, `composed-resources`, `workload` and
 `answers`. All of them fail at the start, because no request exists.
@@ -67,7 +68,7 @@ Apply it:
 kubectl apply -f teamenvironment-scout-env.yaml
 ```
 
-**Run the check.** The check `request` passes.
+**Check the watch terminal.** The check `request` passes.
 
 ---
 
@@ -84,7 +85,7 @@ The `wait` command returns when `Ready` is `True`. The table shows `True` in the
 `SYNCED` and `READY` columns. The first start can take a few minutes, because
 the provider creates the Deployment and the pods must pull their image.
 
-**Run the check.** The checks `ready` and `composed-resources` pass.
+**Check the watch terminal.** The checks `ready` and `composed-resources` pass.
 
 ---
 
@@ -106,13 +107,13 @@ kubectl -n outpost exec deploy/shuttle -- curl -s -o /dev/null -w '%{http_code}\
 You should see `200`. If you see `000`, the pods are still starting. Run the
 command again after a few seconds.
 
-**Run the check.** The checks `workload` and `answers` pass.
+**Check the watch terminal.** The checks `workload` and `answers` pass.
 
 ---
 
 ## Step 5: Submit
 
-When all five checks are green, submit:
+When all five checks are green, press Ctrl-C to stop the watch and run the submit command once:
 
 ```sh
 astrona submit -c sections/section-030/module-03/labs/lab-01
@@ -127,7 +128,7 @@ astrona submit -c sections/section-030/module-03/labs/lab-01
 - **`request` fails and says no TeamEnvironment exists.** You applied the file
   in another namespace. Check `metadata.namespace`, delete the wrong object and
   apply the file again.
-- **`ready` fails.** Crossplane is not finished. Wait and run the check again.
+- **`ready` fails.** Crossplane is not finished. Wait and check the watch terminal again.
   If `Ready` stays `False` for minutes, read `kubectl -n outpost describe
   teamenvironment scout-env`.
 - **`composed-resources` fails and says fewer than 2 references.** The workload

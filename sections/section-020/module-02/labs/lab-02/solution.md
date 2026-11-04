@@ -11,13 +11,15 @@ You work on the `terminal` of the lab cluster. You find the worker for the final
 
 ## The feedback loop
 
-Grading runs from the host terminal, the shell where you typed `astrona run`, not inside the cluster:
+Keep this command running in a second host terminal. It grades the lab every few seconds and records nothing:
 
 ```sh
-astrona submit -c sections/section-020/module-02/labs/lab-02
+astrona submit --watch -c sections/section-020/module-02/labs/lab-02
 ```
 
-The grader has two checks: `cleanup-complete` and `cleanup-rbac`. At the start, `cleanup-complete` fails because the Job is suspended. `cleanup-rbac` fails because the worker cannot delete `probe-cache`. Run the command after each fix and read both results.
+Use `--watch` until the end, because a plain `astrona submit` finishes the attempt and deletes the lab. Run the plain command once, in the last step.
+
+The grader has two checks: `cleanup-complete` and `cleanup-rbac`. At the start, `cleanup-complete` fails because the Job is suspended. `cleanup-rbac` fails because the worker cannot delete `probe-cache`. The watch terminal shows each check as it turns green.
 
 ---
 
@@ -98,7 +100,7 @@ kubectl apply -f role-probe-cleanup.yaml
 kubectl -n starfleet auth can-i delete configmap/probe-cache --as=system:serviceaccount:starfleet:probe-cleanup
 ```
 
-The second command now prints `yes`. Run the check. `cleanup-rbac` now passes.
+The second command now prints `yes`. Check the watch terminal. `cleanup-rbac` now passes.
 
 ---
 
@@ -123,13 +125,13 @@ Then confirm that both ConfigMaps are gone:
 kubectl -n starfleet get configmap probe-settings probe-cache --ignore-not-found -o name
 ```
 
-The command prints nothing. Run the check. `cleanup-complete` now passes.
+The command prints nothing. Check the watch terminal. `cleanup-complete` now passes.
 
 ---
 
 ## Step 6: Submit
 
-When both checks are green, run the submit command once more:
+When both checks are green, press Ctrl-C to stop the watch and run the submit command once:
 
 ```sh
 astrona submit -c sections/section-020/module-02/labs/lab-02

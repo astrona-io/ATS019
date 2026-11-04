@@ -11,13 +11,15 @@ You work on the `terminal` of the lab cluster. You give the ConfigMap `probe-dat
 
 ## The feedback loop
 
-Grading runs from the host terminal, the shell where you typed `astrona run`, not inside the cluster:
+Keep this command running in a second host terminal. It grades the lab every few seconds and records nothing:
 
 ```sh
-astrona submit -c sections/section-020/module-02/labs/lab-01
+astrona submit --watch -c sections/section-020/module-02/labs/lab-01
 ```
 
-The grader has two checks: `probe-handover` and `owner-cascade`. Both fail at the start. Run the command after the steps below and read both results.
+Use `--watch` until the end, because a plain `astrona submit` finishes the attempt and deletes the lab. Run the plain command once, in the last step.
+
+The grader has two checks: `probe-handover` and `owner-cascade`. Both fail at the start. The watch terminal shows each check as it turns green.
 
 ---
 
@@ -110,7 +112,7 @@ kubectl -n outpost delete teamenvironment probe-env --cascade=background --timeo
 kubectl -n outpost get configmap probe-data
 ```
 
-The ConfigMap `probe-data` is still there. Run the check. `probe-handover` now passes.
+The ConfigMap `probe-data` is still there. Check the watch terminal. `probe-handover` now passes.
 
 > You can reach the same end state in another order: delete `probe-env` with `--cascade=orphan` first, which removes the reference to it and keeps `probe-data`, and then add the reference to `probe-env-v2` with the patch from step 3. The grader accepts both orders.
 
@@ -126,13 +128,13 @@ kubectl -n outpost wait --for=delete configmap/scout-config --timeout=60s
 kubectl -n outpost get configmap -l team=outpost
 ```
 
-`scout-config` is gone. `probe-data` and `scout-unowned` remain, because only `scout-config` had `scout-env` as its owner. Run the check. `owner-cascade` now passes.
+`scout-config` is gone. `probe-data` and `scout-unowned` remain, because only `scout-config` had `scout-env` as its owner. Check the watch terminal. `owner-cascade` now passes.
 
 ---
 
 ## Step 6: Submit
 
-When both checks are green, run the submit command once more:
+When both checks are green, press Ctrl-C to stop the watch and run the submit command once:
 
 ```sh
 astrona submit -c sections/section-020/module-02/labs/lab-01
@@ -147,4 +149,4 @@ astrona submit -c sections/section-020/module-02/labs/lab-01
 - **`probe-handover` fails with "exactly one owner reference".** The list still holds the old reference, or you used the default strategic patch. Apply the patch from step 3 with `--type=merge`.
 - **`probe-handover` fails with "UID of probe-env-v2".** You copied the UID of `probe-env`, or of an earlier `probe-env-v2` that you deleted and created again. Read the UID from the object that exists now.
 - **`owner-cascade` fails with "scout-unowned was deleted".** You deleted the ConfigMaps with `-l team=outpost`. A shared label is not ownership. Start again.
-- **`owner-cascade` fails with "scout-config still exists".** The owner `scout-env` is not deleted yet, or it is still terminating. Check `kubectl -n outpost get teamenvironment`, wait a few seconds and run the check again.
+- **`owner-cascade` fails with "scout-config still exists".** The owner `scout-env` is not deleted yet, or it is still terminating. Check `kubectl -n outpost get teamenvironment`, wait a few seconds and check the watch terminal again.

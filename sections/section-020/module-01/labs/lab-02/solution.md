@@ -11,13 +11,15 @@ You work on the `terminal` of the lab cluster. You read the conditions of the `P
 
 ## The feedback loop
 
-Grading runs from the host terminal, the shell where you typed `astrona run`, not inside the cluster:
+Keep this command running in a second host terminal. It grades the lab every few seconds and records nothing:
 
 ```sh
-astrona submit -c sections/section-020/module-01/labs/lab-02
+astrona submit --watch -c sections/section-020/module-01/labs/lab-02
 ```
 
-The grader has three checks: `scrape-secret`, `reconciled` and `service-account`. At the start, all three fail. Run the command after each fix and read the results.
+Use `--watch` until the end, because a plain `astrona submit` finishes the attempt and deletes the lab. Run the plain command once, in the last step.
+
+The grader has three checks: `scrape-secret`, `reconciled` and `service-account`. At the start, all three fail. The watch terminal shows each check as it turns green.
 
 ---
 
@@ -96,6 +98,8 @@ Creating an empty ServiceAccount named `prometheus-tenant` would also start the 
 
 ## Step 5: Submit
 
+Press Ctrl-C to stop the watch, then run the submit command once:
+
 ```sh
 astrona submit -c sections/section-020/module-01/labs/lab-02
 ```
@@ -103,6 +107,6 @@ astrona submit -c sections/section-020/module-01/labs/lab-02
 ## If a check stays red
 
 - **`scrape-secret` fails.** The Secret name, the key or the job is not exactly as the task says. Check `job_name: scout-extra` and the target `scout.outpost.svc:9898`.
-- **`reconciled` fails with `Available=False`.** The pod can take a minute to start after the fix. Run `kubectl -n outpost get pods` and submit again.
+- **`reconciled` fails with `Available=False`.** The pod can take a minute to start after the fix. Run `kubectl -n outpost get pods` and read the watch terminal again.
 - **`service-account` fails with a `cannot` message.** The ServiceAccount has no read access. Use `prometheus`, or bind a new ServiceAccount to the ClusterRole `outpost-prometheus`.
 - **`service-account` fails with a `can` message.** The ServiceAccount has too much access. Remove the wide binding.

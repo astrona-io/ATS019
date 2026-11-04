@@ -11,13 +11,15 @@ You work on the `terminal` of the lab cluster. You repair three faults in the na
 
 ## The feedback loop
 
-Grading runs from the host terminal, the shell where you typed `astrona run`, not inside the cluster:
+Keep this command running in a second host terminal. It grades the lab every few seconds and records nothing:
 
 ```sh
-astrona submit -c sections/section-020/capstone/labs/lab-01
+astrona submit --watch -c sections/section-020/capstone/labs/lab-01
 ```
 
-The grader has five checks: `prometheus-reconciled`, `prometheus-identity`, `ownership`, `cleanup-done` and `cleanup-access`. At the start all five fail. Run the command after each part and read which checks turned green.
+Use `--watch` until the end, because a plain `astrona submit` finishes the attempt and deletes the lab. Run the plain command once, in the last step.
+
+The grader has five checks: `prometheus-reconciled`, `prometheus-identity`, `ownership`, `cleanup-done` and `cleanup-access`. At the start all five fail. The watch terminal shows each check as it turns green.
 
 ---
 
@@ -93,7 +95,7 @@ kubectl -n outpost patch prometheus outpost-metrics --type merge -p '{"spec":{"s
 kubectl -n outpost wait --for=condition=Available --timeout=180s prometheus/outpost-metrics
 ```
 
-Run the check. `prometheus-reconciled` and `prometheus-identity` now pass.
+Check the watch terminal. `prometheus-reconciled` and `prometheus-identity` now pass.
 
 A new ServiceAccount named `prometheus-reader` would start the pod, but it would have no access to targets, and `prometheus-identity` would still fail.
 
@@ -164,7 +166,7 @@ kubectl -n outpost get configmap -l team=outpost \
   -o custom-columns='NAME:.metadata.name,OWNER:.metadata.ownerReferences[*].name'
 ```
 
-Only the two environment ConfigMaps show the owner `scout-env`. Run the check. `ownership` passes.
+Only the two environment ConfigMaps show the owner `scout-env`. Check the watch terminal. `ownership` passes.
 
 ---
 
@@ -223,7 +225,7 @@ kubectl -n outpost auth can-i delete configmap/scout-cache --as=system:serviceac
 kubectl -n outpost auth can-i delete configmaps --as=system:serviceaccount:outpost:scout-cleanup
 ```
 
-The first command prints `yes` and the second prints `no`. Run the check. `cleanup-access` passes.
+The first command prints `yes` and the second prints `no`. Check the watch terminal. `cleanup-access` passes.
 
 ---
 
@@ -243,13 +245,13 @@ The first container sees the deletion timestamp, the second deletes `scout-cache
 kubectl -n outpost get configmap
 ```
 
-Run the check. `cleanup-done` passes.
+Check the watch terminal. `cleanup-done` passes.
 
 ---
 
 ## Step 10: Submit
 
-When all five checks pass:
+When all five checks pass, press Ctrl-C to stop the watch and run the submit command once:
 
 ```sh
 astrona submit -c sections/section-020/capstone/labs/lab-01

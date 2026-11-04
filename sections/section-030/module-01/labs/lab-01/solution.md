@@ -11,13 +11,15 @@ You install `provider-kubernetes` 1.4.1 on the `terminal` of the lab cluster. Yo
 
 ## The feedback loop
 
-Grading runs from the host terminal, the shell where you typed `astrona run`, not inside the cluster:
+Keep this command running in a second host terminal. It grades the lab every few seconds and records nothing:
 
 ```sh
-astrona submit -c sections/section-030/module-01/labs/lab-01
+astrona submit --watch -c sections/section-030/module-01/labs/lab-01
 ```
 
-The grader has two checks: `provider-installed` and `provider-identity`. Both fail at the start, because no provider exists. Run the command after every step and read which check turns green.
+Use `--watch` until the end, because a plain `astrona submit` finishes the attempt and deletes the lab. Run the plain command once, in the last step.
+
+The grader has two checks: `provider-installed` and `provider-identity`. Both fail at the start, because no provider exists. The watch terminal shows each check as it turns green.
 
 ---
 
@@ -61,7 +63,7 @@ Apply it:
 kubectl apply -f deploymentruntimeconfig-provider-kubernetes.yaml
 ```
 
-Run the check. No check turns green yet, because there is no provider.
+Check the watch terminal. No check turns green yet, because there is no provider.
 
 ---
 
@@ -111,13 +113,13 @@ kubectl -n crossplane-system get serviceaccount provider-kubernetes
 
 A `provider-kubernetes-...` pod is `Running`, and the ServiceAccount exists.
 
-Run the check. The checks `provider-installed` and `provider-identity` now pass.
+Check the watch terminal. The checks `provider-installed` and `provider-identity` now pass.
 
 ---
 
 ## Step 5: Submit
 
-When both checks are green, run the submit command once more:
+When both checks are green, press Ctrl-C to stop the watch and run the submit command once:
 
 ```sh
 astrona submit -c sections/section-030/module-01/labs/lab-01
@@ -128,7 +130,7 @@ astrona submit -c sections/section-030/module-01/labs/lab-01
 ## If a check stays red
 
 - **`provider-installed` fails with "spec.package is ...".** The package tag is missing or different. Set the tag `v1.4.1` and apply the file again.
-- **`provider-installed` fails with "Provider is not Healthy".** The package manager is still pulling the package, or the pod cannot start. Wait one minute and run the check again. Then read `kubectl describe provider.pkg.crossplane.io provider-kubernetes` and `kubectl -n crossplane-system get pods`. A cluster without outbound internet access cannot pull the package.
+- **`provider-installed` fails with "Provider is not Healthy".** The package manager is still pulling the package, or the pod cannot start. Wait one minute and check the watch terminal again. Then read `kubectl describe provider.pkg.crossplane.io provider-kubernetes` and `kubectl -n crossplane-system get pods`. A cluster without outbound internet access cannot pull the package.
 - **`provider-identity` fails with "no spec.runtimeConfigRef".** The `Provider` does not refer to your `DeploymentRuntimeConfig`. Add `runtimeConfigRef.name` and apply the file again.
 - **`provider-identity` fails with "sets the ServiceAccount name to ...".** The `serviceAccountTemplate.metadata.name` is empty or has another value. It must be `provider-kubernetes`.
 - **`provider-identity` fails and you edited the provider's Deployment by hand.** Crossplane owns that Deployment and puts the configuration back. Change the `DeploymentRuntimeConfig` instead.

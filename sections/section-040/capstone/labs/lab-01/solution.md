@@ -13,13 +13,15 @@ You work on the `terminal` of the lab cluster. You finish a self-service path wi
 
 ## The feedback loop
 
-Grading runs from the host terminal, the shell where you typed `astrona run`, not inside the cluster:
+Keep this command running in a second host terminal. It grades the lab every few seconds and records nothing:
 
 ```sh
-astrona submit --git ssh://git@github.com/astrona-io/ATS019.git -c sections/section-040/capstone/labs/lab-01
+astrona submit --watch --git ssh://git@github.com/astrona-io/ATS019.git -c sections/section-040/capstone/labs/lab-01
 ```
 
-The grader has seven checks: `tenant-rbac`, `provisioner-rbac`, `template-shape`, `webhook`, `sensor-rbac`, `filter-and-mapping` and `order-ready`. At the start `provisioner-rbac` to `order-ready` fail, because nothing exists yet. Run the command after each step and read which checks turned green. The last two checks send real orders and take a few minutes.
+Use `--watch` until the end, because a plain `astrona submit` finishes the attempt and deletes the lab. Run the plain command once, in the last step.
+
+The grader has seven checks: `tenant-rbac`, `provisioner-rbac`, `template-shape`, `webhook`, `sensor-rbac`, `filter-and-mapping` and `order-ready`. At the start `provisioner-rbac` to `order-ready` fail, because nothing exists yet. The watch terminal shows which checks turned green. The last two checks send real orders and take a few minutes.
 
 ---
 
@@ -66,7 +68,7 @@ kubectl auth can-i create teamenvironments -n outpost --as outpost-dev --as-grou
 kubectl auth can-i delete teamenvironments -n outpost --as outpost-dev --as-group outpost-team
 ```
 
-The first command answers `yes`. The second answers `no`. Submit now: the check `tenant-rbac` passes.
+The first command answers `yes`. The second answers `no`. The watch terminal shows the check `tenant-rbac` passing.
 
 ## Step 2: Give the Workflow identity the same rights
 
@@ -111,7 +113,7 @@ kubectl auth can-i create teamenvironments -n outpost --as system:serviceaccount
 kubectl auth can-i create deployments -n outpost --as system:serviceaccount:starfleet:provisioner
 ```
 
-The first command answers `yes` and the second answers `no`. Submit: the check `provisioner-rbac` passes.
+The first command answers `yes` and the second answers `no`. The watch terminal shows the check `provisioner-rbac` passing.
 
 ## Step 3: Create the WorkflowTemplate
 
@@ -156,7 +158,7 @@ Then check the fields:
 kubectl -n starfleet get workflowtemplate request-environment -o jsonpath='{.spec.templates[0].resource.successCondition}'
 ```
 
-Submit: the check `template-shape` passes.
+The watch terminal shows the check `template-shape` passing.
 
 ## Step 4: Repair the EventSource endpoint
 
@@ -193,7 +195,7 @@ kubectl -n starfleet get pods -l eventsource-name=provision
 kubectl -n starfleet exec deploy/shuttle -- curl -s -o /dev/null -w "%{http_code}\n" -X POST -H "Content-Type: application/json" -d '{"team":"test","tier":"trial"}' http://provision-eventsource-svc.starfleet.svc:12000/provision
 ```
 
-The request returns `200` once the new pod runs. The tier `trial` is not a valid order, so the Sensor must drop it later, and no Workflow starts. Submit: the check `webhook` passes.
+The request returns `200` once the new pod runs. The tier `trial` is not a valid order, so the Sensor must drop it later, and no Workflow starts. The watch terminal shows the check `webhook` passing.
 
 ## Step 5: Give the Sensor the right to create Workflows
 
@@ -241,7 +243,7 @@ kubectl auth can-i create workflows -n starfleet --as system:serviceaccount:star
 kubectl auth can-i create teamenvironments -n outpost --as system:serviceaccount:starfleet:operate-workflow-sa
 ```
 
-The first command answers `yes` and the second answers `no`. Submit: the check `sensor-rbac` passes.
+The first command answers `yes` and the second answers `no`. The watch terminal shows the check `sensor-rbac` passing.
 
 ## Step 6: Repair the Sensor
 
@@ -299,7 +301,7 @@ Apply it:
 kubectl apply -f sensor-provision.yaml
 ```
 
-The Sensor pod restarts. Wait for it, then submit: the check `filter-and-mapping` passes.
+The Sensor pod restarts. Wait for it. The watch terminal shows the check `filter-and-mapping` passing.
 
 ## Step 7: Prove the whole path
 
@@ -323,7 +325,13 @@ The last request returns `200`. Remove your test environment before you submit, 
 kubectl -n outpost delete teamenvironment drifter
 ```
 
-Submit: the check `order-ready` passes. The grader removes every `TeamEnvironment` in `outpost`, sends its own order and checks the result.
+The watch terminal shows the check `order-ready` passing. The grader removes every `TeamEnvironment` in `outpost`, sends its own order and checks the result.
+
+When all seven checks are green, press Ctrl-C to stop the watch and run the submit command once:
+
+```sh
+astrona submit --git ssh://git@github.com/astrona-io/ATS019.git -c sections/section-040/capstone/labs/lab-01
+```
 
 ---
 

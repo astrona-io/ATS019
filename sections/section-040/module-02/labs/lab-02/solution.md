@@ -1,6 +1,14 @@
 # Solution
 
-This walkthrough follows the event from the request to the Workflow and stops at the first component that does not do its job. After the fix, run `astrona submit` to see which checks turn green.
+This walkthrough follows the event from the request to the Workflow and stops at the first component that does not do its job.
+
+Keep this command running in a second host terminal. It grades the lab every few seconds and records nothing:
+
+```sh
+astrona submit --watch --git ssh://git@github.com/astrona-io/ATS019.git -c sections/section-040/module-02/labs/lab-02
+```
+
+Use `--watch` until the end, because a plain `astrona submit` finishes the attempt and deletes the lab. Run the plain command once, in the last step.
 
 ## Step 1: Follow the event along its path
 
@@ -121,7 +129,7 @@ A Workflow with a name that starts with `provision-environment-` should appear, 
 kubectl -n starfleet get workflows -o jsonpath='{.items[*].spec.arguments.parameters[0].value}{"\n"}'
 ```
 
-Submit your work. All five checks should pass.
+The watch terminal now shows all five checks passing. Press Ctrl-C to stop the watch, then run the submit command once:
 
 ```sh
 astrona submit --git ssh://git@github.com/astrona-io/ATS019.git -c sections/section-040/module-02/labs/lab-02

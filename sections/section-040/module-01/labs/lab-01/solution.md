@@ -13,6 +13,14 @@ You store one WorkflowTemplate with two parameters and a DAG, then submit a Work
 | Run two tasks at once, then a third | the `dag` template | `dependencies` |
 | Start a stored template | the Workflow | `spec.workflowTemplateRef` |
 
+Keep this command running in a second host terminal. It grades the lab every few seconds and records nothing:
+
+```sh
+astrona submit --watch -c sections/section-040/module-01/labs/lab-01
+```
+
+Use `--watch` until the end, because a plain `astrona submit` finishes the attempt and deletes the lab. Run the plain command once, in the last step.
+
 ## Step 1: Look at the starting state
 
 Argo Workflows runs in the namespace `argo`, and no template exists yet:
@@ -89,13 +97,7 @@ Apply it:
 kubectl apply -f workflowtemplate-onboard-team.yaml
 ```
 
-Run the grader. The check `verify-template` passes now:
-
-```bash
-astrona submit -c sections/section-040/module-01/labs/lab-01
-```
-
-The checks `verify-parameters` and `verify-submitted-workflow` pass later.
+The watch terminal shows the check `verify-template` passing now. The checks `verify-parameters` and `verify-submitted-workflow` pass later.
 
 ## Step 3: Try the template with its defaults
 
@@ -159,6 +161,8 @@ kubectl -n starfleet logs -l workflows.argoproj.io/workflow=onboard-drifter -c m
 The Workflow ends as `Succeeded`, and one line is `onboarding drifter with size large`. The check `verify-submitted-workflow` passes now.
 
 ## Step 5: Submit
+
+Press Ctrl-C to stop the watch, then run the submit command once:
 
 ```bash
 astrona submit -c sections/section-040/module-01/labs/lab-01

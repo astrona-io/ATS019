@@ -14,13 +14,15 @@ You work on the `terminal` of the lab cluster. You change one object, the CRD `d
 
 ## The feedback loop
 
-Grading runs from the host terminal, the shell where you typed `astrona run`, not inside the cluster:
+Keep this command running in a second host terminal. It grades the lab every few seconds and records nothing:
 
 ```sh
-astrona submit -c sections/section-010/capstone/labs/lab-01
+astrona submit --watch -c sections/section-010/capstone/labs/lab-01
 ```
 
-The grader has seven checks: `crd-published`, `input-validation`, `cel-rules`, `status-subresource`, `scale-subresource`, `versions-and-existing-objects` and `printer-columns`. All of them fail at the start. Run the command after every step and read which checks turn green.
+Use `--watch` until the end, because a plain `astrona submit` finishes the attempt and deletes the lab. Run the plain command once, in the last step.
+
+The grader has seven checks: `crd-published`, `input-validation`, `cel-rules`, `status-subresource`, `scale-subresource`, `versions-and-existing-objects` and `printer-columns`. All of them fail at the start. The watch terminal shows each check as it turns green.
 
 ---
 
@@ -196,7 +198,7 @@ Apply it:
 kubectl apply -f crd-database.yaml
 ```
 
-Run the check. The checks `crd-published`, `input-validation`, `cel-rules` and `versions-and-existing-objects` now pass. The checks `status-subresource`, `scale-subresource` and `printer-columns` still fail, because `v1` has no subresources and no columns yet.
+Check the watch terminal. The checks `crd-published`, `input-validation`, `cel-rules` and `versions-and-existing-objects` now pass. The checks `status-subresource`, `scale-subresource` and `printer-columns` still fail, because `v1` has no subresources and no columns yet.
 
 Prove the rules yourself with dry runs and patches that must be refused:
 
@@ -261,7 +263,7 @@ Apply the file again:
 kubectl apply -f crd-database.yaml
 ```
 
-Run the check. All seven checks now pass.
+Check the watch terminal. All seven checks now pass.
 
 ---
 
@@ -282,7 +284,7 @@ The table shows `postgres`, `50`, `3` and `3` for `orders-db`. This changes `ord
 
 ## Step 5: Submit
 
-When all seven checks are green, run the submit command once more:
+When all seven checks are green, press Ctrl-C to stop the watch and run the submit command once:
 
 ```sh
 astrona submit -c sections/section-010/capstone/labs/lab-01
