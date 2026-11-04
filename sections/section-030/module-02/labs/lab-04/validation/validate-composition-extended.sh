@@ -1,0 +1,22 @@
+#!/usr/bin/env bash
+# Require the new native Service and preserve both original resource templates.
+source "$(dirname "$0")/common.sh"
+require_equal "$(comp_field '.spec.mode')" Pipeline 'keep Pipeline mode'
+require_equal "$(comp_field '.spec.pipeline[0].functionRef.name')" function-patch-and-transform 'keep the installed function reference'
+require_equal "$(comp_field '.spec.pipeline[0].input.resources[0]')" "$(saved head-template)" 'leave the governing-service template unchanged'
+require_equal "$(comp_field '.spec.pipeline[0].input.resources[1]')" "$(saved sts-template)" 'leave the statefulset template unchanged'
+require_equal "$(comp_field '.spec.pipeline[0].input.resources[*].name')" 'governing-service statefulset service' 'append only the service template'
+SERVICE='.spec.pipeline[0].input.resources[2]'
+require_equal "$(comp_field "$SERVICE.base.apiVersion")" v1 'use a native v1 Service'
+require_equal "$(comp_field "$SERVICE.base.kind")" Service 'use a native Service, not an Object wrapper'
+require_equal "$(comp_field "$SERVICE.base.spec.type")" ClusterIP 'set the Service type to ClusterIP'
+[ -z "$(comp_field "$SERVICE.base.spec.clusterIP")" ] || fail 'let Kubernetes allocate the client Service IP'
+require_equal "$(comp_field "$SERVICE.base.spec.ports[0].port")" 9898 'set port 9898'
+require_equal "$(comp_field "$SERVICE.base.spec.ports[0].targetPort")" 9898 'set targetPort 9898'
+require_equal "$(comp_field "$SERVICE.patches[*].type")" 'FromCompositeFieldPath FromCompositeFieldPath FromCompositeFieldPath' 'use the three FromCompositeFieldPath patches'
+require_equal "$(comp_field "$SERVICE.patches[*].fromFieldPath")" 'metadata.name metadata.namespace metadata.name' 'patch from XR name, namespace and name in that order'
+require_equal "$(comp_field "$SERVICE.patches[*].toFieldPath")" 'metadata.name metadata.namespace spec.selector.app' 'patch the Service name, namespace and selector in that order'
+[ -z "$(comp_field "$SERVICE.patches[*].transforms")" ] || fail 'the new Service patches must copy values without transforms'
+require_equal "$(comp_field "$SERVICE.readinessChecks[*].type")" NonEmpty 'use a NonEmpty readiness check'
+require_equal "$(comp_field "$SERVICE.readinessChecks[0].fieldPath")" spec.clusterIP 'check the native Service spec.clusterIP'
+echo 'PASS: composition-extended'

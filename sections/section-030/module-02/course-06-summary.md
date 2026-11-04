@@ -8,6 +8,10 @@ Patches connect the request to the result. `FromCompositeFieldPath` copies a req
 
 Debugging follows the same chain. `crossplane composition render` previews the pipeline locally. On a live cluster, the conditions and events of the composite resource show a bad function reference first. The Composition is the place to repair it.
 
+Crossplane 2.x can also compose native Kubernetes resources directly. Their patches use native field paths, and explicit readiness checks read fields such as a StatefulSet's `status.readyReplicas` and a Service's `spec.clusterIP`. A client Service selects the labels on the StatefulSet's Pods; an allocated address alone does not prove that traffic reaches them.
+
+With the `Automatic` Composition update policy, an existing composite resource adopts newer Composition revisions. Adding a resource template can add a Service without replacing the request or its workload. Compare UIDs before and after the change, then check ownership, ready EndpointSlice targets and an HTTP request.
+
 Key facts:
 
 - An XRD name is `<plural>.<group>`, and its group and names cannot change later.

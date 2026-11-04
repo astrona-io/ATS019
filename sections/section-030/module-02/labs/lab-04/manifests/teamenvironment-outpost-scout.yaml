@@ -1,0 +1,11 @@
+apiVersion: platform.starfleet.io/v1alpha1
+kind: TeamEnvironment
+metadata:
+  name: outpost-scout
+  namespace: outpost
+spec:
+  team: scout
+  crossplane:
+    compositionRef:
+      name: scout-stateful
+    compositionUpdatePolicy: Automatic

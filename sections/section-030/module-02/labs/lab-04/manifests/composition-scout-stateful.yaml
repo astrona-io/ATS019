@@ -1,0 +1,94 @@
+apiVersion: apiextensions.crossplane.io/v1
+kind: Composition
+metadata:
+  name: scout-stateful
+spec:
+  compositeTypeRef:
+    apiVersion: platform.starfleet.io/v1alpha1
+    kind: TeamEnvironment
+  mode: Pipeline
+  pipeline:
+    - step: patch-and-transform
+      functionRef:
+        name: function-patch-and-transform
+      input:
+        apiVersion: pt.fn.crossplane.io/v1beta1
+        kind: Resources
+        resources:
+          - name: governing-service
+            base:
+              apiVersion: v1
+              kind: Service
+              metadata: {}
+              spec:
+                clusterIP: None
+                selector: {}
+                ports:
+                  - port: 9898
+                    targetPort: 9898
+            patches:
+              - type: FromCompositeFieldPath
+                fromFieldPath: metadata.name
+                toFieldPath: metadata.name
+                transforms:
+                  - type: string
+                    string:
+                      type: Format
+                      fmt: '%s-pods'
+              - type: FromCompositeFieldPath
+                fromFieldPath: metadata.namespace
+                toFieldPath: metadata.namespace
+              - type: FromCompositeFieldPath
+                fromFieldPath: metadata.name
+                toFieldPath: spec.selector.app
+            readinessChecks:
+              - type: MatchString
+                fieldPath: spec.clusterIP
+                matchString: None
+          - name: statefulset
+            base:
+              apiVersion: apps/v1
+              kind: StatefulSet
+              metadata: {}
+              spec:
+                replicas: 1
+                selector:
+                  matchLabels: {}
+                template:
+                  metadata:
+                    labels: {}
+                  spec:
+                    containers:
+                      - name: scout
+                        image: ghcr.io/stefanprodan/podinfo:6.15.0
+                        ports:
+                          - containerPort: 9898
+                        readinessProbe:
+                          httpGet:
+                            path: /readyz
+                            port: 9898
+            patches:
+              - type: FromCompositeFieldPath
+                fromFieldPath: metadata.name
+                toFieldPath: metadata.name
+              - type: FromCompositeFieldPath
+                fromFieldPath: metadata.namespace
+                toFieldPath: metadata.namespace
+              - type: FromCompositeFieldPath
+                fromFieldPath: metadata.name
+                toFieldPath: spec.serviceName
+                transforms:
+                  - type: string
+                    string:
+                      type: Format
+                      fmt: '%s-pods'
+              - type: FromCompositeFieldPath
+                fromFieldPath: metadata.name
+                toFieldPath: spec.selector.matchLabels.app
+              - type: FromCompositeFieldPath
+                fromFieldPath: metadata.name
+                toFieldPath: spec.template.metadata.labels.app
+            readinessChecks:
+              - type: MatchInteger
+                fieldPath: status.readyReplicas
+                matchInteger: 1

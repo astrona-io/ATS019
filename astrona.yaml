@@ -533,8 +533,35 @@ modules:
           - name: "Crossplane CLI command reference"
             url: https://docs.crossplane.io/v2.4/cli/command-reference/
       - type: reading
+        title: "Extend A Native Composition"
+        path: sections/section-030/module-02/course-05-extend-a-native-composition.md
+      - type: reading
+        title: Question
+        path: sections/section-030/module-02/labs/lab-04/question.md
+      - type: lab
+        title: "Extend A Native Composition Without Recreating Requests Lab"
+        path: sections/section-030/module-02/labs/lab-04
+        difficulty: intermediate
+        estimated_duration: 25m
+        topic: crossplane
+        task_kind: build
+        tags: [crossplane, xrd, composite-resource, composition, composition-functions, patch-and-transform]
+        learning_goals:
+          - Create a namespaced composite resource from an existing XRD
+          - Extend a native Composition with a ClusterIP Service and explicit readiness checks
+          - Prove an existing request adopts the new Service without recreating the request or workload
+        resources:
+          - name: "Composite resources and revision policy"
+            url: https://docs.crossplane.io/v2.4/composition/composite-resources/
+          - name: "Function Patch and Transform"
+            url: https://docs.crossplane.io/v2.4/guides/function-patch-and-transform/
+          - name: "Readiness check types in function-patch-and-transform 0.11.0"
+            url: https://github.com/crossplane-contrib/function-patch-and-transform/blob/v0.11.0/input/v1beta1/resources_common.go
+          - name: "StatefulSets"
+            url: https://kubernetes.io/docs/concepts/workloads/controllers/statefulset/
+      - type: reading
         title: Summary
-        path: sections/section-030/module-02/course-05-summary.md
+        path: sections/section-030/module-02/course-06-summary.md
 
       - type: reading
         title: "Provision And Trace A Composite Resource"

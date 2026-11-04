@@ -193,6 +193,8 @@ sections:
     - Prove with a request from shuttle that the composed Service answers 200
     - Find a missing function from the conditions and events of a composite resource
     - Find a Service selector that matches no pod and repair it in the Composition
+    - Consume an existing namespaced XRD and add a native Service for StatefulSet Pods
+    - Prove an existing request adopts a new Composition revision without recreation
     - Prove the repair with a Synced and Ready request and a request that returns
       200
     outline:
@@ -200,11 +202,13 @@ sections:
     - Compose Resources With A Pipeline
     - Patch Values In And Out
     - Render And Debug A Composition
+    - Extend A Native Composition
     playground: true
     module_labs:
     - Define A Platform API With An XRD Lab
     - Patch A Composition To Honour Tenant Requests Lab
     - Repair A Broken Composition Lab
+    - Extend A Native Composition Without Recreating Requests Lab
   - id: module-03
     title: Provision And Trace A Composite Resource
     objectives:

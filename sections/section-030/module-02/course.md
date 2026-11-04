@@ -4,9 +4,11 @@
 
 A platform team wants tenant teams to ask for a workload with one small object, and not with a Deployment, a Service and a pile of settings. Crossplane makes that possible. A CompositeResourceDefinition (XRD) defines a new API type, and a Composition says which objects Crossplane creates for each request of that type.
 
-This module builds that pair from nothing. The example API is `TeamEnvironment`. A tenant in the `outpost` namespace creates one `TeamEnvironment`, and Crossplane creates the `scout` Deployment and Service for it. Everything runs inside the `kind` cluster, so Crossplane never calls a cloud provider.
+This module builds that pair from nothing. The example API is `TeamEnvironment`. A tenant in the `outpost` namespace creates one `TeamEnvironment`, and Crossplane creates the `scout` Deployment and Service for it. The final example composes a native StatefulSet and Services directly. Everything runs inside the `kind` cluster, so Crossplane never calls a cloud provider.
 
-The module has four parts. **From A CRD To An XRD** writes the API and its schema. **Compose Resources With A Pipeline** adds a Composition that creates the first workload object. **Patch Values In And Out** copies request values into the workload and writes the result back to status. **Render And Debug A Composition** previews a Composition on your machine and reads the status of a Composition that points at a missing function.
+The module has five parts. **From A CRD To An XRD** writes the API and its schema. **Compose Resources With A Pipeline** adds a Composition that creates the first workload object. **Patch Values In And Out** copies request values into the workload and writes the result back to status. **Render And Debug A Composition** previews a Composition on your machine and reads the status of a Composition that points at a missing function.
+
+**Extend A Native Composition** consumes the existing API, adds a native Service for a StatefulSet, and proves that an existing request adopts the change without being recreated.
 
 ## Learning objectives
 
@@ -15,6 +17,7 @@ After this module you can:
 - Write an XRD in `apiextensions.crossplane.io/v2` with a namespaced scope and a validated schema.
 - Reference `function-patch-and-transform` from a Composition in `Pipeline` mode.
 - Compose a Deployment and a Service from one composite resource.
+- Extend a native StatefulSet Composition with a ClusterIP Service and preserve existing request identities.
 - Patch values from the composite resource into composed resources and write fields back to status.
 - Preview a Composition with `crossplane composition render` and read the status of a broken one.
 

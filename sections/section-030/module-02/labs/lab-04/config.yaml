@@ -1,0 +1,60 @@
+# yaml-language-server: $schema=https://cli.astrona.io/schema/lab-config.schema.json
+apiVersion: astrona.io/v1
+metadata:
+  name: ats-019-lab-030-02-04
+  docs:
+    prerequisites: prerequisites.md
+    question: question.md
+    solution: solution.md
+runtime:
+  type: kind
+  kind:
+    image: kindest/node:v1.35.8
+    preloadImages:
+      - xpkg.crossplane.io/crossplane/crossplane:v2.4.2
+      - ghcr.io/stefanprodan/podinfo:6.15.0
+      - xpkg.crossplane.io/crossplane-contrib/function-patch-and-transform:v0.11.0
+bootstrap:
+  init:
+    - name: install-crossplane
+      description: Installs Crossplane 2.4.2 in crossplane-system and waits for its CRDs
+      type: file
+      source: bootstrap/01-install-crossplane.sh
+    - name: install-packages
+      description: Installs the function and grants Crossplane access to native StatefulSets
+      type: file
+      source: bootstrap/02-install-packages.sh
+    - name: seed-start-state
+      description: Creates the partial Composition and records the original request and workload identities
+      type: file
+      source: bootstrap/03-seed.sh
+  waitFor:
+    - resource: function.pkg.crossplane.io/function-patch-and-transform
+      condition: Healthy
+      timeout: 300s
+testing:
+  init:
+    - name: reference-solution
+      description: Creates the new request and adds the client Service template
+      type: file
+      source: solution/apply.sh
+    - name: wait-converged
+      description: Waits until the request is Synced and Ready
+      type: file
+      source: testing/01-wait-converged.sh
+validation:
+  scripts:
+    - name: tenant-request
+      type: file
+      source: validation/validate-tenant-request.sh
+    - name: composition-extended
+      type: file
+      source: validation/validate-composition-extended.sh
+    - name: existing-request-updated
+      type: file
+      source: validation/validate-existing-request-updated.sh
+    - name: services-reach-pods
+      type: file
+      source: validation/validate-services-reach-pods.sh
+teardown:
+  keepCluster: false

@@ -141,8 +141,8 @@ items:
   what: 'chapter for section-030 module-02: Define A Platform API With An XRD And
     Composition'
   status: done
-  note: landing + 4 parts + summary; built in an earlier session; some parts exceed
-    160 lines
+  note: 'untested: built without booting 2026-11-04; landing + 5 parts + summary;
+    added native Composition extension and identity proof'
 - key: section-030/module-02/lab-01
   kind: lab
   what: 'graded lab: Define A Platform API With An XRD Lab'
@@ -281,3 +281,9 @@ items:
   what: final domain quiz
   status: done
   note: ''
+- key: section-030/module-02/lab-04
+  kind: lab
+  what: 'graded lab: Extend A Native Composition Without Recreating Requests Lab'
+  status: done
+  note: 'untested: built without booting 2026-11-04; YAML, shell syntax and file wiring pass;
+    astrona validate blocked by sandbox maintenance lock; runtime not executed'
