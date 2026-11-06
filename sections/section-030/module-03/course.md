@@ -4,7 +4,7 @@ A platform API is only useful if a tenant can use it and the platform team can s
 
 A composite resource (XR) is one object of the type that a CompositeResourceDefinition (XRD) defines. In this module the type is `TeamEnvironment`, and a team in the `outpost` namespace requests one. A Composition is the Crossplane object that says which resources to create for each composite resource. A managed resource is an object that a provider controls. Here the provider is `provider-kubernetes`, and its managed resource is an `Object`, which wraps any Kubernetes manifest and applies it to the cluster.
 
-The module has four parts. **Request A Composite Resource** applies a `TeamEnvironment` from `outpost`, waits for it to be ready and proves that the `scout` workload answers. **Trace A Composite Resource** follows the request to every object it created, with `kubectl` and with `crossplane resource trace`. **Read A Failing Composite Resource** uses conditions and events to find out why a composite resource never becomes ready. **Update And Delete A Composite Resource** changes a request, deletes it, and compares deleting the composed resources with orphaning them.
+The module has five parts. **Request A Composite Resource** applies a `TeamEnvironment` from `outpost`, waits for it to be ready and proves that the `scout` workload answers. **Trace A Composite Resource** follows the request to every object it created, with `kubectl` and with `crossplane resource trace`. **Read A Failing Composite Resource** uses conditions and events to find out why a composite resource never becomes ready. **Update And Delete A Composite Resource** changes a request, deletes it, and compares deleting the composed resources with orphaning them. **Trace With The Crossplane CLI** installs the pinned CLI, reads full condition messages and records a failing child before repair.
 
 ## Learning objectives
 
@@ -15,6 +15,7 @@ After this module you can:
 - Read the `Synced` and `Ready` conditions on a composite resource and on its composed resources to find the one that fails.
 - Diagnose a Composition that references a missing function or patches a field that does not exist.
 - Choose between deleting a composite resource and orphaning its composed resources.
+- Install CLI 2.4.1, trace a namespaced request with wide output and preserve the failing child's diagnosis before repair.
 
 ## Before you start
 

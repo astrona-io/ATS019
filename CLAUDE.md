@@ -241,6 +241,7 @@ section is only true for this one.
   | Tool | Version |
   | --- | --- |
   | Crossplane | 2.4.2 |
+  | Crossplane CLI (released separately) | 2.4.1 |
   | `provider-kubernetes` | 1.4.1 |
   | `function-patch-and-transform` | 0.11.0 |
   | Prometheus Operator | 0.94.1 |

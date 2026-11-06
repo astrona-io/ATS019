@@ -641,8 +641,30 @@ modules:
           - name: "What's Crossplane"
             url: https://docs.crossplane.io/v2.4/whats-crossplane/
       - type: reading
+        title: Trace With The Crossplane CLI
+        path: sections/section-030/module-03/course-05-trace-with-the-crossplane-cli.md
+      - type: reading
+        title: Question
+        path: sections/section-030/module-03/labs/lab-04/question.md
+      - type: lab
+        title: "Trace And Repair A Composed Resource Lab"
+        path: sections/section-030/module-03/labs/lab-04
+        difficulty: intermediate
+        estimated_duration: 15m
+        topic: crossplane
+        task_kind: troubleshooting
+        tags: [crossplane, composite-resource, resource-trace, conditions, provider-config, managed-resource]
+        learning_goals:
+          - Trace a namespaced composite resource and record the failing child's identity and condition
+          - Repair the Composition and prove the original request and children become ready
+        resources:
+          - name: "Crossplane CLI 2.4.1 trace command"
+            url: https://github.com/crossplane/cli/blob/v2.4.1/cmd/crossplane/trace/help/trace.md
+          - name: "Crossplane CLI 2.4.1 tree printer"
+            url: https://github.com/crossplane/cli/blob/v2.4.1/cmd/crossplane/trace/internal/printer/default.go
+      - type: reading
         title: Summary
-        path: sections/section-030/module-03/course-05-summary.md
+        path: sections/section-030/module-03/course-06-summary.md
       - type: reading
         title: Question
         path: sections/section-030/capstone/labs/lab-01/question.md

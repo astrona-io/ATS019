@@ -1,0 +1,64 @@
+# yaml-language-server: $schema=https://cli.astrona.io/schema/lab-config.schema.json
+#
+# Trace And Repair A Composed Resource (LAB). Graded against the live cluster. Needs outbound
+# internet: Crossplane pulls providers and functions from xpkg.crossplane.io.
+apiVersion: astrona.io/v1
+metadata:
+  name: ats-019-lab-030-03-04
+  docs:
+    prerequisites: prerequisites.md
+    question: question.md
+    solution: solution.md
+
+runtime:
+  type: kind
+  kind:
+    image: kindest/node:v1.35.8
+    preloadImages:
+      - xpkg.crossplane.io/crossplane/crossplane:v2.4.2
+      - ghcr.io/stefanprodan/podinfo:6.15.0
+      - xpkg.crossplane.io/crossplane-contrib/provider-kubernetes:v1.4.1
+      - xpkg.crossplane.io/crossplane-contrib/function-patch-and-transform:v0.11.0
+
+bootstrap:
+  init:
+    - name: install-crossplane
+      description: "Installs Crossplane 2.4.2 in crossplane-system and waits for its CRDs"
+      type: file
+      source: bootstrap/01-install-crossplane.sh
+    - name: install-platform-api
+      description: "Installs provider-kubernetes, the function, the ProviderConfig, its RBAC and the TeamEnvironment XRD"
+      type: file
+      source: bootstrap/02-install-platform-api.sh
+    - name: install-crossplane-cli
+      description: "Downloads the crossplane CLI 2.4.1 into the lab work folder"
+      type: file
+      source: bootstrap/03-install-crossplane-cli.sh
+    - name: seed-request
+      description: "Creates a broken request and records its actual failure condition"
+      type: file
+      source: bootstrap/04-seed-request.sh
+
+testing:
+  init:
+    - name: solution
+      description: "Reference solution applied by astrona test"
+      type: file
+      source: solution/apply.sh
+
+validation:
+  passPercent: 100
+  scripts:
+    - name: diagnosis
+      description: "The report matches the original condition and the live composed resource"
+      type: file
+      source: validation/validate-diagnosis.sh
+      points: 50
+    - name: request-ready
+      description: "The original request and composed resources are ready after the Composition repair"
+      type: file
+      source: validation/validate-request-ready.sh
+      points: 50
+
+teardown:
+  keepCluster: false

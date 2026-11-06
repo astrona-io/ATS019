@@ -167,8 +167,8 @@ items:
   kind: course
   what: 'chapter for section-030 module-03: Provision And Trace A Composite Resource'
   status: done
-  note: landing + 4 parts + summary; built in an earlier session; some parts exceed
-    160 lines
+  note: 'untested: built without booting 2026-11-06; added CLI installation and wide trace reading;
+    summary moved to 06; CLI 2.4.1 flags and printer verified from tagged source'
 - key: section-030/module-03/lab-01
   kind: lab
   what: 'graded lab: Provision A TeamEnvironment And Prove It Answers'
@@ -287,3 +287,11 @@ items:
   status: done
   note: 'untested: built without booting 2026-11-04; YAML, shell syntax and file wiring pass;
     astrona validate blocked by sandbox maintenance lock; runtime not executed'
+
+- key: section-030/module-03/lab-04
+  kind: lab
+  what: 'graded lab: Trace And Repair A Composed Resource'
+  status: done
+  note: 'untested: built without booting 2026-11-06; static checks only;
+    original diagnosis compared with captured live condition and current child identity;
+    astrona validate blocked by sandbox maintenance lock; schema download endpoint returned 404'

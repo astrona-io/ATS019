@@ -18,6 +18,7 @@ course:
     kind: v0.33.0
     kind_node_image: kindest/node:v1.35.8
     crossplane: 2.4.2
+    crossplane_cli: 2.4.1
     provider_kubernetes: 1.4.1
     function_patch_and_transform: 0.11.0
     prometheus_operator: 0.94.1
@@ -221,16 +222,20 @@ sections:
     - Delete a composite resource with orphaning so its workload stays
     - Prove that the composed objects lost their owner reference
     - Show that the workload still answers a request
+    - Install CLI 2.4.1 and read full condition messages with wide trace output
+    - Record the failing child identity and original condition before repairing the Composition
     outline:
     - Request A Composite Resource
     - Trace A Composite Resource
     - Read A Failing Composite Resource
     - Update And Delete A Composite Resource
+    - Trace With The Crossplane CLI
     playground: true
     module_labs:
     - Provision A TeamEnvironment And Prove It Answers
     - Fix A Failing Composition Found By Tracing
     - Delete A Composite Resource Without Losing Its Workload
+    - Trace And Repair A Composed Resource
   capstone:
     title: Build A Self-Service Team Environment API Capstone
     objective: Install provider-kubernetes and grant it only the access its Compositions

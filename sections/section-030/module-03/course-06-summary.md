@@ -8,6 +8,8 @@ The `Synced` condition says that Crossplane ran the Composition and applied the 
 
 Crossplane lists the composed resources in `spec.crossplane.resourceRefs`. The command `crossplane resource trace` reads those references and prints the tree from the composite resource down to the `Object` resources. The tree shows the `Synced` and `Ready` state of each row, so the row that is not ready marks the place to look.
 
+CLI 2.4.1 uses `crossplane resource trace <kind> <name> -n <namespace> -o wide` to show full condition messages and Composition resource names. The CLI reads the same references and conditions available through `kubectl`. Record the failing child's kind, name, reason and message before repair, because reconciliation replaces the error condition.
+
 A failing request leaves its reason in the conditions and the events. A Composition that names a function that is not installed stops the pipeline, and the composite resource reports `Synced` as `False` with a reconcile error. A patch that names a field that does not exist is found by comparing the Composition with the fields of the XRD. You fix both faults in the Composition, not in the request.
 
 Deleting a composite resource removes the composed resources through owner references, and the provider removes the real objects. Orphan deletion keeps them and leaves them without an owner. Use delete for normal removal and orphan only for a planned handover.

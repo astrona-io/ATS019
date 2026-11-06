@@ -30,3 +30,8 @@ The XRD and Composition material includes **Extend A Native Composition** and
 the 25-minute **Extend A Native Composition Without Recreating Requests Lab**.
 The lab checks revision adoption, object identities, Service ownership, ready
 EndpointSlice targets and HTTP requests for existing and new requests.
+
+The provision and trace material includes **Trace With The Crossplane CLI**
+and the 15-minute **Trace And Repair A Composed Resource Lab**. The learner
+uses CLI 2.4.1 wide output to find a failing child, saves its original
+condition in a ConfigMap and repairs the Composition until the request is ready.
