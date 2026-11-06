@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 # Record the real failure before repairing the Composition.
 set -euo pipefail
-object_name=$(kubectl -n starfleet get configmap trace-baseline -o jsonpath='{.data.name}')
+object_name=$(kubectl -n outpost get objects.kubernetes.m.crossplane.io \
+  -o jsonpath='{range .items[?(@.spec.forProvider.manifest.kind=="Service")]}{.metadata.name}{end}')
 reason=$(kubectl -n outpost get objects.kubernetes.m.crossplane.io "$object_name" -o jsonpath='{.status.conditions[?(@.type=="Synced")].reason}')
 message=$(kubectl -n outpost get objects.kubernetes.m.crossplane.io "$object_name" -o jsonpath='{.status.conditions[?(@.type=="Synced")].message}')
 kubectl -n outpost create configmap trace-report \

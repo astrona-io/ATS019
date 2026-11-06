@@ -13,8 +13,9 @@ composed resource and its condition, and repairs a provider configuration
 reference in the Composition. The shared Crossplane bootstrap comes from
 the module's other labs. The CLI download is required rather than optional.
 
-Bootstrap stores the actual failing condition and object identities in
-`starfleet/trace-baseline`. The diagnosis check compares the report with
+Bootstrap stores SHA-256 digests of the actual failing condition and the
+object identities in `starfleet/trace-baseline`, so the learner cannot read
+the answer from it. The diagnosis check compares the report with
 that snapshot and the child's live identity, owner and resource reference.
 This keeps the diagnosis gradeable after reconciliation replaces the error
 condition. The readiness check reads the live request, children and Service.

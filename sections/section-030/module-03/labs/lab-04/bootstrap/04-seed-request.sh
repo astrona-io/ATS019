@@ -1,6 +1,9 @@
 #!/usr/bin/env bash
 # Wait for the intended child failure and preserve its real condition.
+# The answer fields are stored as SHA-256 digests so the learner cannot copy
+# them out of the ConfigMap; the graders compare digests.
 set -euo pipefail
+digest() { if command -v sha256sum >/dev/null 2>&1; then printf '%s' "$1" | sha256sum; else printf '%s' "$1" | shasum -a 256; fi | cut -d' ' -f1; }
 cd "$(dirname "$0")/.."
 kubectl apply -f manifests/composition-teamenvironment.yaml >/dev/null
 kubectl apply -f manifests/teamenvironment-scout-env.yaml >/dev/null
@@ -22,9 +25,9 @@ for attempt in $(seq 1 120); do
       object_uid=$(kubectl -n outpost get objects.kubernetes.m.crossplane.io "$service_object" -o jsonpath='{.metadata.uid}')
       request_uid=$(kubectl -n outpost get teamenvironment scout-env -o jsonpath='{.metadata.uid}')
       kubectl -n starfleet create configmap trace-baseline \
-        --from-literal=kind=Object --from-literal=name="$service_object" \
+        --from-literal=kindSha="$(digest Object)" --from-literal=nameSha="$(digest "$service_object")" \
         --from-literal=uid="$object_uid" --from-literal=requestUid="$request_uid" \
-        --from-literal=reason="$reason" --from-literal=message="$message" \
+        --from-literal=reasonSha="$(digest "$reason")" --from-literal=messageSha="$(digest "$message")" \
         --dry-run=client -o yaml | kubectl apply -f - >/dev/null
       exit 0
     fi

@@ -24,8 +24,10 @@ for child in $children; do
     [ "$status" = True ] || fail "$child $condition must be True"
   done
 done
-object_name=$(kubectl -n starfleet get configmap trace-baseline -o jsonpath='{.data.name}')
-[ "$(kubectl -n outpost get objects.kubernetes.m.crossplane.io "$object_name" -o jsonpath='{.metadata.uid}')" = "$(kubectl -n starfleet get configmap trace-baseline -o jsonpath='{.data.uid}')" ] || fail "keep the original failing child"
+# The baseline stores the failing child's uid, not its name; find it by uid.
+object_uid=$(kubectl -n starfleet get configmap trace-baseline -o jsonpath='{.data.uid}')
+object_name=$(kubectl -n outpost get objects.kubernetes.m.crossplane.io -o jsonpath="{.items[?(@.metadata.uid==\"$object_uid\")].metadata.name}")
+[ -n "$object_name" ] || fail "keep the original failing child"
 [ "$(kubectl -n outpost get objects.kubernetes.m.crossplane.io "$object_name" -o jsonpath='{.spec.providerConfigRef.name}')" = in-cluster ] || fail "live child must use in-cluster"
 [ "$(kubectl -n outpost get objects.kubernetes.m.crossplane.io "$object_name" -o jsonpath='{.spec.providerConfigRef.kind}')" = ClusterProviderConfig ] || fail "live child must use ClusterProviderConfig"
 kubectl -n outpost get service scout >/dev/null || fail "provider must create the Service"
