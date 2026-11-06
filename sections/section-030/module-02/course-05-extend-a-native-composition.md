@@ -151,9 +151,8 @@ spec:
                 fromFieldPath: metadata.name
                 toFieldPath: spec.template.metadata.labels.app
             readinessChecks:
-              - type: MatchInteger
+              - type: NonEmpty
                 fieldPath: status.readyReplicas
-                matchInteger: 1
 ---
 apiVersion: platform.starfleet.io/v1alpha1
 kind: TeamEnvironment
@@ -191,10 +190,18 @@ kubectl -n outpost get statefulset outpost-scout -o jsonpath='{.metadata.uid}{"\
 
 The function's default readiness check expects a `Ready` condition. Native
 StatefulSets and Services do not expose that condition, so the templates use
-explicit `readinessChecks`. In `function-patch-and-transform` 0.11.0,
-`MatchInteger` compares a field with an integer and `MatchString` compares it
-with a string. The workload check requires one ready replica, while the
-headless Service check matches the literal string `None`.
+explicit `readinessChecks`. `NonEmpty` passes when the field exists with a
+value, and `MatchString` compares a field with a string. The headless Service
+check matches the literal string `None`. The workload check uses `NonEmpty` on
+`status.readyReplicas`: the API server leaves that field out of the status
+while no Pod is ready, so the check passes once one Pod is ready.
+
+Do not use `MatchInteger` for this field. In `function-patch-and-transform`
+0.11.0 the function reads the observed StatefulSet with a number type that
+`MatchInteger` does not accept, and the composite resource stays not ready
+with this event: `cannot check readiness of composed resource "statefulset":
+cannot run readiness check at index 0: status.readyReplicas: not a (int64)
+number`.
 
 ## Add the client Service
 
@@ -275,7 +282,8 @@ ready endpoints and a successful request prove that the new Service works.
 ## Common pitfalls
 
 > [!WARNING]
-> - **Using `Condition` as a check type.** The valid condition check is `MatchCondition`. The checks used here are `MatchInteger`, `MatchString` and `NonEmpty`.
+> - **Using `Condition` as a check type.** The valid condition check is `MatchCondition`. The checks used here are `MatchString` and `NonEmpty`.
+> - **Using `MatchInteger` on a native object's status.** In 0.11.0 it fails with `not a (int64) number` on an observed Kubernetes object. Use `NonEmpty` on a field the API server omits until it has a value, such as `status.readyReplicas`.
 > - **Leaving the default readiness check.** These native objects have no `Ready` condition. Check the fields they actually expose.
 > - **Changing a resource entry name.** Crossplane uses it to identify a composed resource. Preserve the existing names when extending the list.
 > - **Assuming every request upgrades.** A request using `Manual` update policy does not automatically adopt the new revision.

@@ -89,9 +89,8 @@ spec:
                 fromFieldPath: metadata.name
                 toFieldPath: spec.template.metadata.labels.app
             readinessChecks:
-              - type: MatchInteger
+              - type: NonEmpty
                 fieldPath: status.readyReplicas
-                matchInteger: 1
           - name: service
             base:
               apiVersion: v1

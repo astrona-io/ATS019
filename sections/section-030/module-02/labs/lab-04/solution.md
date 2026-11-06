@@ -43,8 +43,9 @@ kubectl -n outpost get service outpost-scout-pods -o jsonpath='{.metadata.uid}{"
 Note the three UIDs and the revision name. A UID is the unique identifier
 Kubernetes assigns when it creates an object. The two templates create a
 headless Service for Pod network identity and a one-replica StatefulSet.
-The StatefulSet check uses `MatchInteger` on `status.readyReplicas` to wait
-for one ready Pod. No grading check changes yet.
+The StatefulSet check uses `NonEmpty` on `status.readyReplicas`: the API
+server leaves that field out while no Pod is ready, so the check passes once
+one Pod is ready. No grading check changes yet.
 
 ## Step 2: Consume the existing XRD
 
