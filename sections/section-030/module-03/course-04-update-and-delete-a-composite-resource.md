@@ -55,11 +55,12 @@ kubectl -n outpost wait teamenvironment/scout-env --for=condition=Ready --timeou
 kubectl -n outpost annotate teamenvironment scout-env crossplane.io/paused=true --overwrite
 kubectl -n outpost wait teamenvironment/scout-env --for=jsonpath='{.status.conditions[?(@.type=="Synced")].reason}'=ReconcilePaused --timeout=180s
 kubectl -n outpost delete teamenvironment scout-env --cascade=orphan --wait=false
+kubectl -n outpost wait teamenvironment/scout-env --for=jsonpath='{.metadata.finalizers}'='["composite.apiextensions.crossplane.io"]' --timeout=180s
 kubectl -n outpost annotate teamenvironment scout-env crossplane.io/paused-
 kubectl -n outpost wait --for=delete teamenvironment/scout-env --timeout=180s
 ```
 
-Pause reconciliation and wait for `ReconcilePaused` before deleting. This prevents composition from restoring owner references while the garbage collector removes them. Request deletion without waiting, then remove the pause annotation: Crossplane must resume to remove its finalizer. Leaving the request paused would hold deletion open. Do not remove finalizers by hand.
+Pause reconciliation and wait for `ReconcilePaused` before deleting. This prevents composition from restoring owner references while the garbage collector removes them. Request deletion without waiting, then wait until only the Crossplane finalizer remains. In this fixture that proves the garbage collector has removed its `orphan` finalizer after detaching the dependents. Only then remove the pause annotation: Crossplane must resume to remove its own finalizer. Resuming immediately races with orphan processing and can delete the workload. Leaving the request paused would hold deletion open. Do not remove finalizers by hand.
 
 Check what is left:
 

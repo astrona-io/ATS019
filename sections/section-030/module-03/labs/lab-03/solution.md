@@ -48,15 +48,18 @@ and the Service named `scout`. Do not delete anything yet.
 kubectl -n outpost annotate teamenvironment scout-env crossplane.io/paused=true --overwrite
 kubectl -n outpost wait teamenvironment/scout-env --for=jsonpath='{.status.conditions[?(@.type=="Synced")].reason}'=ReconcilePaused --timeout=180s
 kubectl -n outpost delete teamenvironment scout-env --cascade=orphan --wait=false
+kubectl -n outpost wait teamenvironment/scout-env --for=jsonpath='{.metadata.finalizers}'='["composite.apiextensions.crossplane.io"]' --timeout=180s
 kubectl -n outpost annotate teamenvironment scout-env crossplane.io/paused-
 kubectl -n outpost wait --for=delete teamenvironment/scout-env --timeout=180s
 ```
 
 Wait for `ReconcilePaused` before requesting orphan deletion. Use `--wait=false`
-so you can remove the pause annotation after deletion has been requested.
-Crossplane must resume to remove its own finalizer; leaving it paused would
-keep the request in deletion. The garbage collector removes the dependents'
-owner references, and the last command waits for the request to disappear.
+so the shell can wait for orphan processing before resuming Crossplane. In this
+fixture, only `composite.apiextensions.crossplane.io` remains after the garbage
+collector removes its `orphan` finalizer and detaches the dependents. Resuming
+earlier can race with that process and delete the workload. Crossplane must
+then resume to remove its own finalizer; leaving it paused would keep the
+request in deletion. The last command waits for the request to disappear.
 Do not remove finalizers by hand.
 
 **Check the watch terminal.** The checks `request-gone`, `workload-kept` and
@@ -93,7 +96,8 @@ astrona submit -c sections/section-030/module-03/labs/lab-03
 
 - **`request-gone` fails.** The delete is not finished, or the command did not
   run. Check with `kubectl -n outpost get teamenvironment`. If deletion is
-  requested but paused, remove `crossplane.io/paused` so Crossplane can finalize it.
+  requested but paused, first wait for the `orphan` finalizer to disappear,
+  then remove `crossplane.io/paused` so Crossplane can finalize it.
 - **`workload-kept` fails.** You deleted without `--cascade=orphan`, so
   Crossplane removed the Deployment and the Service. This lab cannot be
   repaired in place. Run `astrona destroy ats-019-lab-030-03-03` and start
