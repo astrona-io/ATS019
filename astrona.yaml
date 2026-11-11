@@ -855,6 +855,21 @@ modules:
         path: sections/section-040/module-03/course-02-aggregate-platform-api-permissions.md
       - type: reading
         title: Question
+        path: sections/section-040/module-03/labs/lab-03/question.md
+      - type: lab
+        title: Extend edit And view For A Platform API Lab
+        path: sections/section-040/module-03/labs/lab-03
+        difficulty: intermediate
+        estimated_duration: 15m
+        topic: rbac
+        task_kind: troubleshooting
+        tags:
+        - rbac
+        learning_goals:
+        - Extend built-in roles through labelled ClusterRoles
+        - Verify allowed and denied operations with impersonation
+      - type: reading
+        title: Question
         path: sections/section-040/module-03/labs/lab-01/question.md
       - type: lab
         title: "Scope A Tenant To One Platform API With RBAC Lab"

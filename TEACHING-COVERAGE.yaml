@@ -139,5 +139,7 @@ labs:
     - sections/section-040/module-02/course-01-eventbus-and-webhook-eventsource.md
     - sections/section-040/module-02/course-02-a-sensor-that-submits-a-workflow.md
     - sections/section-040/module-02/course-03-filters-and-parameter-mapping.md
-additional_readings:
-- sections/section-040/module-03/course-02-aggregate-platform-api-permissions.md
+  sections/section-040/module-03/labs/lab-03:
+    preparation:
+    - sections/section-040/module-03/course-02-aggregate-platform-api-permissions.md
+additional_readings: []

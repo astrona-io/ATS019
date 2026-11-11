@@ -1,2 +1,5 @@
 
 __pycache__/
+# Runtime snapshots created by lab and example checks.
+sections/section-040/module-03/labs/lab-03/bindings.json
+sections/section-040/module-03/playground/testing/bindings.json
