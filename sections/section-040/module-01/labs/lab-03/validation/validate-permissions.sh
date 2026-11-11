@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Grading for ats-019-lab-040-03, check 1. Asks the API server what the ServiceAccount
+# Grading for ats-019-lab-040-01-03, check 1. Asks the API server what the ServiceAccount
 # starfleet/provisioner may do:
 #   1. in outpost it may get, list, watch and create TeamEnvironments (a step that
 #      waits needs all four)

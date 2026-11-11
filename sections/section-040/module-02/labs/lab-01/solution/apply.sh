@@ -4,3 +4,4 @@
 set -euo pipefail
 cd "$(dirname "$0")"
 kubectl apply -f solution.yaml
+bash wait-ready.sh

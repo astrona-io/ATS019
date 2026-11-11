@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Grading for ats-019-lab-040-02, check 2. Asks the API server what the ServiceAccount
+# Grading for ats-019-lab-040-01-02, check 2. Asks the API server what the ServiceAccount
 # starfleet/provisioner may do:
 #   1. in outpost it may get, create and patch Deployments and Services
 #   2. in outpost it may not delete them, and may not touch Secrets

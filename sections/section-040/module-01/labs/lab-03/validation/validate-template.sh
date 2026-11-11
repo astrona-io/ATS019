@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Grading for ats-019-lab-040-03, check 2. Checks the WorkflowTemplate request-environment:
+# Grading for ats-019-lab-040-01-03, check 2. Checks the WorkflowTemplate request-environment:
 #   1. it exists in starfleet and runs as the ServiceAccount provisioner
 #   2. it has the parameters name (default outpost-env) and team (default outpost)
 #   3. its step is a resource template with action create
