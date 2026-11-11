@@ -23,5 +23,5 @@ astrona submit -c sections/section-040/module-01/labs/lab-03
 When you are done, remove the lab:
 
 ```bash
-astrona destroy ats-019-lab-040-03
+astrona destroy ats-019-lab-040-01-03
 ```

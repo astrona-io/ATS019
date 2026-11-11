@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Grading for ats-019-lab-040-02, check 1. The fix is RBAC, not a different workflow:
+# Grading for ats-019-lab-040-01-02, check 1. The fix is RBAC, not a different workflow:
 #   1. the WorkflowTemplate deploy-scout exists and still runs as provisioner
 #   2. it still has the two resource steps (apply Deployment, apply Service)
 #   3. the ServiceAccount provisioner still exists in starfleet

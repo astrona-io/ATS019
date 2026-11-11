@@ -1,13 +1,13 @@
 # yaml-language-server: $schema=https://cli.astrona.io/schema/lab-config.schema.json
 #
-# Fix A Provisioning Workflow That Fails On Permissions (ats-019-lab-040-02)
+# Fix A Provisioning Workflow That Fails On Permissions (ats-019-lab-040-01-02)
 # Astrona hands-on lab. kind runtime: a single-node Kubernetes 1.35 cluster
 # with Argo Workflows 4.1.5. Starts broken on purpose: the ServiceAccount
 # provisioner has too few permissions in outpost. Needs outbound internet for
 # the install manifest.
 apiVersion: astrona.io/v1
 metadata:
-  name: ats-019-lab-040-02
+  name: ats-019-lab-040-01-02
   docs:
     prerequisites: prerequisites.md
     question: question.md

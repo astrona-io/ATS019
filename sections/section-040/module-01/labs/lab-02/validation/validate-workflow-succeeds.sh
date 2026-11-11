@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Grading for ats-019-lab-040-02, check 3. Removes the scout objects, runs the
+# Grading for ats-019-lab-040-01-02, check 3. Removes the scout objects, runs the
 # WorkflowTemplate deploy-scout in a new Workflow and checks the result:
 #   1. the Workflow ends as Succeeded
 #   2. the Deployment scout (podinfo 6.15.0) and the Service scout (port 9898) exist in outpost

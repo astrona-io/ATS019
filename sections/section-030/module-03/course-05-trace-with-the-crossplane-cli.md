@@ -140,6 +140,32 @@ message. The tree is a compact view of stored resource references and
 conditions. Saving the failing child's identity and condition before repair
 preserves the diagnosis after the controllers replace the error with success.
 
+## Preserve the failing condition before repair
+
+A trace is a view of current status. Once the controller repairs the resource,
+its failing condition can disappear. After identifying the failed child, save
+that object's JSON before editing the Composition. Replace `<OBJECT_NAME>`
+with the generated name from the trace:
+
+```sh
+OBJECT_NAME='<OBJECT_NAME>'
+kubectl -n outpost get objects.kubernetes.m.crossplane.io "$OBJECT_NAME" -o json > failed-object.json
+jq -e '.status.conditions[] | select(.type == "Synced" and .status == "False")' failed-object.json
+kubectl -n outpost create configmap diagnosis --from-literal=kind=Object --from-literal=name="$OBJECT_NAME" --from-literal=reason="$(jq -r '.status.conditions[] | select(.type == "Synced" and .status == "False") | .reason' failed-object.json)" --from-literal=message="$(jq -r '.status.conditions[] | select(.type == "Synced" and .status == "False") | .message' failed-object.json)"
+```
+
+Run this only when the chosen child actually has `Synced: False`. The earlier
+missing-function example can fail at the parent before any child fails; in
+that case record the parent condition instead. Keep the full message and UID
+in the JSON snapshot. A generated name identifies the child, while its UID
+proves that a later healthy object is the same object rather than a replacement.
+
+After repairing the Composition, compare the child's UID with the snapshot,
+then check `Synced` and `Ready` on both the request and its children. The
+original evidence should continue to describe the fault, not be overwritten
+with the healthy condition. Check the provider-created Service separately:
+a healthy composition tree does not by itself prove the application answers.
+
 ## Common pitfalls
 
 > [!WARNING]

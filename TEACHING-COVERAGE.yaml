@@ -1,0 +1,143 @@
+version: 1
+labs:
+  sections/section-010/module-01/labs/lab-01:
+    preparation:
+    - sections/section-010/module-01/course-01-what-a-crd-adds.md
+    - sections/section-010/module-01/course-02-types-defaults-and-pruning.md
+  sections/section-010/module-01/labs/lab-02:
+    preparation:
+    - sections/section-010/module-01/course-02-types-defaults-and-pruning.md
+    - sections/section-010/module-01/course-03-cel-rules.md
+    - sections/section-010/module-01/course-04-printer-columns-and-names.md
+  sections/section-010/module-02/labs/lab-01:
+    preparation:
+    - sections/section-010/module-02/course-01-served-and-storage-versions.md
+    - sections/section-010/module-02/course-02-deprecate-a-served-version.md
+  sections/section-010/module-02/labs/lab-02:
+    preparation:
+    - sections/section-010/module-02/course-03-status-subresource.md
+    - sections/section-010/module-02/course-04-scale-subresource.md
+  sections/section-010/capstone/labs/lab-01:
+    preparation:
+    - sections/section-010/module-01/course-01-what-a-crd-adds.md
+    - sections/section-010/module-01/course-02-types-defaults-and-pruning.md
+    - sections/section-010/module-01/course-03-cel-rules.md
+    - sections/section-010/module-01/course-04-printer-columns-and-names.md
+    - sections/section-010/module-02/course-01-served-and-storage-versions.md
+    - sections/section-010/module-02/course-02-deprecate-a-served-version.md
+    - sections/section-010/module-02/course-03-status-subresource.md
+    - sections/section-010/module-02/course-04-scale-subresource.md
+  sections/section-020/module-01/labs/lab-01:
+    preparation:
+    - sections/section-020/module-01/course-01-what-an-operator-installs.md
+    - sections/section-020/module-01/course-02-follow-a-custom-resource.md
+    - sections/section-020/module-01/course-03-conditions-and-observed-generation.md
+  sections/section-020/module-01/labs/lab-02:
+    preparation:
+    - sections/section-020/module-01/course-02-follow-a-custom-resource.md
+    - sections/section-020/module-01/course-03-conditions-and-observed-generation.md
+    - sections/section-020/module-01/course-04-find-why-a-reconcile-failed.md
+  sections/section-020/module-02/labs/lab-01:
+    preparation:
+    - sections/section-020/module-02/course-01-owner-references-and-garbage-collection.md
+    - sections/section-020/module-02/course-02-cascading-deletion-modes.md
+  sections/section-020/module-02/labs/lab-02:
+    preparation:
+    - sections/section-020/module-02/course-03-finalizers-and-deletion-timestamp.md
+    - sections/section-020/module-02/course-04-restore-a-cleanup-worker.md
+  sections/section-020/capstone/labs/lab-01:
+    preparation:
+    - sections/section-020/module-01/course-02-follow-a-custom-resource.md
+    - sections/section-020/module-01/course-03-conditions-and-observed-generation.md
+    - sections/section-020/module-01/course-04-find-why-a-reconcile-failed.md
+    - sections/section-020/module-02/course-01-owner-references-and-garbage-collection.md
+    - sections/section-020/module-02/course-03-finalizers-and-deletion-timestamp.md
+    - sections/section-020/module-02/course-04-restore-a-cleanup-worker.md
+  sections/section-030/module-01/labs/lab-01:
+    preparation:
+    - sections/section-030/module-01/course-01-crossplane-and-provider-packages.md
+  sections/section-030/module-01/labs/lab-02:
+    preparation:
+    - sections/section-030/module-01/course-02-providerconfig-and-injected-identity.md
+    - sections/section-030/module-01/course-03-managed-resources-and-failed-syncs.md
+  sections/section-030/module-02/labs/lab-01:
+    preparation:
+    - sections/section-030/module-02/course-01-from-a-crd-to-an-xrd.md
+  sections/section-030/module-02/labs/lab-02:
+    preparation:
+    - sections/section-030/module-02/course-02-compose-resources-with-a-pipeline.md
+    - sections/section-030/module-02/course-03-patch-values-in-and-out.md
+  sections/section-030/module-02/labs/lab-03:
+    preparation:
+    - sections/section-030/module-02/course-02-compose-resources-with-a-pipeline.md
+    - sections/section-030/module-02/course-03-patch-values-in-and-out.md
+    - sections/section-030/module-02/course-04-render-and-debug-a-composition.md
+  sections/section-030/module-02/labs/lab-04:
+    preparation:
+    - sections/section-030/module-02/course-05-extend-a-native-composition.md
+  sections/section-030/module-03/labs/lab-01:
+    preparation:
+    - sections/section-030/module-03/course-01-request-a-composite-resource.md
+  sections/section-030/module-03/labs/lab-02:
+    preparation:
+    - sections/section-030/module-03/course-02-trace-a-composite-resource.md
+    - sections/section-030/module-03/course-03-read-a-failing-composite-resource.md
+  sections/section-030/module-03/labs/lab-03:
+    preparation:
+    - sections/section-030/module-03/course-04-update-and-delete-a-composite-resource.md
+  sections/section-030/module-03/labs/lab-04:
+    preparation:
+    - sections/section-030/module-03/course-02-trace-a-composite-resource.md
+    - sections/section-030/module-03/course-03-read-a-failing-composite-resource.md
+    - sections/section-030/module-03/course-05-trace-with-the-crossplane-cli.md
+  sections/section-030/capstone/labs/lab-01:
+    preparation:
+    - sections/section-030/module-01/course-01-crossplane-and-provider-packages.md
+    - sections/section-030/module-01/course-02-providerconfig-and-injected-identity.md
+    - sections/section-030/module-01/course-03-managed-resources-and-failed-syncs.md
+    - sections/section-030/module-02/course-01-from-a-crd-to-an-xrd.md
+    - sections/section-030/module-02/course-02-compose-resources-with-a-pipeline.md
+    - sections/section-030/module-02/course-03-patch-values-in-and-out.md
+    - sections/section-030/module-03/course-01-request-a-composite-resource.md
+    - sections/section-030/module-03/course-02-trace-a-composite-resource.md
+  sections/section-040/module-01/labs/lab-01:
+    preparation:
+    - sections/section-040/module-01/course-01-what-argo-workflows-runs.md
+    - sections/section-040/module-01/course-02-build-a-reusable-workflowtemplate.md
+  sections/section-040/module-01/labs/lab-02:
+    preparation:
+    - sections/section-040/module-01/course-02-build-a-reusable-workflowtemplate.md
+    - sections/section-040/module-01/course-03-give-the-workflow-a-serviceaccount.md
+  sections/section-040/module-01/labs/lab-03:
+    preparation:
+    - sections/section-040/module-01/course-02-build-a-reusable-workflowtemplate.md
+    - sections/section-040/module-01/course-03-give-the-workflow-a-serviceaccount.md
+    - sections/section-040/module-01/course-04-create-a-platform-api-object-and-wait.md
+  sections/section-040/module-02/labs/lab-01:
+    preparation:
+    - sections/section-040/module-02/course-01-eventbus-and-webhook-eventsource.md
+    - sections/section-040/module-02/course-02-a-sensor-that-submits-a-workflow.md
+    - sections/section-040/module-02/course-03-filters-and-parameter-mapping.md
+  sections/section-040/module-02/labs/lab-02:
+    preparation:
+    - sections/section-040/module-02/course-01-eventbus-and-webhook-eventsource.md
+    - sections/section-040/module-02/course-02-a-sensor-that-submits-a-workflow.md
+    - sections/section-040/module-02/course-03-filters-and-parameter-mapping.md
+    - sections/section-040/module-02/course-04-follow-an-event-that-went-nowhere.md
+  sections/section-040/module-03/labs/lab-01:
+    preparation:
+    - sections/section-040/module-03/course-01-scope-a-tenant-with-a-role-and-rolebinding.md
+  sections/section-040/module-03/labs/lab-02:
+    preparation:
+    - sections/section-040/module-03/course-03-deliver-requests-through-git-with-argo-cd.md
+    - sections/section-040/module-03/course-04-follow-a-request-from-commit-to-ready.md
+  sections/section-040/capstone/labs/lab-01:
+    preparation:
+    - sections/section-040/module-01/course-02-build-a-reusable-workflowtemplate.md
+    - sections/section-040/module-01/course-03-give-the-workflow-a-serviceaccount.md
+    - sections/section-040/module-01/course-04-create-a-platform-api-object-and-wait.md
+    - sections/section-040/module-02/course-01-eventbus-and-webhook-eventsource.md
+    - sections/section-040/module-02/course-02-a-sensor-that-submits-a-workflow.md
+    - sections/section-040/module-02/course-03-filters-and-parameter-mapping.md
+additional_readings:
+- sections/section-040/module-03/course-02-aggregate-platform-api-permissions.md

@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Grading for ats-019-lab-040-03, check 3. The grader plays the controller.
+# Grading for ats-019-lab-040-01-03, check 3. The grader plays the controller.
 #   Run 1 (Ready):
 #     a. a TeamEnvironment with the requested name and team appears in outpost
 #     b. 20 seconds later the Workflow is still Running (a step without a
