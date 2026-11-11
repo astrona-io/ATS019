@@ -190,6 +190,23 @@ Then wait for the Sensor pod to run:
 kubectl -n starfleet get pods -l sensor-name=provision
 ```
 
+## Prove delivery before sending the task requests
+
+A Ready Sensor Pod and an HTTP `200` from the EventSource do not prove that the Sensor has subscribed to JetStream. A request sent during startup can be accepted without creating a Workflow. After the bus and Pods are ready and the Sensor has its permissions and parameter mapping, send a disposable practice request:
+
+```sh
+PROBE="readiness-$(date +%s)"
+kubectl -n starfleet exec deploy/shuttle -- curl -s -o /dev/null -w '%{http_code}\n' \
+  -X POST -H 'Content-Type: application/json' \
+  -d "{\"team\":\"$PROBE\",\"tier\":\"standard\"}" \
+  http://provision-eventsource-svc.starfleet.svc:12000/provision
+kubectl -n starfleet get workflows -o jsonpath='{range .items[*]}{.metadata.name}{" "}{.spec.arguments.parameters[?(@.name=="team")].value}{"\n"}{end}'
+```
+
+Wait for a Workflow with that exact `team` value. If none appears, inspect the EventBus, EventSource and Sensor logs, then send the practice request again after startup completes. Stop after five minutes and diagnose the failure if no Workflow appears. The reference solution automates this bounded probe before running the graders, which then send their own unique requests.
+
+This lab's Workflow only runs a practice task. Retrying a request can create more than one Workflow. A real provisioning endpoint needs a request identifier and duplicate handling before clients retry operations with side effects.
+
 Send a valid request and a filtered request, and list the `team` values of the Workflows:
 
 ```sh

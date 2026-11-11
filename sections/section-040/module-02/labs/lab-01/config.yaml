@@ -51,9 +51,6 @@ testing:
     - name: apply-reference-solution
       type: file
       source: solution/apply.sh
-    - name: wait-for-pods
-      type: file
-      source: testing/wait-ready.sh
 
 validation:
   passPercent: 100
